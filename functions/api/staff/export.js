@@ -1,13 +1,8 @@
 // GET /api/staff/export: every order line as a CSV file for Excel or Google Sheets.
-import { handle } from '../../_lib/http.js';
+import { handle, csvCell as cell } from '../../_lib/http.js';
 import { getDb } from '../../_lib/db.js';
 import { orderNumber } from '../../_lib/store.js';
 
-const cell = (v) => {
-  let s = String(v ?? '');
-  if (/^[=+\-@]/.test(s)) s = `'${s}`; // stops spreadsheet formulas sneaking in through names
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
 const jod = (fils) => (fils / 1000).toFixed(3);
 
 export const onRequestGet = handle(async ({ env }) => {

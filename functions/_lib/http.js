@@ -76,6 +76,13 @@ export function email(value) {
   return v;
 }
 
+// One CSV cell. A leading = + - @ is defused so names can't run as spreadsheet formulas.
+export function csvCell(v) {
+  let s = String(v ?? '');
+  if (/^[=+\-@]/.test(s)) s = `'${s}`;
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
 // Hidden "website" field: people never fill it, spam bots usually do.
 export function honeypot(body) {
   if (body.website) throw new HttpError(400, 'Request rejected.');

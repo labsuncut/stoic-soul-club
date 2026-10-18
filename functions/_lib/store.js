@@ -38,6 +38,7 @@ export function shapeProduct(p, variants, { staff = false } = {}) {
   return {
     id: p.id, slug: p.slug, name_en: p.name_en, name_ar: p.name_ar || p.name_en,
     desc_en: p.desc_en, desc_ar: p.desc_ar || p.desc_en, category: p.category,
+    fit_en: p.fit_en || '', fit_ar: p.fit_ar || p.fit_en || '',
     price: p.price, compare_at: p.compare_at, images: parseImages(p.images), tone: p.tone,
     featured: !!p.featured, sample: !!p.sample,
     sold_out: !vs.some((v) => (staff ? v.stock > 0 : v.in_stock)),

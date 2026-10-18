@@ -114,6 +114,34 @@
     };
     products().then((list) => { render(list); rerenders.push(() => render(list)); })
       .catch((e) => { grid.innerHTML = `<p class="msg bad">${esc(errorText(e))}</p>`; });
+
+    // "Tell me when it drops": on until staff switch it off in Settings.
+    const form = $('#drop-form');
+    info().then((i) => { if (i?.drop_signup) $('#drop').hidden = false; });
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = $('#drop-msg');
+      const btn = form.querySelector('button');
+      btn.disabled = true;
+      try {
+        await api('/api/notify', { method: 'POST', body: JSON.stringify({ contact: form.contact.value, website: form.website.value, lang }) });
+        form.querySelector('.drop-row').hidden = true;
+        msg.className = 'msg ok';
+        msg.textContent = t().dropDone;
+      } catch (err) {
+        msg.className = 'msg bad';
+        msg.textContent = errorText(err);
+      } finally { btn.disabled = false; }
+    });
+  }
+
+  function pageHelp() {
+    info().then((i) => {
+      const link = $('#ask-wa');
+      if (!i?.whatsapp || !link) return;
+      link.href = `https://wa.me/${encodeURIComponent(i.whatsapp)}?text=${encodeURIComponent(t().waHello)}`;
+      link.hidden = false;
+    });
   }
 
   function pageShop() {
@@ -150,6 +178,7 @@
       ? Promise.resolve(JSON.parse(embedded.textContent))
       : api(`/api/products?slug=${encodeURIComponent(slug || '')}`).then((d) => d.product);
 
+    let zones = [];
     function variant() { return p.variants.find((v) => v.size === size && v.color === colour); }
 
     function render() {
@@ -170,6 +199,7 @@
           <p class="desc">${esc(pick(p, 'desc'))}</p>
           ${colours.length > 1 || colours[0] ? `<div class="opt-label"><span data-i18n="pdp.colour">${lang === 'ar' ? window.AR['pdp.colour'] : 'Colour'}</span><span>${esc(colour)}</span></div>
           <div class="opts" role="group">${colours.map((c) => `<button type="button" class="opt" data-colour="${esc(c)}" aria-pressed="${c === colour}">${esc(c)}</button>`).join('')}</div>` : ''}
+          ${pick(p, 'fit') ? `<p class="fit">${esc(pick(p, 'fit'))}</p>` : ''}
           <div class="opt-label"><span>${lang === 'ar' ? window.AR['pdp.size'] : 'Size'}</span></div>
           <div class="opts" role="group">${sizes.map((s) => {
             const sv = inColour(s);
@@ -177,6 +207,7 @@
           }).join('')}</div>
           <p class="stock-note" aria-live="polite">${v?.low ? t().low(2) : ''}</p>
           <button type="button" class="btn block" id="add" ${p.sold_out ? 'disabled' : ''}>${p.sold_out ? t().soldOut : size ? t().add : t().pick}</button>
+          ${zones.length ? `<p class="promise-line">${promiseLine()}</p>` : ''}
           <div style="margin-top:24px">
             <details><summary>${lang === 'ar' ? window.AR['pdp.guide'] : 'Size help'}</summary>
               <p class="fine">${lang === 'ar' ? window.AR['pdp.guideNote'] : 'Measurements are laid flat. Not sure? Send us your height and usual size and we will tell you which one, with numbers, not guesses.'}</p></details>
@@ -198,8 +229,17 @@
       }
     });
 
-    load.then((data) => { p = data; render(); rerenders.push(render); })
-      .catch((e) => { root.innerHTML = `<p class="msg bad">${esc(errorText(e))}</p>`; });
+    // Delivery promise under Add to bag, built from the real delivery fees in Settings.
+    function promiseLine() {
+      const name = (z) => esc(lang === 'ar' ? z.ar || z.en : z.en);
+      return [...zones.map((z) => (z.fee ? t().zoneFee(name(z), money(z.fee)) : t().zoneFree(name(z)))), t().swap].join(' · ');
+    }
+
+    Promise.all([load, info()]).then(([data, i]) => {
+      p = data;
+      zones = i?.zones || [];
+      render(); rerenders.push(render);
+    }).catch((e) => { root.innerHTML = `<p class="msg bad">${esc(errorText(e))}</p>`; });
   }
 
   // ---------- Bag and checkout ----------
@@ -357,7 +397,7 @@
       .catch((e) => { root.innerHTML = `<p class="msg bad">${esc(errorText(e))}</p>`; });
   }
 
-  const pages = { home: pageHome, shop: pageShop, product: pageProduct, bag: pageBag, pay: pagePay, order: pageOrder };
+  const pages = { home: pageHome, shop: pageShop, product: pageProduct, help: pageHelp, bag: pageBag, pay: pagePay, order: pageOrder };
   pages[document.body.dataset.page]?.();
   applyLang();
 })();

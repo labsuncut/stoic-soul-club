@@ -8,7 +8,7 @@ export const onRequestPost = handle(async ({ request, env }) => {
   const s = await readBody(request);
   const db = await getDb(env);
   const updates = {};
-  for (const k of ['store_open', 'card_enabled', 'cod_enabled', 'cliq_enabled']) if (k in s) updates[k] = s[k] ? '1' : '0';
+  for (const k of ['store_open', 'card_enabled', 'cod_enabled', 'cliq_enabled', 'drop_signup']) if (k in s) updates[k] = s[k] ? '1' : '0';
   if ('notice_en' in s) updates.notice_en = text(s.notice_en, 200);
   if ('notice_ar' in s) updates.notice_ar = text(s.notice_ar, 200);
   if ('telegram_chat' in s && s.telegram_chat === '') updates.telegram_chat = '';

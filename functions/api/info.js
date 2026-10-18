@@ -16,5 +16,6 @@ export const onRequestGet = handle(async ({ env }) => {
     whatsapp: s.whatsapp,
     notice_en: s.notice_en,
     notice_ar: s.notice_ar,
+    drop_signup: s.drop_signup === '1',
   });
 });

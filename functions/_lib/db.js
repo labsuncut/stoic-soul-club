@@ -88,7 +88,34 @@ const SCHEMA = [
     at INTEGER NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS hits_lookup ON hits (bucket, who, at)`,
+  // People who asked to hear when a drop opens. contact is a phone (digits) or an email.
+  `CREATE TABLE IF NOT EXISTS subscribers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact TEXT NOT NULL UNIQUE,
+    kind TEXT NOT NULL CHECK (kind IN ('phone','email')),
+    lang TEXT NOT NULL DEFAULT 'en',
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  )`,
 ];
+
+// Columns added after the first launch. ALTER fails harmlessly once a column exists.
+const ADDED_COLUMNS = [
+  ['products', 'fit_en', "TEXT NOT NULL DEFAULT ''"],
+  ['products', 'fit_ar', "TEXT NOT NULL DEFAULT ''"],
+];
+
+// Fit notes from the brand brief, shown above the size buttons. Staff can add who wears
+// what (for example "Ali is 180 cm and wears L") from the dashboard once photos exist.
+const FIT = {
+  oversized: ['Cut oversized.', 'قصة واسعة.'],
+  boxy: ['Very boxy, dropped shoulder.', 'قصة واسعة جدًا وكتف نازل.'],
+  regular: ['Relaxed regular fit; size up for baggy.', 'قصة عادية مريحة، اختر مقاسًا أكبر لإطلالة واسعة.'],
+};
+const STARTER_FIT = {
+  'vengeance-washed-hoodie': FIT.oversized, 'vengeance-washed-tee': FIT.oversized,
+  'kaizen-hoodie': FIT.boxy, 'tranquility-hoodie': FIT.boxy,
+  'kaizen-tee': FIT.regular, 'tranquility-tee': FIT.regular,
+};
 
 // Stoic Soul Club's Chapter One stock (founder count, 2026-10-10) and prices (D-008).
 // This only fills an empty database; after that, staff manage products from the dashboard.
@@ -138,6 +165,7 @@ const DEFAULT_SETTINGS = {
   zones: JSON.stringify(DEFAULT_ZONES),
   whatsapp: '',
   telegram_chat: '', // filled by Settings > Connect Telegram
+  drop_signup: '1', // shows the "tell me when it drops" box on the home page
   notice_en: '',
   notice_ar: '',
 };
@@ -150,6 +178,16 @@ export async function getDb(env) {
   }
   if (!ready) {
     await env.DB.batch(SCHEMA.map((sql) => env.DB.prepare(sql)));
+    let added = false;
+    for (const [table, column, type] of ADDED_COLUMNS) {
+      try {
+        await env.DB.prepare(`ALTER TABLE ${table} ADD COLUMN ${column} ${type}`).run();
+        added = true;
+      } catch (err) {
+        if (!/duplicate column/i.test(String(err.message))) throw err;
+      }
+    }
+    if (added) await fillStarterFit(env.DB);
     const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM products').first();
     if (n === 0) await seedStarter(env.DB);
     const seed = env.DB.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
@@ -175,6 +213,12 @@ async function seedStarter(db) {
     });
   });
   await db.batch(rows);
+  await fillStarterFit(db);
+}
+
+async function fillStarterFit(db) {
+  const set = db.prepare("UPDATE products SET fit_en = ?, fit_ar = ? WHERE slug = ? AND fit_en = ''");
+  await db.batch(Object.entries(STARTER_FIT).map(([slug, [en, ar]]) => set.bind(en, ar, slug)));
 }
 
 export async function getSettings(db) {

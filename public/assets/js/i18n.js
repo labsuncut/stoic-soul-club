@@ -35,6 +35,12 @@ window.AR = {
   'foot.shop': 'المتجر', 'foot.help': 'المساعدة', 'foot.delivery': 'التوصيل', 'foot.returns': 'تبديل المقاس',
   'foot.privacy': 'الخصوصية', 'foot.terms': 'الشروط', 'foot.track': 'تتبّع طلب',
   'nf.title': 'هذه الصفحة غير موجودة.', 'nf.back': 'العودة إلى المتجر',
+  'drop.eyebrow': 'طلب مبكر · السبت 24 تشرين الأول، 8 مساءً',
+  'drop.title': 'خُذ الفصل الأول قبل الكل بيوم.',
+  'drop.lead': 'قائمة الطلب المبكر بتتسوّق يوم السبت الساعة 8 المسا، قبل الكل بيوم. اترك رقم واتساب أو إيميل وبنبعتلك أول ما يفتح.',
+  'drop.label': 'رقم واتساب أو إيميل', 'drop.btn': 'بلّغني', 'drop.or': 'أو ابعت "CHAPTER" برسالة على',
+  'ask.title': 'أسرع جواب: راسلنا', 'ask.lead': 'مقاسات، توصيل، طلبك: ابعتلنا رسالة وواحد منا برد عليك.',
+  'ask.wa': 'راسلنا واتساب', 'ask.ig': 'رسالة إنستغرام',
 };
 
 window.UI = {
@@ -50,6 +56,9 @@ window.UI = {
     },
     steps: ['Received', 'Packed', 'On the way', 'Delivered'],
     paid: 'Paid', unpaid: 'To pay', cod: 'Cash on delivery', card: 'Card', testOrder: 'Test order',
+    dropDone: "You're on the list. We'll message you when early access opens.",
+    waHello: 'Hi Stoic, I have a question',
+    zoneFree: (z) => `Free delivery in ${z}`, zoneFee: (z, f) => `${f} to ${z}`, swap: '7-day size swap',
     payNow: 'Pay now', waMsg: (n) => `Hi Stoic Soul Club, a question about my order ${n}`, cliq: 'CliQ',
     cliqHow: (amount, alias, n) => `To pay by CliQ, send <b>${amount}</b> to the alias <b>${alias}</b> and write <b>${n}</b> in the note. We confirm as soon as it arrives.`,
     all: 'All', cats: { tees: 'Tees', hoodies: 'Hoodies', bottoms: 'Bottoms', accessories: 'Accessories' },
@@ -66,6 +75,9 @@ window.UI = {
     },
     steps: ['تم الاستلام', 'تم التغليف', 'في الطريق', 'تم التوصيل'],
     paid: 'مدفوع', unpaid: 'للدفع', cod: 'الدفع عند الاستلام', card: 'بطاقة', testOrder: 'طلب تجريبي',
+    dropDone: 'تمام، اسمك صار عالقائمة. رح نبعتلك أول ما يفتح الطلب المبكر.',
+    waHello: 'مرحبا ستويك، عندي سؤال',
+    zoneFree: (z) => `توصيل مجاني داخل ${z}`, zoneFee: (z, f) => `${f} لـ${z}`, swap: 'تبديل المقاس خلال 7 أيام',
     payNow: 'ادفع الآن', waMsg: (n) => `مرحبا، عندي سؤال عن طلبي ${n}`, cliq: 'كليك',
     cliqHow: (amount, alias, n) => `للدفع عبر كليك، حوّل <b>${amount}</b> إلى الاسم المستعار <b>${alias}</b> واكتب <b>${n}</b> في الملاحظة. نأكد طلبك أول ما يوصل المبلغ.`,
     all: 'الكل', cats: { tees: 'تيشيرتات', hoodies: 'هوديز', bottoms: 'بناطيل', accessories: 'إكسسوارات' },

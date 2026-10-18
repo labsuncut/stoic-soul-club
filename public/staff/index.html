@@ -31,6 +31,7 @@
       <button type="button" role="tab" data-tab="overview" aria-selected="true">Today</button>
       <button type="button" role="tab" data-tab="orders">Orders</button>
       <button type="button" role="tab" data-tab="products">Products and stock</button>
+      <button type="button" role="tab" data-tab="drop">Drop list</button>
       <button type="button" role="tab" data-tab="settings">Settings</button>
     </nav>
 
@@ -78,6 +79,10 @@
             <div class="field"><label>Description (Arabic)</label><textarea name="desc_ar" dir="rtl"></textarea></div>
           </div>
           <div class="row2">
+            <div class="field"><label>Fit note (English), shown above sizes. Example: Cut oversized. Ali is 180 cm and wears L.</label><input name="fit_en" type="text" maxlength="160"></div>
+            <div class="field"><label>Fit note (Arabic)</label><input name="fit_ar" type="text" maxlength="160" dir="rtl"></div>
+          </div>
+          <div class="row2">
             <div class="field"><label>Price (JOD)</label><input name="price" type="number" step="0.001" min="0" required></div>
             <div class="field"><label>Old price, for a sale (JOD, optional)</label><input name="compare_at" type="number" step="0.001" min="0"></div>
           </div>
@@ -98,6 +103,12 @@
       </dialog>
     </section>
 
+    <section data-panel="drop" hidden>
+      <div class="bar"><p id="d-count" class="fine"></p><a class="btn ghost" href="/api/staff/subscribers?csv=1">Download list (CSV)</a></div>
+      <p class="fine">People who asked to hear when the drop opens, from the home page. When early access opens, message each one. The WhatsApp link fills in the message for you.</p>
+      <div id="d-list"></div>
+    </section>
+
     <section data-panel="settings" hidden>
       <form id="s-form" class="panel">
         <h2>Shop</h2>
@@ -105,6 +116,7 @@
         <label class="check"><input type="checkbox" name="cod_enabled"> Cash on delivery</label>
         <label class="check"><input type="checkbox" name="cliq_enabled"> CliQ transfer (shows at checkout once the alias below is filled in)</label>
         <label class="check"><input type="checkbox" name="card_enabled"> Card payment (test mode: practice cards only)</label>
+        <label class="check"><input type="checkbox" name="drop_signup"> "Notify me" drop sign-up on the home page</label>
         <div class="field"><label>CliQ alias customers send money to</label><input name="cliq_alias" type="text" maxlength="40"></div>
         <div class="row2">
           <div class="field"><label>WhatsApp number for customers (with 962, digits only)</label><input name="whatsapp" type="tel" placeholder="9627XXXXXXXX"></div>

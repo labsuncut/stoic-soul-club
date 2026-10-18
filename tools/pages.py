@@ -113,6 +113,24 @@ PAGES = {
   <div><b data-i18n="p.cod">Cash or CliQ</b><span data-i18n="p.codD">Pay when it arrives, or by CliQ</span></div>
   <div><b data-i18n="p.returns">7-day size swap</b><span data-i18n="p.returnsD">Unworn, tags on</span></div>
 </div>
+<section class="drop" id="drop" hidden>
+  <div class="wrap">
+    <div>
+      <p class="eyebrow" data-i18n="drop.eyebrow">Early access · Sat 24 Oct, 8pm</p>
+      <h2 data-i18n="drop.title">Get Chapter One a day early.</h2>
+      <p data-i18n="drop.lead">The early-access list shops on Saturday at 8pm, a day before everyone else. Leave your WhatsApp or email and we'll message you the moment it opens.</p>
+    </div>
+    <form id="drop-form" novalidate>
+      <label for="drop-contact" data-i18n="drop.label">WhatsApp number or email</label>
+      <div class="drop-row">
+        <input id="drop-contact" name="contact" type="text" inputmode="email" autocomplete="tel" placeholder="079 123 4567" required>
+        <button class="btn" type="submit" data-i18n="drop.btn">Notify me</button>
+      </div>
+      <input class="sr-only" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p class="fine" id="drop-msg" aria-live="polite"><span data-i18n="drop.or">Or DM "CHAPTER" to</span> <a href="https://www.instagram.com/stoicsoul.club/" rel="noopener">@stoicsoul.club</a></p>
+    </form>
+  </div>
+</section>
 <section class="block">
   <div class="wrap">
     <div class="block-head"><h2 data-i18n="home.featured">The pieces</h2><a href="/shop" data-i18n="home.all">See everything</a></div>
@@ -214,6 +232,14 @@ PAGES = {
   "help.html": dict(path="/help", page="help", title=f"Help · {NAME}", desc="Delivery, payment, size swaps, privacy and terms at Stoic Soul Club.", extra="", body="""
 <div class="wrap"><article class="prose">
   <h1>Help</h1>
+  <div class="ask">
+    <h2 data-i18n="ask.title">Fastest answer: message us</h2>
+    <p data-i18n="ask.lead">Sizes, delivery, an order: send us a message and one of us replies.</p>
+    <div class="ask-btns">
+      <a class="btn" id="ask-wa" href="#" hidden data-i18n="ask.wa">WhatsApp us</a>
+      <a class="btn ghost" href="https://www.instagram.com/stoicsoul.club/" rel="noopener" data-i18n="ask.ig">Instagram DM</a>
+    </div>
+  </div>
   <h2 id="delivery">Delivery</h2>
   <p>Free inside Amman: one of us brings it to you. Anywhere else in Jordan, 3 JOD by courier. We message you on WhatsApp to arrange the time.</p>
   <h2 id="payment">Payment</h2>

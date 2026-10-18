@@ -267,3 +267,24 @@ h1, h2, .logo { font-variation-settings: "SOFT" 100, "WONK" 1; }
 .opt, .choice { border-radius: 10px; }
 .panel { border-radius: var(--round); }
 .choice input { accent-color: var(--brand); }
+
+/* Fit note, delivery promise, drop sign-up, help contact box */
+.fit { font-size: 14px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin: 16px 0 4px; }
+.promise-line { font-size: 13px; color: var(--muted); text-align: center; margin: 10px 0 0; }
+.drop { padding: 48px 0; background: var(--brand); color: #f4f1ec; }
+.drop .wrap { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: center; }
+.drop h2 { font-size: clamp(28px, 4vw, 40px); margin-bottom: 8px; }
+.drop p { margin: 0; }
+.drop .eyebrow { color: #f2c9a6; }
+.drop label { color: #dfe7ee; }
+.drop .fine, .drop .fine a { color: #dfe7ee; margin-top: 10px; }
+.drop-row { display: flex; gap: 8px; }
+.drop-row input { flex: 1; min-width: 0; border-color: transparent; }
+.drop .btn { background: var(--accent); border-color: var(--accent); }
+.drop .btn:hover { background: #a95f2f; }
+.drop .msg.ok { color: #fff; font-size: 16px; }
+@media (max-width: 720px) { .drop .wrap { grid-template-columns: 1fr; gap: 20px; } .drop-row { flex-direction: column; } }
+.ask { background: var(--paper); border: 1px solid var(--line); border-radius: var(--round); padding: 20px; margin: 8px 0 28px; }
+.ask h2 { margin-top: 0 !important; }
+.ask-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.drop .msg.bad { color: #ffd9d2; }

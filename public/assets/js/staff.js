@@ -49,7 +49,7 @@
   $('#logout').addEventListener('click', async () => { await api('/api/staff/login', { method: 'DELETE' }); showLogin(); });
 
   // ---------- Tabs ----------
-  const loaders = { overview: loadOverview, orders: loadOrders, products: loadProducts, settings: loadSettings };
+  const loaders = { overview: loadOverview, orders: loadOrders, products: loadProducts, drop: loadDrop, settings: loadSettings };
   function openTab(name) {
     for (const b of $$('[data-tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
     for (const p of $$('[data-panel]')) p.hidden = p.dataset.panel !== name;
@@ -183,6 +183,7 @@
     const v = p || { tone: '#2b2b2b', active: true, sort: 100, category: 'tees', images: [] };
     for (const [k, val] of Object.entries({
       id: v.id ?? '', name_en: v.name_en ?? '', name_ar: v.name_ar ?? '', desc_en: v.desc_en ?? '', desc_ar: v.desc_ar ?? '',
+      fit_en: v.fit_en ?? '', fit_ar: v.fit_ar ?? '',
       price: v.price != null ? v.price / 1000 : '', compare_at: v.compare_at ? v.compare_at / 1000 : '', category: v.category,
       slug: v.slug ?? '', images: (v.images || []).join('\n'), tone: v.tone, sort: v.sort,
     })) pform.elements[k].value = val;
@@ -201,6 +202,7 @@
     try {
       await post('/api/staff/products', { product: {
         id: f.id.value || undefined, name_en: f.name_en.value, name_ar: f.name_ar.value, desc_en: f.desc_en.value, desc_ar: f.desc_ar.value,
+        fit_en: f.fit_en.value, fit_ar: f.fit_ar.value,
         price: f.price.value, compare_at: f.compare_at.value || 0, category: f.category.value, slug: f.slug.value,
         images: f.images.value, tone: f.tone.value, sort: f.sort.value, featured: f.featured.checked, active: f.active.checked,
       } });
@@ -209,6 +211,23 @@
     } catch (err) { $('#p-msg').className = 'msg bad'; $('#p-msg').textContent = err.message; }
   });
 
+  // ---------- Drop list ----------
+  const dropText = {
+    en: `Hi, it's Stoic Soul Club. Early access to Chapter One is open now: ${location.origin}/shop`,
+    ar: `مرحبا، معك Stoic Soul Club. الطلب المبكر للفصل الأول فتح هلأ: ${location.origin}/shop`,
+  };
+  async function loadDrop() {
+    const { subscribers: list } = await api('/api/staff/subscribers');
+    $('#d-count').textContent = `${list.length} ${list.length === 1 ? 'person' : 'people'} on the list`;
+    $('#d-list').innerHTML = list.length
+      ? `<table class="tbl"><tr><th>Contact</th><th>Language</th><th>Signed up (UTC)</th><th></th></tr>${list.map((r) => `<tr>
+          <td>${esc(r.kind === 'phone' ? `+${r.contact}` : r.contact)}</td><td>${r.lang === 'ar' ? 'Arabic' : 'English'}</td><td>${esc(r.created_at)}</td>
+          <td>${r.kind === 'phone'
+            ? `<a href="https://wa.me/${esc(r.contact)}?text=${encodeURIComponent(dropText[r.lang] || dropText.en)}" target="_blank" rel="noopener">WhatsApp</a>`
+            : `<a href="mailto:${esc(r.contact)}?subject=${encodeURIComponent('Stoic Soul Club: early access is open')}&body=${encodeURIComponent(dropText[r.lang] || dropText.en)}">Email</a>`}</td></tr>`).join('')}</table>`
+      : '<p class="fine">Nobody yet.</p>';
+  }
+
   // ---------- Settings ----------
   const zoneRow = (z = { en: '', ar: '', fee: 0, id: '' }) => `<tr data-zone="${esc(z.id)}">
     <td><input value="${esc(z.en)}" data-k="en" required></td><td><input value="${esc(z.ar)}" data-k="ar" dir="rtl"></td>
@@ -216,7 +235,7 @@
   async function loadSettings() {
     const { settings: s } = await api('/api/staff/settings');
     const f = $('#s-form').elements;
-    for (const k of ['store_open', 'cod_enabled', 'card_enabled', 'cliq_enabled']) f[k].checked = s[k] === '1';
+    for (const k of ['store_open', 'cod_enabled', 'card_enabled', 'cliq_enabled', 'drop_signup']) f[k].checked = s[k] === '1';
     for (const k of ['whatsapp', 'cliq_alias', 'notice_en', 'notice_ar']) f[k].value = s[k] || '';
     f.free_delivery_over.value = (Number(s.free_delivery_over) || 0) / 1000;
     $('#zones tbody').innerHTML = s.zones.map(zoneRow).join('');
@@ -238,7 +257,7 @@
     const msg = $('#s-msg');
     try {
       await post('/api/staff/settings', {
-        store_open: f.store_open.checked, cod_enabled: f.cod_enabled.checked, card_enabled: f.card_enabled.checked, cliq_enabled: f.cliq_enabled.checked, cliq_alias: f.cliq_alias.value,
+        store_open: f.store_open.checked, cod_enabled: f.cod_enabled.checked, card_enabled: f.card_enabled.checked, cliq_enabled: f.cliq_enabled.checked, drop_signup: f.drop_signup.checked, cliq_alias: f.cliq_alias.value,
         whatsapp: f.whatsapp.value, notice_en: f.notice_en.value, notice_ar: f.notice_ar.value, free_delivery_over: f.free_delivery_over.value || 0,
         zones: $$('#zones tbody tr').map((tr) => ({ id: tr.dataset.zone || $('[data-k="en"]', tr).value, en: $('[data-k="en"]', tr).value, ar: $('[data-k="ar"]', tr).value, fee: $('[data-k="fee"]', tr).value })),
       });

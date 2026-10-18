@@ -28,6 +28,8 @@ export const onRequestPost = handle(async ({ request, env }) => {
     text(p.name_ar, 80),
     String(p.desc_en || '').trim().slice(0, 1500),
     String(p.desc_ar || '').trim().slice(0, 1500),
+    text(p.fit_en, 160),
+    text(p.fit_ar, 160),
     CATEGORIES.includes(p.category) ? p.category : 'tees',
     money(p.price, 'Price'),
     p.compare_at ? money(p.compare_at, 'Old price') : 0,
@@ -41,15 +43,15 @@ export const onRequestPost = handle(async ({ request, env }) => {
   try {
     if (Number.isInteger(id)) {
       const r = await db.prepare(
-        `UPDATE products SET slug=?, name_en=?, name_ar=?, desc_en=?, desc_ar=?, category=?, price=?, compare_at=?,
+        `UPDATE products SET slug=?, name_en=?, name_ar=?, desc_en=?, desc_ar=?, fit_en=?, fit_ar=?, category=?, price=?, compare_at=?,
            images=?, tone=?, featured=?, active=?, sort=?, sample=0 WHERE id=?`,
       ).bind(...fields, id).run();
       if (!r.meta.changes) throw new HttpError(404, 'Product not found.');
       return json({ ok: true, id });
     }
     const r = await db.prepare(
-      `INSERT INTO products (slug, name_en, name_ar, desc_en, desc_ar, category, price, compare_at, images, tone, featured, active, sort)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (slug, name_en, name_ar, desc_en, desc_ar, fit_en, fit_ar, category, price, compare_at, images, tone, featured, active, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(...fields).run();
     return json({ ok: true, id: r.meta.last_row_id }, 201);
   } catch (err) {
