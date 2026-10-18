@@ -3,8 +3,9 @@
 import { handle, json, readBody, sameOrigin, text, phone, email, honeypot, HttpError } from '../_lib/http.js';
 import { getDb, getSettings, rateLimit } from '../_lib/db.js';
 import { createOrder, expireUnpaid } from '../_lib/store.js';
+import { alertNewOrder } from '../_lib/notify.js';
 
-export const onRequestPost = handle(async ({ request, env }) => {
+export const onRequestPost = handle(async ({ request, env, waitUntil }) => {
   sameOrigin(request);
   const body = await readBody(request);
   honeypot(body);
@@ -44,6 +45,8 @@ export const onRequestPost = handle(async ({ request, env }) => {
   await rateLimit(db, request, 'checkout', 8, 60);
   await expireUnpaid(db);
   const { token, status } = await createOrder(db, settings, { items, customer, paymentMethod });
+  // Card orders are announced once paid, not when the shopper first reaches the card page.
+  if (status === 'new') waitUntil(alertNewOrder(env, db, token, new URL(request.url).origin));
   const next = status === 'awaiting_payment' ? `/pay/?t=${token}` : `/order/?t=${token}&new=1`;
   return json({ ok: true, token, next }, 201);
 });

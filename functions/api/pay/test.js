@@ -7,8 +7,9 @@
 import { handle, json, readBody, sameOrigin, randomToken, HttpError } from '../../_lib/http.js';
 import { getDb, getSettings, rateLimit } from '../../_lib/db.js';
 import { loadOrder, markPaid } from '../../_lib/store.js';
+import { alertNewOrder } from '../../_lib/notify.js';
 
-export const onRequestPost = handle(async ({ request, env }) => {
+export const onRequestPost = handle(async ({ request, env, waitUntil }) => {
   sameOrigin(request);
   const body = await readBody(request);
   const db = await getDb(env);
@@ -28,5 +29,6 @@ export const onRequestPost = handle(async ({ request, env }) => {
   if (card !== '4242424242424242') throw new HttpError(400, 'This is a test store: use the test card 4242 4242 4242 4242.');
 
   await markPaid(db, order, `TEST-${randomToken(6)}`);
+  waitUntil(alertNewOrder(env, db, t, new URL(request.url).origin));
   return json({ ok: true, next: `/order/?t=${t}&new=1` });
 });

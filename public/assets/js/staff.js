@@ -220,7 +220,16 @@
     for (const k of ['whatsapp', 'cliq_alias', 'notice_en', 'notice_ar']) f[k].value = s[k] || '';
     f.free_delivery_over.value = (Number(s.free_delivery_over) || 0) / 1000;
     $('#zones tbody').innerHTML = s.zones.map(zoneRow).join('');
+    $('#tg-state').textContent = s.telegram_chat ? 'Telegram alerts are on.' : 'Telegram alerts are off.';
+    $('#tg-off').hidden = !s.telegram_chat;
   }
+  $('#tg-connect').addEventListener('click', async () => {
+    try { const r = await post('/api/staff/telegram', {}); $('#tg-state').textContent = `Alerts go to ${r.chat}. A test message was sent.`; $('#tg-off').hidden = false; }
+    catch (err) { $('#tg-state').textContent = err.message; }
+  });
+  $('#tg-off').addEventListener('click', async () => {
+    await post('/api/staff/settings', { telegram_chat: '' }); await loadSettings();
+  });
   $('#z-add').addEventListener('click', () => $('#zones tbody').insertAdjacentHTML('beforeend', zoneRow()));
   $('#zones').addEventListener('click', (e) => { if (e.target.matches('[data-zrm]')) e.target.closest('tr').remove(); });
   $('#s-form').addEventListener('submit', async (e) => {

@@ -137,6 +137,7 @@ const DEFAULT_SETTINGS = {
   free_delivery_over: '0',
   zones: JSON.stringify(DEFAULT_ZONES),
   whatsapp: '',
+  telegram_chat: '', // filled by Settings > Connect Telegram
   notice_en: '',
   notice_ar: '',
 };
