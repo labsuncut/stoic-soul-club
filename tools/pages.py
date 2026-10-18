@@ -26,15 +26,15 @@ HEAD = """<!doctype html>
 {extra}</head>
 <body data-page="{page}">
 <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
-<div class="ribbon" data-i18n="ribbon">Test store: card payments are practice only and no money is taken. Products shown are samples.</div>
+<div class="ribbon" data-i18n="ribbon">Preview store: card payments are practice only and no money is taken.</div>
 <div class="notice" id="notice" hidden></div>
 <header class="top">
   <div class="wrap">
     <a class="logo" href="/" aria-label="{name} home">Stoic</a>
     <nav class="nav" aria-label="Main">
       <a href="/shop" data-i18n="nav.shop">Shop</a>
-      <a href="/shop?c=tops" data-i18n="nav.tops">Tops</a>
-      <a href="/shop?c=bottoms" data-i18n="nav.bottoms">Bottoms</a>
+      <a href="/shop?c=tees" data-i18n="nav.tees">Tees</a>
+      <a href="/shop?c=hoodies" data-i18n="nav.hoodies">Hoodies</a>
       <a href="/about" data-i18n="nav.about">About</a>
       <a href="/help" data-i18n="nav.help">Help</a>
     </nav>
@@ -45,8 +45,8 @@ HEAD = """<!doctype html>
   </div>
   <nav class="mobile-nav" aria-label="Main">
     <a href="/shop" data-i18n="nav.shop">Shop</a>
-    <a href="/shop?c=tops" data-i18n="nav.tops">Tops</a>
-    <a href="/shop?c=bottoms" data-i18n="nav.bottoms">Bottoms</a>
+    <a href="/shop?c=tees" data-i18n="nav.tees">Tees</a>
+    <a href="/shop?c=hoodies" data-i18n="nav.hoodies">Hoodies</a>
     <a href="/help" data-i18n="nav.help">Help</a>
   </nav>
 </header>
@@ -58,23 +58,22 @@ FOOT = """</main>
   <div class="wrap">
     <div>
       <a class="logo" href="/">Stoic</a>
-      <p data-i18n="foot.tag">Quiet clothes for a steady mind. Amman, Jordan.</p>
+      <p data-i18n="foot.tag">100% cotton streetwear from Amman.</p>
+      <p><a href="https://www.instagram.com/stoicsoul.club/" rel="noopener">Instagram @stoicsoul.club</a></p>
     </div>
     <div>
       <h4 data-i18n="foot.shop">Shop</h4>
       <ul>
         <li><a href="/shop" data-i18n="shop.all">All</a></li>
-        <li><a href="/shop?c=tops" data-i18n="nav.tops">Tops</a></li>
-        <li><a href="/shop?c=bottoms" data-i18n="nav.bottoms">Bottoms</a></li>
-        <li><a href="/shop?c=outerwear" data-i18n="nav.outer">Outerwear</a></li>
-        <li><a href="/shop?c=accessories" data-i18n="nav.acc">Accessories</a></li>
+        <li><a href="/shop?c=tees" data-i18n="nav.tees">Tees</a></li>
+        <li><a href="/shop?c=hoodies" data-i18n="nav.hoodies">Hoodies</a></li>
       </ul>
     </div>
     <div>
       <h4 data-i18n="foot.help">Help</h4>
       <ul>
         <li><a href="/help#delivery" data-i18n="foot.delivery">Delivery</a></li>
-        <li><a href="/help#returns" data-i18n="foot.returns">Exchanges and returns</a></li>
+        <li><a href="/help#returns" data-i18n="foot.returns">Size swaps</a></li>
         <li><a href="/help#privacy" data-i18n="foot.privacy">Privacy</a></li>
         <li><a href="/help#terms" data-i18n="foot.terms">Terms</a></li>
       </ul>
@@ -90,43 +89,43 @@ FOOT = """</main>
 ORG_LD = """<script type="application/ld+json">
 {"@context":"https://schema.org","@type":"ClothingStore","name":"Stoic Soul Club","url":"https://stoicsoulclub.com/",
  "logo":"https://stoicsoulclub.com/assets/img/favicon.svg","areaServed":"JO","currenciesAccepted":"JOD",
- "paymentAccepted":"Cash, Credit Card","address":{"@type":"PostalAddress","addressLocality":"Amman","addressCountry":"JO"}}
+ "paymentAccepted":"Cash, CliQ","sameAs":["https://www.instagram.com/stoicsoul.club/"],"address":{"@type":"PostalAddress","addressLocality":"Amman","addressCountry":"JO"}}
 </script>
 """
 
 PAGES = {
-  "index.html": dict(path="/", page="home", title=f"{NAME} · Clothing in Amman, delivered across Jordan",
-    desc="Stoic Soul Club: quiet, well-made everyday clothing from Amman. Delivery across Jordan, cash on delivery or card.",
+  "index.html": dict(path="/", page="home", title=f"{NAME} · Streetwear tees and hoodies, Amman",
+    desc="Stoic Soul Club: heavyweight 100% cotton tees and hoodies with big back prints. Free delivery in Amman, 3 JOD across Jordan. Pay cash or CliQ.",
     extra=ORG_LD, body="""
 <section class="hero">
   <div class="wrap">
     <div>
-      <p class="eyebrow" data-i18n="hero.eyebrow">Stoic Soul Club · Amman</p>
-      <h1 data-i18n="hero.title">Quiet clothes for a steady mind.</h1>
-      <p class="lead" data-i18n="hero.lead">Well-made everyday pieces, without the noise. Delivered across Jordan, pay on delivery.</p>
-      <a class="btn" href="/shop" data-i18n="hero.cta">Shop the collection</a>
+      <p class="eyebrow" data-i18n="hero.eyebrow">Stoic Soul Club · Chapter One</p>
+      <h1 data-i18n="hero.title">Three designs. 48 pieces.</h1>
+      <p class="lead" data-i18n="hero.lead">Heavy cotton tees and hoodies with a big back print. Free delivery in Amman, pay cash or CliQ.</p>
+      <a class="btn" href="/shop" data-i18n="hero.cta">Shop Chapter One</a>
     </div>
     <div class="art hero-art" style="--tone:#2f2d29"><span aria-hidden="true">Stoic</span></div>
   </div>
 </section>
 <div class="promise">
-  <div><b data-i18n="p.delivery">Delivery across Jordan</b><span data-i18n="p.deliveryD">Amman in 1 to 3 working days</span></div>
-  <div><b data-i18n="p.cod">Cash on delivery</b><span data-i18n="p.codD">Or pay online by card</span></div>
-  <div><b data-i18n="p.returns">Easy exchanges</b><span data-i18n="p.returnsD">Within 7 days of delivery</span></div>
+  <div><b data-i18n="p.delivery">Free delivery in Amman</b><span data-i18n="p.deliveryD">3 JOD to the rest of Jordan</span></div>
+  <div><b data-i18n="p.cod">Cash or CliQ</b><span data-i18n="p.codD">Pay when it arrives, or by CliQ</span></div>
+  <div><b data-i18n="p.returns">7-day size swap</b><span data-i18n="p.returnsD">Unworn, tags on</span></div>
 </div>
 <section class="block">
   <div class="wrap">
-    <div class="block-head"><h2 data-i18n="home.featured">Selected pieces</h2><a href="/shop" data-i18n="home.all">See everything</a></div>
+    <div class="block-head"><h2 data-i18n="home.featured">The pieces</h2><a href="/shop" data-i18n="home.all">See everything</a></div>
     <div class="grid" id="featured"><p class="fine" data-i18n="shop.loading">Loading…</p></div>
   </div>
 </section>
 """),
   "shop.html": dict(path="/shop", page="shop", title=f"Shop · {NAME}",
-    desc="Shop the Stoic Soul Club collection: tops, bottoms, outerwear and accessories. Delivery across Jordan.",
+    desc="Shop Stoic Soul Club Chapter One: KAIZEN, TRANQUILITY and VENGEANCE tees and hoodies. Free delivery in Amman.",
     extra="", body="""
 <section class="block" style="padding-top:40px">
   <div class="wrap">
-    <h1 style="font-size:clamp(32px,5vw,52px)" data-i18n="shop.title">The collection</h1>
+    <h1 style="font-size:clamp(32px,5vw,52px)" data-i18n="shop.title">Chapter One</h1>
     <div class="filters" id="filters" role="group" aria-label="Category"></div>
     <div class="grid" id="grid"><p class="fine" data-i18n="shop.loading">Loading…</p></div>
   </div>
@@ -162,6 +161,7 @@ PAGES = {
         <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
         <h2 style="font-size:24px;margin-top:28px" data-i18n="co.pay">Payment</h2>
         <label class="choice" id="opt-cod"><input type="radio" name="payment" value="cod" checked><span><span data-i18n="co.cod">Cash on delivery</span><small data-i18n="co.codD">Pay in cash when your order arrives.</small></span></label>
+        <label class="choice" id="opt-cliq" hidden><input type="radio" name="payment" value="cliq"><span><span data-i18n="co.cliq">CliQ</span><small data-i18n="co.cliqD">Transfer by CliQ after you place the order.</small></span></label>
         <label class="choice" id="opt-card"><input type="radio" name="payment" value="card"><span><span data-i18n="co.card">Card (test)</span><small data-i18n="co.cardD">Visa or Mastercard. In this test store only a practice card works.</small></span></label>
       </div>
       <aside class="panel">
@@ -200,27 +200,32 @@ PAGES = {
   "order/index.html": dict(path="/order/", page="order", title=f"Your order · {NAME}", desc="Order status.", extra='<meta name="robots" content="noindex">\n', body="""
 <div class="wrap"><div class="track" id="order"><p class="fine" data-i18n="shop.loading">Loading…</p></div></div>
 """),
-  "about.html": dict(path="/about", page="about", title=f"About · {NAME}", desc="The story behind Stoic Soul Club.", extra="", body="""
+  "about.html": dict(path="/about", page="about", title=f"About · {NAME}", desc="Stoic Soul Club is streetwear for people building something who have not arrived yet.", extra="", body="""
 <div class="wrap"><article class="prose">
   <p class="eyebrow">Stoic Soul Club</p>
-  <h1>About Stoic</h1>
-  <p class="draft">Draft page. Stoic's own story, founders and values go here once the brand brief arrives.</p>
+  <h1>Pride in becoming.</h1>
+  <p>Stoic Soul Club is an independent streetwear brand from Amman, started by friends with Libyan, Iraqi and Jordanian-Palestinian roots.</p>
+  <p>We make clothes for people building something: a degree, a body, a business, a craft. People who have not arrived yet and don't pretend they have. Your circumstances don't decide your future, and there is pride in the chapter you are in.</p>
+  <p>The clothes come first. Heavy 100% cotton, cut big, with a back print you'll want people to see. Three designs in Chapter One:</p>
+  <p><b>KAIZEN</b> is getting a little better every day. <b>TRANQUILITY</b> is calm and perspective. <b>VENGEANCE</b> is adversity turned into fuel.</p>
+  <p>Say hi on Instagram: <a href="https://www.instagram.com/stoicsoul.club/" rel="noopener">@stoicsoul.club</a>.</p>
 </article></div>
 """),
-  "help.html": dict(path="/help", page="help", title=f"Help · {NAME}", desc="Delivery, exchanges, privacy and terms at Stoic Soul Club.", extra="", body="""
+  "help.html": dict(path="/help", page="help", title=f"Help · {NAME}", desc="Delivery, payment, size swaps, privacy and terms at Stoic Soul Club.", extra="", body="""
 <div class="wrap"><article class="prose">
   <h1>Help</h1>
-  <p class="draft">Draft policies for the trial store. Stoic must confirm every fee, time and rule before real customers order.</p>
   <h2 id="delivery">Delivery</h2>
-  <p>We deliver across Jordan. Fees by area are shown at checkout. Amman orders usually arrive in 1 to 3 working days.</p>
-  <h2 id="returns">Exchanges and returns</h2>
-  <p>Wrong size? Message us within 7 days of delivery and we'll swap it, as long as the piece is unworn with its tags on.</p>
+  <p>Free inside Amman: one of us brings it to you. Anywhere else in Jordan, 3 JOD by courier. We message you on WhatsApp to arrange the time.</p>
+  <h2 id="payment">Payment</h2>
+  <p>Pay cash when your order arrives, or by CliQ. After you order, your order page shows the CliQ alias and the number to write in the note.</p>
+  <h2 id="returns">Size swaps and defects</h2>
+  <p>Wrong size? Message us within 7 days of delivery and we'll swap it, as long as it's unworn with the tags on. The swap delivery is on you. If something arrives with a defect, we replace it for free.</p>
   <h2 id="track">Your order</h2>
   <p>After checkout you get a private order page. Bookmark it to follow your order from received to delivered.</p>
   <h2 id="privacy">Privacy</h2>
-  <p>We collect your name, phone, email (if you give it) and address only to deliver your order and contact you about it. We do not sell your details or use advertising trackers. Card details are handled by the payment provider, never stored by us. To see or delete your details, message us.</p>
+  <p>We collect your name, phone, email (if you give it) and address only to deliver your order and contact you about it. We don't sell your details and we don't use advertising trackers. To see or delete your details, message us.</p>
   <h2 id="terms">Terms</h2>
-  <p>Prices are in Jordanian dinars. An order is confirmed when you receive your order page. If an item turns out to be unavailable, we contact you and refund anything paid for it.</p>
+  <p>Prices are in Jordanian dinars. If a piece turns out to be unavailable after you order, we contact you and refund anything you paid for it.</p>
 </article></div>
 """),
   "404.html": dict(path="/404", page="404", title=f"Page not found · {NAME}", desc="Page not found.", extra='<meta name="robots" content="noindex">\n', body="""

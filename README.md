@@ -4,7 +4,7 @@ Weezy's clothing-store trial: a real online shop for Stoic Soul Club at stoicsou
 
 ## What's in it
 - **Shop** (`public/`): home, collection with filters, product pages, bag and checkout, Arabic and English.
-- **Payments**: cash on delivery, plus card payment in **test mode** (practice card `4242 4242 4242 4242`; `4000 0000 0000 0002` is declined). No real money moves.
+- **Payments**: cash on delivery, CliQ transfer (staff confirm it arrived), plus card payment in **test mode** (practice card `4242 4242 4242 4242`; `4000 0000 0000 0002` is declined). No real money moves.
 - **Back end** (`functions/`): Cloudflare Pages Functions with a D1 database. Prices and stock are checked on the server; stock can't oversell.
 - **Staff dashboard** at `/staff/`: today's numbers, orders (to pack, packed, on the way, delivered), WhatsApp messages to customers, products, stock per size, delivery fees, shop open/closed, CSV export.
 - **SEO and AI search**: product pages are filled in on the server with title, description, price and stock (schema.org `Product`), plus `/sitemap.xml`. The whole site is `noindex` during the trial (see `public/_headers`).
@@ -31,5 +31,6 @@ Open http://localhost:8788 and http://localhost:8788/staff/.
 ## Going live
 See [LAUNCH.md](LAUNCH.md).
 
-## Still sample content
-Products, prices, tagline, delivery fees and the exchange policy are placeholders until Stoic's brand brief arrives. Real card payments need a payment provider account (PayTabs or HyperPay in Jordan).
+## Content
+Products, prices, stock, delivery terms and the size-swap rule come from the Stoic Soul Club brand brief (founder decisions D-007 to D-012). The starter stock only fills an empty database; after that the staff dashboard is the source of truth.
+Still open: brand colours, fonts, logo and product photos (grey placeholders for now), and a native check of the Arabic copy. CliQ appears at checkout once the alias is set in the dashboard. Real card payments need a payment provider account (PayTabs or HyperPay in Jordan).

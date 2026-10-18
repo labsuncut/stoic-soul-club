@@ -31,14 +31,15 @@ export const onRequestPost = handle(async ({ request, env }) => {
     address: text(c.address, 300, { required: true, label: 'Your address' }),
     note: text(c.note, 300),
   };
-  const paymentMethod = body.payment === 'card' ? 'card' : body.payment === 'cod' ? 'cod' : null;
+  const paymentMethod = ['card', 'cod', 'cliq'].includes(body.payment) ? body.payment : null;
   if (!paymentMethod) throw new HttpError(400, 'Please choose how to pay.');
 
   const db = await getDb(env);
   const settings = await getSettings(db);
   if (settings.store_open !== '1') throw new HttpError(403, 'The shop is closed for orders right now. Please check back soon.');
   if (paymentMethod === 'card' && settings.card_enabled !== '1') throw new HttpError(400, 'Card payment is off right now. Please choose cash on delivery.');
-  if (paymentMethod === 'cod' && settings.cod_enabled !== '1') throw new HttpError(400, 'Cash on delivery is off right now. Please pay by card.');
+  if (paymentMethod === 'cod' && settings.cod_enabled !== '1') throw new HttpError(400, 'Cash on delivery is off right now. Please choose another way to pay.');
+  if (paymentMethod === 'cliq' && !(settings.cliq_enabled === '1' && settings.cliq_alias)) throw new HttpError(400, 'CliQ is off right now. Please choose another way to pay.');
 
   await rateLimit(db, request, 'checkout', 8, 60);
   await expireUnpaid(db);

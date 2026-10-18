@@ -9,6 +9,8 @@ export const onRequestGet = handle(async ({ env }) => {
     payments_mode: s.payments_mode,
     card: s.card_enabled === '1',
     cod: s.cod_enabled === '1',
+    cliq: s.cliq_enabled === '1' && !!s.cliq_alias,
+    cliq_alias: s.cliq_enabled === '1' ? s.cliq_alias : '',
     free_delivery_over: Number(s.free_delivery_over) || 0,
     zones: s.zones,
     whatsapp: s.whatsapp,

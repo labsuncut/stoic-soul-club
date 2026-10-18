@@ -11,7 +11,7 @@ const SCHEMA = [
     name_ar TEXT NOT NULL DEFAULT '',
     desc_en TEXT NOT NULL DEFAULT '',
     desc_ar TEXT NOT NULL DEFAULT '',
-    category TEXT NOT NULL DEFAULT 'tops',
+    category TEXT NOT NULL DEFAULT 'tees',
     price INTEGER NOT NULL CHECK (price >= 0),
     compare_at INTEGER NOT NULL DEFAULT 0,
     images TEXT NOT NULL DEFAULT '[]',
@@ -38,7 +38,7 @@ const SCHEMA = [
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     token TEXT NOT NULL UNIQUE,
     status TEXT NOT NULL CHECK (status IN ('awaiting_payment','new','packed','shipped','delivered','cancelled','returned')),
-    payment_method TEXT NOT NULL CHECK (payment_method IN ('card','cod')),
+    payment_method TEXT NOT NULL CHECK (payment_method IN ('card','cod','cliq')),
     payment_status TEXT NOT NULL DEFAULT 'unpaid' CHECK (payment_status IN ('unpaid','paid','refunded')),
     payment_ref TEXT NOT NULL DEFAULT '',
     test INTEGER NOT NULL DEFAULT 1,
@@ -90,42 +90,41 @@ const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS hits_lookup ON hits (bucket, who, at)`,
 ];
 
-// Sample catalogue so the store works on day one. Every item is marked as a sample;
-// staff replace them with the real Stoic products from the dashboard.
-// [slug, name_en, name_ar, category, price_fils, tone, featured, sizes, colours, desc_en, desc_ar]
-const SAMPLE_PRODUCTS = [
-  ['essential-tee', 'Essential Tee', 'تيشيرت أساسي', 'tops', 18000, '#3a3a36', 1,
-    ['S', 'M', 'L', 'XL'], ['Black', 'Bone'],
-    'Heavy cotton, boxy fit, made to be worn every day.',
-    'قطن ثقيل وقصة واسعة، مصنوع للبس اليومي.'],
-  ['heavyweight-hoodie', 'Heavyweight Hoodie', 'هودي ثقيل', 'tops', 42000, '#4a463f', 1,
-    ['S', 'M', 'L', 'XL'], ['Black', 'Stone'],
-    'Brushed fleece inside, clean front, no logos shouting.',
-    'صوف ناعم من الداخل وواجهة بسيطة بلا شعارات صاخبة.'],
-  ['crewneck-sweatshirt', 'Crewneck Sweatshirt', 'سويتشيرت برقبة دائرية', 'tops', 35000, '#5b5a52', 0,
-    ['S', 'M', 'L', 'XL'], ['Charcoal'],
-    'A quiet layer for cold Amman evenings.',
-    'طبقة هادئة لأمسيات عمّان الباردة.'],
-  ['relaxed-trousers', 'Relaxed Trousers', 'بنطال واسع', 'bottoms', 38000, '#2f3330', 1,
-    ['S', 'M', 'L', 'XL'], ['Black', 'Olive'],
-    'Wide leg, elastic back, pockets deep enough for a phone.',
-    'قصة واسعة وخصر مطاطي من الخلف وجيوب تتسع للهاتف.'],
-  ['canvas-overshirt', 'Canvas Overshirt', 'قميص كانفاس خارجي', 'outerwear', 48000, '#6b6250', 0,
-    ['M', 'L', 'XL'], ['Sand'],
-    'Sturdy canvas that softens the more you wear it.',
-    'كانفاس متين يصبح أنعم كلما لبسته.'],
-  ['logo-cap', 'Six-Panel Cap', 'كاب', 'accessories', 15000, '#2a2a2a', 0,
-    ['One size'], ['Black'],
-    'Washed cotton cap with an adjustable strap.',
-    'كاب قطني مغسول بحزام قابل للتعديل.'],
+// Stoic Soul Club's Chapter One stock (founder count, 2026-10-10) and prices (D-008).
+// This only fills an empty database; after that, staff manage products from the dashboard.
+// [slug, name_en, name_ar, category, price_fils, tone, featured, colour, {size: stock}, desc_en, desc_ar]
+const STARTER_PRODUCTS = [
+  ['vengeance-washed-hoodie', 'VENGEANCE Washed Hoodie', 'هودي VENGEANCE مغسول', 'hoodies', 35000, '#55524c', 1,
+    'Acid-washed charcoal', { S: 1, M: 3, L: 1, XL: 1, XXL: 0 },
+    '450G acid-washed cotton, cut oversized. Big back print, small bust on the chest.\nSize M: 62 cm across the chest, 72 cm long.\nVENGEANCE is adversity turned into fuel.',
+    'قطن مغسول 450 غرام بقصة واسعة. طبعة كبيرة على الظهر وشعار صغير على الصدر.\nمقاس M: عرض الصدر 62 سم، الطول 72 سم.'],
+  ['vengeance-washed-tee', 'VENGEANCE Washed Tee', 'تيشيرت VENGEANCE مغسول', 'tees', 24000, '#5e5b55', 1,
+    'Acid-washed charcoal', { S: 0, M: 1, L: 2, XL: 2, XXL: 2 },
+    '250G acid-washed cotton, cut oversized. Big back print, small bust on the chest.\nSize M: 58 cm across the chest, 72 cm long.\nVENGEANCE is adversity turned into fuel.',
+    'قطن مغسول 250 غرام بقصة واسعة. طبعة كبيرة على الظهر وشعار صغير على الصدر.\nمقاس M: عرض الصدر 58 سم، الطول 72 سم.'],
+  ['kaizen-hoodie', 'KAIZEN Hoodie', 'هودي KAIZEN', 'hoodies', 32000, '#26252a', 1,
+    'Black', { S: 1, M: 3, L: 3, XL: 3, XXL: 0 },
+    '400G cotton in black. Very boxy, dropped shoulder. Big back print, small bust on the chest.\nSize M: 66 cm across the chest, 72 cm long.\nKAIZEN means getting a little better, every day.',
+    'قطن 400 غرام باللون الأسود. قصة واسعة جدًا وكتف نازل. طبعة كبيرة على الظهر وشعار صغير على الصدر.\nمقاس M: عرض الصدر 66 سم، الطول 72 سم.'],
+  ['kaizen-tee', 'KAIZEN Tee', 'تيشيرت KAIZEN', 'tees', 22000, '#2c2b30', 0,
+    'Black', { S: 0, M: 2, L: 3, XL: 1, XXL: 0 },
+    '260G cotton in black, puff logo on the chest, big back print. Relaxed regular fit; size up for baggy.\nSize M: 53 cm across the chest, 68 cm long.\nKAIZEN means getting a little better, every day.',
+    'قطن 260 غرام باللون الأسود، شعار بارز على الصدر وطبعة كبيرة على الظهر. قصة عادية مريحة، اختر مقاسًا أكبر لإطلالة واسعة.\nمقاس M: عرض الصدر 53 سم، الطول 68 سم.'],
+  ['tranquility-hoodie', 'TRANQUILITY Hoodie', 'هودي TRANQUILITY', 'hoodies', 32000, '#e8e3d8', 0,
+    'White', { S: 1, M: 3, L: 2, XL: 3, XXL: 0 },
+    '400G cotton in white. Very boxy, dropped shoulder. Big back print, small bust on the chest.\nSize M: 66 cm across the chest, 72 cm long.\nTRANQUILITY is calm and perspective.',
+    'قطن 400 غرام باللون الأبيض. قصة واسعة جدًا وكتف نازل. طبعة كبيرة على الظهر وشعار صغير على الصدر.\nمقاس M: عرض الصدر 66 سم، الطول 72 سم.'],
+  ['tranquility-tee', 'TRANQUILITY Tee', 'تيشيرت TRANQUILITY', 'tees', 22000, '#efebe2', 0,
+    'White', { S: 1, M: 3, L: 4, XL: 2, XXL: 0 },
+    '260G cotton in white, puff logo on the chest, big back print. Relaxed regular fit; size up for baggy.\nSize M: 53 cm across the chest, 68 cm long.\nTRANQUILITY is calm and perspective.',
+    'قطن 260 غرام باللون الأبيض، شعار بارز على الصدر وطبعة كبيرة على الظهر. قصة عادية مريحة، اختر مقاسًا أكبر لإطلالة واسعة.\nمقاس M: عرض الصدر 53 سم، الطول 68 سم.'],
 ];
 
 // Delivery zones and fees (fils). Staff change these from the dashboard.
+// Free in Amman (a founder delivers), +3 JOD by courier elsewhere (D-009).
 const DEFAULT_ZONES = [
-  { id: 'amman', en: 'Amman', ar: 'عمّان', fee: 2000 },
-  { id: 'zarqa', en: 'Zarqa and Russeifa', ar: 'الزرقاء والرصيفة', fee: 3000 },
-  { id: 'irbid', en: 'Irbid', ar: 'إربد', fee: 3500 },
-  { id: 'other', en: 'Other cities', ar: 'مدن أخرى', fee: 4000 },
+  { id: 'amman', en: 'Amman', ar: 'عمّان', fee: 0 },
+  { id: 'jordan', en: 'Rest of Jordan', ar: 'باقي محافظات الأردن', fee: 3000 },
 ];
 
 const DEFAULT_SETTINGS = {
@@ -133,7 +132,9 @@ const DEFAULT_SETTINGS = {
   payments_mode: 'test', // 'test' = fake cards only. Real card payments need a payment provider account.
   card_enabled: '1',
   cod_enabled: '1',
-  free_delivery_over: '60000',
+  cliq_enabled: '1',
+  cliq_alias: '', // CliQ shows at checkout only once an alias is filled in
+  free_delivery_over: '0',
   zones: JSON.stringify(DEFAULT_ZONES),
   whatsapp: '',
   notice_en: '',
@@ -149,7 +150,7 @@ export async function getDb(env) {
   if (!ready) {
     await env.DB.batch(SCHEMA.map((sql) => env.DB.prepare(sql)));
     const { n } = await env.DB.prepare('SELECT COUNT(*) AS n FROM products').first();
-    if (n === 0) await seedSamples(env.DB);
+    if (n === 0) await seedStarter(env.DB);
     const seed = env.DB.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
     await env.DB.batch(Object.entries(DEFAULT_SETTINGS).map(([k, v]) => seed.bind(k, v)));
     ready = true;
@@ -157,23 +158,20 @@ export async function getDb(env) {
   return env.DB;
 }
 
-async function seedSamples(db) {
+async function seedStarter(db) {
   const rows = [];
-  SAMPLE_PRODUCTS.forEach(([slug, en, ar, cat, price, tone, featured, sizes, colours, den, dar], i) => {
+  STARTER_PRODUCTS.forEach(([slug, en, ar, cat, price, tone, featured, colour, stock, den, dar], i) => {
     rows.push(db.prepare(
-      `INSERT INTO products (slug, name_en, name_ar, desc_en, desc_ar, category, price, tone, featured, sample, sort)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+      `INSERT INTO products (slug, name_en, name_ar, desc_en, desc_ar, category, price, tone, featured, sort)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(slug, en, ar, den, dar, cat, price, tone, featured, (i + 1) * 10));
-    let s = 0;
-    for (const colour of colours) {
-      for (const size of sizes) {
-        const sku = `${slug}-${colour}-${size}`.toUpperCase().replace(/[^A-Z0-9]+/g, '-');
-        rows.push(db.prepare(
-          `INSERT INTO variants (product_id, size, color, sku, stock, sort)
-           VALUES ((SELECT id FROM products WHERE slug = ?), ?, ?, ?, ?, ?)`,
-        ).bind(slug, size, colour, sku, size === 'XL' ? 2 : 6, s++));
-      }
-    }
+    Object.entries(stock).forEach(([size, n], s) => {
+      const sku = `${slug}-${size}`.toUpperCase().replace(/[^A-Z0-9]+/g, '-');
+      rows.push(db.prepare(
+        `INSERT INTO variants (product_id, size, color, sku, stock, sort)
+         VALUES ((SELECT id FROM products WHERE slug = ?), ?, ?, ?, ?, ?)`,
+      ).bind(slug, size, colour, sku, n, s));
+    });
   });
   await db.batch(rows);
 }

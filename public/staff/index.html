@@ -82,7 +82,7 @@
             <div class="field"><label>Old price, for a sale (JOD, optional)</label><input name="compare_at" type="number" step="0.001" min="0"></div>
           </div>
           <div class="row2">
-            <div class="field"><label>Category</label><select name="category"><option value="tops">Tops</option><option value="bottoms">Bottoms</option><option value="outerwear">Outerwear</option><option value="accessories">Accessories</option></select></div>
+            <div class="field"><label>Category</label><select name="category"><option value="tees">Tees</option><option value="hoodies">Hoodies</option><option value="bottoms">Bottoms</option><option value="accessories">Accessories</option></select></div>
             <div class="field"><label>Web name (in the link)</label><input name="slug" type="text" required pattern="[a-z0-9-]+"></div>
           </div>
           <div class="field"><label>Photo links, one per line (https://… or /assets/…)</label><textarea name="images"></textarea></div>
@@ -103,7 +103,9 @@
         <h2>Shop</h2>
         <label class="check"><input type="checkbox" name="store_open"> Shop open for orders</label>
         <label class="check"><input type="checkbox" name="cod_enabled"> Cash on delivery</label>
+        <label class="check"><input type="checkbox" name="cliq_enabled"> CliQ transfer (shows at checkout once the alias below is filled in)</label>
         <label class="check"><input type="checkbox" name="card_enabled"> Card payment (test mode: practice cards only)</label>
+        <div class="field"><label>CliQ alias customers send money to</label><input name="cliq_alias" type="text" maxlength="40"></div>
         <div class="row2">
           <div class="field"><label>WhatsApp number for customers (with 962, digits only)</label><input name="whatsapp" type="tel" placeholder="9627XXXXXXXX"></div>
           <div class="field"><label>Free delivery over (JOD, 0 = never)</label><input name="free_delivery_over" type="number" step="0.5" min="0"></div>

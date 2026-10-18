@@ -50,9 +50,14 @@
     const num = Number.isInteger(v) ? String(v) : v.toFixed(2).replace(/0$/, '');
     return lang === 'ar' ? `${num} ${t().jod}` : `${t().jod} ${num}`;
   };
+  // Pale placeholder colours (white garments) get dark lettering.
+  const isLight = (hex) => {
+    const n = Number.parseInt(String(hex || '').slice(1), 16);
+    return ((n >> 16) * 299 + ((n >> 8) & 255) * 587 + (n & 255) * 114) / 1000 > 160;
+  };
   const art = (p, cls = '') => {
     const img = p.images?.[0];
-    return `<div class="art ${cls}" style="--tone:${esc(p.tone)}">${img
+    return `<div class="art ${cls}${isLight(p.tone) ? ' light' : ''}" style="--tone:${esc(p.tone)}">${img
       ? `<img src="${esc(img)}" alt="${esc(pick(p, 'name'))}" loading="lazy">`
       : `<span aria-hidden="true">${esc(pick(p, 'name'))}</span>`}</div>`;
   };
@@ -173,12 +178,9 @@
           <p class="stock-note" aria-live="polite">${v?.low ? t().low(2) : ''}</p>
           <button type="button" class="btn block" id="add" ${p.sold_out ? 'disabled' : ''}>${p.sold_out ? t().soldOut : size ? t().add : t().pick}</button>
           <div style="margin-top:24px">
-            <details><summary>${lang === 'ar' ? window.AR['pdp.guide'] : 'Size guide'}</summary>
-              <table class="size-table"><tr><th></th><th>S</th><th>M</th><th>L</th><th>XL</th></tr>
-              <tr><td>${lang === 'ar' ? 'الصدر' : 'Chest'}</td><td>96</td><td>102</td><td>108</td><td>114</td></tr></table>
-              <p class="fine">${lang === 'ar' ? window.AR['pdp.guideNote'] : 'Approximate chest sizes in cm. Final measurements to be confirmed by Stoic.'}</p></details>
-            <details><summary>${lang === 'ar' ? window.AR['pdp.details'] : 'Details and care'}</summary><p class="fine">${lang === 'ar' ? window.AR['pdp.detailsD'] : 'Wash cold, inside out. Do not tumble dry.'}</p></details>
-            <details><summary>${lang === 'ar' ? window.AR['pdp.delivery'] : 'Delivery and exchanges'}</summary><p class="fine">${lang === 'ar' ? window.AR['pdp.deliveryD'] : 'Delivery across Jordan. Size exchanges within 7 days if the piece is unworn with tags.'} <a href="/help">${lang === 'ar' ? 'المزيد' : 'More'}</a></p></details>
+            <details><summary>${lang === 'ar' ? window.AR['pdp.guide'] : 'Size help'}</summary>
+              <p class="fine">${lang === 'ar' ? window.AR['pdp.guideNote'] : 'Measurements are laid flat. Not sure? Send us your height and usual size and we will tell you which one, with numbers, not guesses.'}</p></details>
+            <details><summary>${lang === 'ar' ? window.AR['pdp.delivery'] : 'Delivery and exchanges'}</summary><p class="fine">${lang === 'ar' ? window.AR['pdp.deliveryD'] : 'Free delivery in Amman, 3 JOD to the rest of Jordan. Wrong size? Swap it within 7 days if it is unworn with tags.'} <a href="/help">${lang === 'ar' ? 'المزيد' : 'More'}</a></p></details>
           </div>
         </div>`;
     }
@@ -234,6 +236,7 @@
         zoneSel.value = keep;
         $('#opt-card').hidden = !settings.card;
         $('#opt-cod').hidden = !settings.cod;
+        $('#opt-cliq').hidden = !settings.cliq;
         if (!settings.store_open) { $('#co-msg').textContent = t().closed; $('#co-msg').className = 'msg bad'; }
       }
       totals();
@@ -322,6 +325,7 @@
     const root = $('#order');
     let order;
     let wa = '';
+    let cliq = '';
     const render = () => {
       const steps = ['new', 'packed', 'shipped', 'delivered'];
       const reached = steps.indexOf(order.status);
@@ -333,6 +337,7 @@
         <p><span class="badge">${esc(t().status[order.status])}</span> ${order.test ? `<span class="badge" style="color:var(--warn)">${t().testOrder}</span>` : ''}</p>
         ${ended ? '' : `<ol class="steps">${t().steps.map((s, i) => `<li class="${i <= reached ? 'done' : ''}">${esc(s)}</li>`).join('')}</ol>`}
         ${order.status === 'awaiting_payment' ? `<p><a class="btn" href="/pay/?t=${encodeURIComponent(token)}">${t().payNow}</a></p>` : ''}
+        ${order.payment_method === 'cliq' && order.payment_status !== 'paid' && cliq && !ended ? `<div class="testcard">${t().cliqHow(money(order.total), esc(cliq), esc(order.number))}</div>` : ''}
         <ul class="lines">${order.items.map((i) => `<li class="line" style="grid-template-columns:1fr auto">
           <div><h3>${esc(pick(i, 'name'))} × ${i.qty}</h3><div class="meta">${esc([i.color, i.size].filter(Boolean).join(' · '))}</div></div>
           <div>${money(i.unit_price * i.qty)}</div></li>`).join('')}</ul>
@@ -340,7 +345,7 @@
           <div class="sum"><span>${lang === 'ar' ? window.AR['co.subtotal'] : 'Subtotal'}</span><span>${money(order.subtotal)}</span></div>
           <div class="sum"><span>${lang === 'ar' ? window.AR['co.delivery'] : 'Delivery'}</span><span>${order.delivery_fee ? money(order.delivery_fee) : t().free}</span></div>
           <div class="sum total"><span>${lang === 'ar' ? window.AR['co.total'] : 'Total'}</span><span>${money(order.total)}</span></div>
-          <p class="fine">${order.payment_method === 'cod' ? t().cod : t().card} · ${order.payment_status === 'paid' ? t().paid : t().unpaid}</p>
+          <p class="fine">${t()[order.payment_method]} · ${order.payment_status === 'paid' ? t().paid : t().unpaid}</p>
         </div>
         <h2 style="font-size:20px;margin-top:28px">${lang === 'ar' ? window.AR['order.ship'] : 'Delivering to'}</h2>
         <p>${esc(order.name)}<br>${esc(order.zone)} · ${esc(order.address)}</p>
@@ -348,7 +353,7 @@
         <p class="fine">${lang === 'ar' ? 'احفظ رابط هذه الصفحة لتتبع طلبك.' : 'Bookmark this page to follow your order.'}</p>`;
     };
     Promise.all([api(`/api/order?t=${encodeURIComponent(token)}`), info()])
-      .then(([d, i]) => { order = d.order; wa = i?.whatsapp || ''; render(); rerenders.push(render); })
+      .then(([d, i]) => { order = d.order; wa = i?.whatsapp || ''; cliq = i?.cliq_alias || ''; render(); rerenders.push(render); })
       .catch((e) => { root.innerHTML = `<p class="msg bad">${esc(errorText(e))}</p>`; });
   }
 

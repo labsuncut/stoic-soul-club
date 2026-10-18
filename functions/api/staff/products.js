@@ -4,7 +4,7 @@ import { handle, json, readBody, text, HttpError } from '../../_lib/http.js';
 import { getDb } from '../../_lib/db.js';
 import { listProducts } from '../../_lib/store.js';
 
-const CATEGORIES = ['tops', 'bottoms', 'outerwear', 'accessories'];
+const CATEGORIES = ['tees', 'hoodies', 'bottoms', 'accessories'];
 
 function money(v, label) {
   const n = Math.round(Number(v) * 1000);
@@ -28,7 +28,7 @@ export const onRequestPost = handle(async ({ request, env }) => {
     text(p.name_ar, 80),
     String(p.desc_en || '').trim().slice(0, 1500),
     String(p.desc_ar || '').trim().slice(0, 1500),
-    CATEGORIES.includes(p.category) ? p.category : 'tops',
+    CATEGORIES.includes(p.category) ? p.category : 'tees',
     money(p.price, 'Price'),
     p.compare_at ? money(p.compare_at, 'Old price') : 0,
     JSON.stringify(images),

@@ -3,6 +3,7 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const PAY = { cod: 'Cash on delivery', cliq: 'CliQ', card: 'Card' };
   const jod = (fils) => `JOD ${(fils / 1000).toFixed(fils % 1000 ? 3 : 0)}`;
   const when = (sqlUtc) => new Date(`${sqlUtc.replace(' ', 'T')}Z`).toLocaleString('en-GB', { timeZone: 'Asia/Amman', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -78,7 +79,7 @@
     $('#o-list').innerHTML = orders.length ? orders.map((o) => `
       <button type="button" class="orow" data-id="${o.id}" aria-current="${o.id === currentOrder}">
         <span>${esc(o.number)}</span><span class="who">${esc(o.name)}</span><span class="pill ${o.status}">${LABEL[o.status]}</span>
-        <span class="sub">${when(o.created_at)} · ${o.pieces} pc · ${jod(o.total)} · ${o.payment_method === 'cod' ? 'Cash' : 'Card'} ${o.payment_status === 'paid' ? '(paid)' : ''} · ${esc(o.zone)}${o.test ? ' · test' : ''}</span>
+        <span class="sub">${when(o.created_at)} · ${o.pieces} pc · ${jod(o.total)} · ${PAY[o.payment_method]} ${o.payment_status === 'paid' ? '(paid)' : ''} · ${esc(o.zone)}${o.test ? ' · test' : ''}</span>
       </button>`).join('') : '<p class="fine">No orders here yet.</p>';
   }
   let searchTimer;
@@ -94,8 +95,9 @@
     const wa = WA[o.status] ? `https://wa.me/${phone}?text=${encodeURIComponent(WA[o.status](o))}` : `https://wa.me/${phone}`;
     $('#o-detail').innerHTML = `
       <div class="prod-head"><h2 style="margin:0">${esc(o.number)}</h2><span class="pill ${o.status}">${LABEL[o.status]}</span>${o.test ? '<span class="pill test">Test order</span>' : ''}</div>
-      <p class="fine">${when(o.created_at)} · ${o.payment_method === 'cod' ? 'Cash on delivery' : 'Card'} · ${o.payment_status}${o.payment_ref ? ` (${esc(o.payment_ref)})` : ''}</p>
+      <p class="fine">${when(o.created_at)} · ${PAY[o.payment_method]} · ${o.payment_status}${o.payment_ref ? ` (${esc(o.payment_ref)})` : ''}</p>
       <div class="actions">${(ACTIONS[o.status] || []).map(([s, label]) => `<button type="button" class="btn ${s === 'cancelled' || s === 'returned' || s === 'new' ? 'ghost' : ''}" data-status="${s}">${label}</button>`).join('')}
+        ${o.payment_status === 'unpaid' && o.payment_method !== 'card' && !['cancelled', 'returned'].includes(o.status) ? `<button type="button" class="btn ghost" data-paid>${o.payment_method === 'cliq' ? 'CliQ received' : 'Cash received'}</button>` : ''}
         <a class="btn ghost" href="${wa}" target="_blank" rel="noopener">WhatsApp customer</a></div>
       <h3>Customer</h3>
       <p>${esc(o.name)} · <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a>${o.email ? ` · ${esc(o.email)}` : ''}<br>${esc(o.zone)} · ${esc(o.address)}${o.note ? `<br><i>${esc(o.note)}</i>` : ''}</p>
@@ -116,6 +118,12 @@
         const s = b.dataset.status;
         if ((s === 'cancelled' || s === 'returned') && !confirm(`${b.textContent}? Its items go back into stock.`)) return;
         await post('/api/staff/order', { id: currentOrder, status: s });
+        await Promise.all([showOrder(currentOrder), loadOrders()]);
+      }
+      if (e.target.closest('[data-paid]')) {
+        const ref = prompt('Reference (optional, e.g. CliQ transfer number):') ?? null;
+        if (ref === null) return;
+        await post('/api/staff/order', { id: currentOrder, paid: true, ref });
         await Promise.all([showOrder(currentOrder), loadOrders()]);
       }
       if (e.target.id === 'o-note-save') {
@@ -172,7 +180,7 @@
     pform.reset();
     $('#p-msg').textContent = '';
     $('#p-title').textContent = p ? `Edit ${p.name_en}` : 'Add a product';
-    const v = p || { tone: '#2b2b2b', active: true, sort: 100, category: 'tops', images: [] };
+    const v = p || { tone: '#2b2b2b', active: true, sort: 100, category: 'tees', images: [] };
     for (const [k, val] of Object.entries({
       id: v.id ?? '', name_en: v.name_en ?? '', name_ar: v.name_ar ?? '', desc_en: v.desc_en ?? '', desc_ar: v.desc_ar ?? '',
       price: v.price != null ? v.price / 1000 : '', compare_at: v.compare_at ? v.compare_at / 1000 : '', category: v.category,
@@ -208,8 +216,8 @@
   async function loadSettings() {
     const { settings: s } = await api('/api/staff/settings');
     const f = $('#s-form').elements;
-    for (const k of ['store_open', 'cod_enabled', 'card_enabled']) f[k].checked = s[k] === '1';
-    for (const k of ['whatsapp', 'notice_en', 'notice_ar']) f[k].value = s[k] || '';
+    for (const k of ['store_open', 'cod_enabled', 'card_enabled', 'cliq_enabled']) f[k].checked = s[k] === '1';
+    for (const k of ['whatsapp', 'cliq_alias', 'notice_en', 'notice_ar']) f[k].value = s[k] || '';
     f.free_delivery_over.value = (Number(s.free_delivery_over) || 0) / 1000;
     $('#zones tbody').innerHTML = s.zones.map(zoneRow).join('');
   }
@@ -221,7 +229,7 @@
     const msg = $('#s-msg');
     try {
       await post('/api/staff/settings', {
-        store_open: f.store_open.checked, cod_enabled: f.cod_enabled.checked, card_enabled: f.card_enabled.checked,
+        store_open: f.store_open.checked, cod_enabled: f.cod_enabled.checked, card_enabled: f.card_enabled.checked, cliq_enabled: f.cliq_enabled.checked, cliq_alias: f.cliq_alias.value,
         whatsapp: f.whatsapp.value, notice_en: f.notice_en.value, notice_ar: f.notice_ar.value, free_delivery_over: f.free_delivery_over.value || 0,
         zones: $$('#zones tbody tr').map((tr) => ({ id: tr.dataset.zone || $('[data-k="en"]', tr).value, en: $('[data-k="en"]', tr).value, ar: $('[data-k="ar"]', tr).value, fee: $('[data-k="fee"]', tr).value })),
       });

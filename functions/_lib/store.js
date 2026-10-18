@@ -115,7 +115,7 @@ export async function createOrder(db, settings, { items, customer, paymentMethod
     ).bind(token, status, paymentMethod, test, customer.name, customer.phone, customer.email,
       zone.en, customer.address, customer.note, subtotal, fee, subtotal + fee),
     db.prepare(`INSERT INTO order_events (order_id, status, note) VALUES (${orderId}, ?, ?)`)
-      .bind(token, status, paymentMethod === 'card' ? 'Order placed, waiting for card payment.' : 'Order placed, cash on delivery.'),
+      .bind(token, status, { card: 'Order placed, waiting for card payment.', cod: 'Order placed, cash on delivery.', cliq: 'Order placed, waiting for CliQ transfer.' }[paymentMethod]),
   ];
   for (const l of lines) {
     statements.push(db.prepare(
@@ -172,6 +172,19 @@ export async function setStatus(db, id, status, note = '', { system = false } = 
 export async function markPaid(db, order, ref) {
   await setStatus(db, order.id, 'new', `Card payment received (${ref}).`, { system: true });
   await db.prepare(`UPDATE orders SET payment_status = 'paid', payment_ref = ? WHERE id = ?`).bind(ref, order.id).run();
+}
+
+// Staff confirm cash or CliQ money by hand once it has arrived.
+export async function markPaidByHand(db, id, ref) {
+  const order = await db.prepare('SELECT * FROM orders WHERE id = ?').bind(id).first();
+  if (!order) throw new HttpError(404, 'Order not found.');
+  if (order.payment_status !== 'unpaid' || order.payment_method === 'card') throw new HttpError(409, 'This order cannot be marked as paid.');
+  if (order.status === 'cancelled' || order.status === 'returned') throw new HttpError(409, 'This order is closed.');
+  const label = order.payment_method === 'cliq' ? 'CliQ transfer received' : 'Cash received';
+  await db.batch([
+    db.prepare(`UPDATE orders SET payment_status = 'paid', payment_ref = ? WHERE id = ?`).bind(ref, id),
+    db.prepare('INSERT INTO order_events (order_id, status, note) VALUES (?, ?, ?)').bind(id, order.status, `${label}${ref ? ` (${ref})` : ''}.`),
+  ]);
 }
 
 export async function loadOrder(db, where, value) {
