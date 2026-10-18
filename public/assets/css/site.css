@@ -1,20 +1,60 @@
-/* Stoic store. Brand colours and fonts live in :root so the real Stoic look
-   can be dropped in later without touching the rest. */
+/* Stoic Soul Club store. Brand colours and fonts live in :root. */
+/* latin */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(../fonts/dm-sans-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(../fonts/fraunces-italic.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* latin */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(../fonts/fraunces-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* arabic */
+@font-face {
+  font-family: 'Noto Naskh Arabic';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(../fonts/noto-naskh-arabic-normal.woff2) format('woff2');
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB, U+10E60-10E7E, U+10EC2-10EC7, U+10EC9-10EEE, U+10EF0-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F, U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42, U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59, U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72, U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3, U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+
 :root {
-  --bg: #f3f0ea;
-  --paper: #fbfaf7;
-  --ink: #1b1b19;
-  --muted: #6c6a63;
-  --line: #d9d4ca;
-  --brand: #1b1b19;      /* buttons; must be dark enough for white text */
-  --accent: #8a6d46;     /* small highlights */
+  /* Look A, "Linen & Sky" (picked by Ali, 2026-10-18): warm cream, steel blue from the butterfly, apricot. */
+  --bg: #F4ECDF;
+  --paper: #FBF6EE;
+  --ink: #2B241F;
+  --muted: #75695C;
+  --line: #E2D6C4;
+  --brand: #3E5B74;      /* buttons; dark enough for white text */
+  --brand-dark: #2C4256;
+  --accent: #C8763F;     /* small highlights */
+  --sky: #6888A0;        /* the butterfly */
   --ok: #2f6b3f;
   --warn: #9a5b12;
   --bad: #a3322a;
-  --radius: 2px;
+  --radius: 999px;
+  --round: 14px;
   --wrap: 1180px;
-  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Arabic", "Helvetica Neue", Arial, sans-serif;
-  --display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Noto Naskh Arabic", serif;
+  --font: "DM Sans", "Noto Naskh Arabic", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --display: "Fraunces", "Noto Naskh Arabic", Georgia, serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -56,7 +96,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Buttons */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: var(--brand); color: #fff; border: 1px solid var(--brand); border-radius: var(--radius); padding: 14px 26px; font-size: 14px; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; cursor: pointer; min-height: 48px; }
-.btn:hover { background: #000; }
+.btn:hover { background: var(--brand-dark); }
 .btn[disabled] { opacity: .45; cursor: not-allowed; }
 .btn.ghost { background: transparent; color: var(--ink); }
 .btn.ghost:hover { background: var(--ink); color: #fff; }
@@ -163,7 +203,7 @@ section.block { padding: 64px 0; }
 form .field { margin-bottom: 14px; }
 label { display: block; font-size: 13px; letter-spacing: .04em; margin-bottom: 6px; }
 input[type="text"], input[type="tel"], input[type="email"], input[type="password"], input[type="number"], select, textarea {
-  width: 100%; padding: 12px 12px; border: 1px solid var(--line); background: #fff; border-radius: var(--radius); font-size: 16px; }
+  width: 100%; padding: 12px 12px; border: 1px solid var(--line); background: #fff; border-radius: 10px; font-size: 16px; }
 textarea { min-height: 84px; resize: vertical; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
@@ -209,3 +249,21 @@ footer.foot a:hover { text-decoration: underline; }
 .toast a { color: #fff; font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+/* Look A details */
+h1, h2, .logo { font-variation-settings: "SOFT" 100, "WONK" 1; }
+.hero h1 { font-weight: 500; font-style: italic; letter-spacing: -.02em; }
+.logo { display: inline-flex; align-items: center; gap: 8px; letter-spacing: .04em; text-transform: none; font-weight: 600; font-size: 24px; white-space: nowrap; }
+.logo svg { flex: none; }
+.btn { letter-spacing: .06em; }
+.ribbon { background: var(--brand); color: #eef2f5; }
+.eyebrow { color: var(--accent); font-weight: 600; }
+.hero { background: radial-gradient(60% 80% at 85% 20%, rgba(200,118,63,.16), transparent 70%); }
+.hero-art, .card .art, .pdp .gallery .art { border-radius: var(--round); }
+.hero-art { --tone: #C8763F !important; }
+.promise b { color: var(--brand); }
+.bag-count { background: var(--brand); }
+@media (max-width: 420px) { .logo { font-size: 18px; } .tools { gap: 0; } }
+.opt, .choice { border-radius: 10px; }
+.panel { border-radius: var(--round); }
+.choice input { accent-color: var(--brand); }
