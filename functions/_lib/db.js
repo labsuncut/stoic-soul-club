@@ -163,7 +163,7 @@ const DEFAULT_SETTINGS = {
   cliq_alias: '', // CliQ shows at checkout only once an alias is filled in
   free_delivery_over: '0',
   zones: JSON.stringify(DEFAULT_ZONES),
-  whatsapp: '',
+  whatsapp: '962797977736', // Ali's WhatsApp, given 2026-10-18
   telegram_chat: '', // filled by Settings > Connect Telegram
   drop_signup: '1', // shows the "tell me when it drops" box on the home page
   notice_en: '',
