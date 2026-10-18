@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your bag · Stoic Soul Club</title>
+<meta name="description" content="Your bag and checkout.">
+<link rel="canonical" href="https://stoicsoulclub.com/bag">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Stoic Soul Club">
+<meta property="og:title" content="Your bag · Stoic Soul Club">
+<meta property="og:description" content="Your bag and checkout.">
+<meta property="og:url" content="https://stoicsoulclub.com/bag">
+<meta name="theme-color" content="#1b1b19">
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body data-page="bag">
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+<div class="ribbon" data-i18n="ribbon">Test store: card payments are practice only and no money is taken. Products shown are samples.</div>
+<div class="notice" id="notice" hidden></div>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="Stoic Soul Club home">Stoic</a>
+    <nav class="nav" aria-label="Main">
+      <a href="/shop" data-i18n="nav.shop">Shop</a>
+      <a href="/shop?c=tops" data-i18n="nav.tops">Tops</a>
+      <a href="/shop?c=bottoms" data-i18n="nav.bottoms">Bottoms</a>
+      <a href="/about" data-i18n="nav.about">About</a>
+      <a href="/help" data-i18n="nav.help">Help</a>
+    </nav>
+    <div class="tools">
+      <button class="tool" id="lang-toggle" type="button" lang="ar">عربي</button>
+      <a class="tool" href="/bag"><span data-i18n="nav.bag">Bag</span> <span class="bag-count" hidden>0</span></a>
+    </div>
+  </div>
+  <nav class="mobile-nav" aria-label="Main">
+    <a href="/shop" data-i18n="nav.shop">Shop</a>
+    <a href="/shop?c=tops" data-i18n="nav.tops">Tops</a>
+    <a href="/shop?c=bottoms" data-i18n="nav.bottoms">Bottoms</a>
+    <a href="/help" data-i18n="nav.help">Help</a>
+  </nav>
+</header>
+<main id="main">
+<div class="wrap">
+  <div id="bag-empty" class="empty" hidden>
+    <p data-i18n="bag.empty">Your bag is empty.</p>
+    <a class="btn" href="/shop" data-i18n="bag.continue">Continue shopping</a>
+  </div>
+  <div id="bag-full" hidden>
+    <form class="checkout" id="checkout">
+      <div>
+        <h1 style="font-size:36px" data-i18n="bag.title">Your bag</h1>
+        <ul class="lines" id="lines"></ul>
+        <h2 style="font-size:24px;margin-top:36px" data-i18n="co.details">Your details</h2>
+        <div class="field"><label for="name" data-i18n="co.name">Full name</label><input id="name" name="name" type="text" autocomplete="name" required maxlength="80"></div>
+        <div class="row2">
+          <div class="field"><label for="phone" data-i18n="co.phone">Phone or WhatsApp</label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="07X XXX XXXX"></div>
+          <div class="field"><label for="email" data-i18n="co.email">Email (optional)</label><input id="email" name="email" type="email" autocomplete="email"></div>
+        </div>
+        <div class="field"><label for="zone" data-i18n="co.zone">Delivery area</label><select id="zone" name="zone" required></select></div>
+        <div class="field"><label for="address" data-i18n="co.address">Address (area, street, building number)</label><textarea id="address" name="address" autocomplete="street-address" required maxlength="300"></textarea></div>
+        <div class="field"><label for="note" data-i18n="co.note">Delivery note (optional)</label><input id="note" name="note" type="text" maxlength="300"></div>
+        <div class="hp" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+        <h2 style="font-size:24px;margin-top:28px" data-i18n="co.pay">Payment</h2>
+        <label class="choice" id="opt-cod"><input type="radio" name="payment" value="cod" checked><span><span data-i18n="co.cod">Cash on delivery</span><small data-i18n="co.codD">Pay in cash when your order arrives.</small></span></label>
+        <label class="choice" id="opt-card"><input type="radio" name="payment" value="card"><span><span data-i18n="co.card">Card (test)</span><small data-i18n="co.cardD">Visa or Mastercard. In this test store only a practice card works.</small></span></label>
+      </div>
+      <aside class="panel">
+        <h2 data-i18n="co.summary">Summary</h2>
+        <div class="sum"><span data-i18n="co.subtotal">Subtotal</span><span id="sub">—</span></div>
+        <div class="sum"><span data-i18n="co.delivery">Delivery</span><span id="fee">—</span></div>
+        <div class="sum total"><span data-i18n="co.total">Total</span><span id="total">—</span></div>
+        <p class="fine" id="free-note"></p>
+        <button class="btn block" id="place" type="submit" data-i18n="co.place">Place order</button>
+        <p class="msg" id="co-msg" role="status"></p>
+        <p class="fine"><span data-i18n="co.privacy">We use your details only to deliver your order and contact you about it.</span> <a href="/help#privacy" data-i18n="foot.privacy">Privacy</a></p>
+      </aside>
+    </form>
+  </div>
+</div>
+</main>
+<footer class="foot">
+  <div class="wrap">
+    <div>
+      <a class="logo" href="/">Stoic</a>
+      <p data-i18n="foot.tag">Quiet clothes for a steady mind. Amman, Jordan.</p>
+    </div>
+    <div>
+      <h4 data-i18n="foot.shop">Shop</h4>
+      <ul>
+        <li><a href="/shop" data-i18n="shop.all">All</a></li>
+        <li><a href="/shop?c=tops" data-i18n="nav.tops">Tops</a></li>
+        <li><a href="/shop?c=bottoms" data-i18n="nav.bottoms">Bottoms</a></li>
+        <li><a href="/shop?c=outerwear" data-i18n="nav.outer">Outerwear</a></li>
+        <li><a href="/shop?c=accessories" data-i18n="nav.acc">Accessories</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 data-i18n="foot.help">Help</h4>
+      <ul>
+        <li><a href="/help#delivery" data-i18n="foot.delivery">Delivery</a></li>
+        <li><a href="/help#returns" data-i18n="foot.returns">Exchanges and returns</a></li>
+        <li><a href="/help#privacy" data-i18n="foot.privacy">Privacy</a></li>
+        <li><a href="/help#terms" data-i18n="foot.terms">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+<script src="/assets/js/i18n.js"></script>
+<script src="/assets/js/app.js"></script>
+</body>
+</html>

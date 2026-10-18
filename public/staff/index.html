@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Stoic · Staff</title>
+<link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/staff.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="/" target="_blank" rel="noopener">Stoic</a>
+    <span class="fine">Staff</span>
+    <button class="tool" id="logout" type="button" hidden style="margin-inline-start:auto">Log out</button>
+  </div>
+</header>
+
+<main class="wrap staff">
+  <form id="login" class="panel login" hidden>
+    <h1>Staff login</h1>
+    <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <button class="btn block" type="submit">Log in</button>
+    <p class="msg" id="login-msg" role="status"></p>
+  </form>
+
+  <div id="app" hidden>
+    <nav class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="overview" aria-selected="true">Today</button>
+      <button type="button" role="tab" data-tab="orders">Orders</button>
+      <button type="button" role="tab" data-tab="products">Products and stock</button>
+      <button type="button" role="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <section data-panel="overview">
+      <div class="kpis" id="kpis"></div>
+      <h2>Low stock</h2>
+      <div id="low"></div>
+    </section>
+
+    <section data-panel="orders" hidden>
+      <div class="bar">
+        <select id="o-status">
+          <option value="open">Open (to pack, packed, on the way)</option>
+          <option value="new">New: to pack</option>
+          <option value="packed">Packed</option>
+          <option value="shipped">On the way</option>
+          <option value="delivered">Delivered</option>
+          <option value="awaiting_payment">Waiting for card payment</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="returned">Returned</option>
+          <option value="">All orders</option>
+        </select>
+        <input id="o-q" type="text" placeholder="Search name, phone or S1001">
+        <a class="btn ghost" href="/api/staff/export">Download CSV</a>
+      </div>
+      <div class="split">
+        <div id="o-list" class="list"></div>
+        <div id="o-detail" class="panel detail"><p class="fine">Pick an order.</p></div>
+      </div>
+    </section>
+
+    <section data-panel="products" hidden>
+      <div class="bar"><button class="btn" type="button" id="p-new">Add a product</button></div>
+      <div id="p-list"></div>
+      <dialog id="p-dialog">
+        <form id="p-form" method="dialog">
+          <h2 id="p-title">Product</h2>
+          <input type="hidden" name="id">
+          <div class="row2">
+            <div class="field"><label>Name (English)</label><input name="name_en" type="text" required></div>
+            <div class="field"><label>Name (Arabic)</label><input name="name_ar" type="text" dir="rtl"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Description (English)</label><textarea name="desc_en"></textarea></div>
+            <div class="field"><label>Description (Arabic)</label><textarea name="desc_ar" dir="rtl"></textarea></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Price (JOD)</label><input name="price" type="number" step="0.001" min="0" required></div>
+            <div class="field"><label>Old price, for a sale (JOD, optional)</label><input name="compare_at" type="number" step="0.001" min="0"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Category</label><select name="category"><option value="tops">Tops</option><option value="bottoms">Bottoms</option><option value="outerwear">Outerwear</option><option value="accessories">Accessories</option></select></div>
+            <div class="field"><label>Web name (in the link)</label><input name="slug" type="text" required pattern="[a-z0-9-]+"></div>
+          </div>
+          <div class="field"><label>Photo links, one per line (https://… or /assets/…)</label><textarea name="images"></textarea></div>
+          <div class="row2">
+            <div class="field"><label>Placeholder colour</label><input name="tone" type="color"></div>
+            <div class="field"><label>Order on the page (lower first)</label><input name="sort" type="number"></div>
+          </div>
+          <label class="check"><input type="checkbox" name="featured"> Show on the home page</label>
+          <label class="check"><input type="checkbox" name="active" checked> On sale (untick to hide)</label>
+          <p class="msg" id="p-msg" role="status"></p>
+          <div class="bar"><button class="btn" type="submit" value="save">Save</button><button class="btn ghost" type="button" id="p-cancel">Cancel</button></div>
+        </form>
+      </dialog>
+    </section>
+
+    <section data-panel="settings" hidden>
+      <form id="s-form" class="panel">
+        <h2>Shop</h2>
+        <label class="check"><input type="checkbox" name="store_open"> Shop open for orders</label>
+        <label class="check"><input type="checkbox" name="cod_enabled"> Cash on delivery</label>
+        <label class="check"><input type="checkbox" name="card_enabled"> Card payment (test mode: practice cards only)</label>
+        <div class="row2">
+          <div class="field"><label>WhatsApp number for customers (with 962, digits only)</label><input name="whatsapp" type="tel" placeholder="9627XXXXXXXX"></div>
+          <div class="field"><label>Free delivery over (JOD, 0 = never)</label><input name="free_delivery_over" type="number" step="0.5" min="0"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Notice bar (English, optional)</label><input name="notice_en" type="text" maxlength="200"></div>
+          <div class="field"><label>Notice bar (Arabic, optional)</label><input name="notice_ar" type="text" maxlength="200" dir="rtl"></div>
+        </div>
+        <h2>Delivery areas</h2>
+        <table class="tbl" id="zones"><thead><tr><th>Area (English)</th><th>Area (Arabic)</th><th>Fee (JOD)</th><th></th></tr></thead><tbody></tbody></table>
+        <button class="link" type="button" id="z-add">Add an area</button>
+        <p class="msg" id="s-msg" role="status"></p>
+        <button class="btn" type="submit">Save settings</button>
+      </form>
+    </section>
+  </div>
+</main>
+<script src="/assets/js/staff.js"></script>
+</body>
+</html>

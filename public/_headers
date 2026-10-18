@@ -1,0 +1,16 @@
+# Security headers for every page (Cloudflare Pages reads this file).
+# TRIAL: the X-Robots-Tag line keeps Google from listing the test store.
+# Remove it on launch day, when real payments and real products are in.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Strict-Transport-Security: max-age=31536000
+  X-Robots-Tag: noindex
+
+/staff/*
+  Cache-Control: no-store
+
+/assets/*
+  Cache-Control: public, max-age=3600
