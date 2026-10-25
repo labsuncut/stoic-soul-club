@@ -22,7 +22,7 @@ export function seedVariants(p) {
 export const SEED_PRODUCTS = [
   {
     slug: 'vengeance-washed-hoodie',
-    images: ['/assets/img/ch1/vengeance-hoodie-back.webp | Back print, acid-washed charcoal', '/assets/img/ch1/vengeance-hoodie-night-45.webp | Worn, Amman, after dark', '/assets/img/ch1/vengeance-hoodie-white.webp | Back print, white', '/assets/img/ch1/vengeance-art.webp | The print: Lady Justice, VENGEANCE', '/assets/img/ch1/cover-night-45.webp | Hood up, over the city'],
+    images: [],
     sku: 'SSC-VEN-WH', name: 'VENGEANCE Washed Hoodie', category: 'hoodies', collection: 'vengeance',
     price: 35000, tone: '#55524c', featured: true, status: 'available', sort: 10, color: 'Acid-washed charcoal',
     // White: real piece (Ali, 25 October 2026); count per size still to come, so it starts at 0.
@@ -35,7 +35,7 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'vengeance-washed-tee',
-    images: ['/assets/img/ch1/vengeance-tee-wall.webp | Back print, on body, painted wall', '/assets/img/ch1/vengeance-tee-back.webp | Back print, acid-washed charcoal', '/assets/img/ch1/vengeance-tee-bar.webp | Worn, the gym', '/assets/img/ch1/vengeance-tee-front.webp | Front, chest logo', '/assets/img/ch1/vengeance-art.webp | The print: Lady Justice, VENGEANCE', '/assets/img/ch1/vengeance-tee-bar-2.webp | Pull-ups, Amman'],
+    images: [],
     sku: 'SSC-VEN-WT', name: 'VENGEANCE Washed Tee', category: 'tees', collection: 'vengeance',
     price: 25000, tone: '#5e5b55', featured: true, status: 'available', sort: 20, color: 'Acid-washed charcoal',
     stock: { S: 0, M: 1, L: 2, XL: 2, XXL: 2 },
@@ -47,7 +47,7 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'kaizen-hoodie',
-    images: ['/assets/img/ch1/kaizen-hoodie-back.webp | Back print, black', '/assets/img/ch1/hoodie-front-logo.webp | Front, chest logo', '/assets/img/ch1/kaizen-hoodie-white.webp | Back print, white', '/assets/img/ch1/kaizen-art.webp | The print: the angel, KAIZEN', '/assets/img/ch1/kaizen-hoodie-bar.webp | Worn, the gym', '/assets/img/ch1/kaizen-hoodie-night-45.webp | Worn, Amman, after dark'],
+    images: [],
     sku: 'SSC-KAI-H', name: 'KAIZEN Hoodie', category: 'hoodies', collection: 'kaizen',
     price: 35000, tone: '#26252a', featured: true, status: 'available', sort: 30, color: 'Black',
     // White: real piece (Ali, 25 October 2026); count per size still to come, so it starts at 0.
@@ -60,7 +60,7 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'kaizen-tee',
-    images: ['/assets/img/ch1/kaizen-tee-back.webp | Back print, black', '/assets/img/ch1/kaizen-tee-front.webp | Front, puff logo on the chest', '/assets/img/ch1/kaizen-art.webp | The print: the angel, KAIZEN', '/assets/img/ch1/poster-kaizen-blossom.webp | Tee and hoodie, Chapter One poster'],
+    images: [],
     sku: 'SSC-KAI-T', name: 'KAIZEN Tee', category: 'tees', collection: 'kaizen',
     price: 25000, tone: '#2c2b30', featured: false, status: 'available', sort: 40, color: 'Black',
     stock: { S: 0, M: 2, L: 3, XL: 1, XXL: 0 },
@@ -72,7 +72,7 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'tranquility-hoodie',
-    images: ['/assets/img/ch1/tranquility-hoodie-rooftop.webp | Back print, rooftop, Amman', '/assets/img/ch1/tranquility-hoodie-front.webp | Front, chest logo, hood up', '/assets/img/ch1/tranquility-art.webp | The print: TRANQUILITY', '/assets/img/ch1/tranquility-hoodie-wall-45.webp | Worn, after dark'],
+    images: [],
     sku: 'SSC-TRA-H', name: 'TRANQUILITY Hoodie', category: 'hoodies', collection: 'tranquility',
     price: 35000, tone: '#e8e3d8', featured: false, status: 'available', sort: 50, color: 'White',
     stock: { S: 1, M: 3, L: 2, XL: 3, XXL: 0 },
@@ -84,7 +84,7 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'tranquility-tee',
-    images: ['/assets/img/ch1/tranquility-tee-back.webp | Back print, white', '/assets/img/ch1/tranquility-tee-front.webp | Front, puff logo on the chest', '/assets/img/ch1/tranquility-art.webp | The print: TRANQUILITY', '/assets/img/ch1/poster-tranquility.webp | Tee and hoodie, Chapter One poster'],
+    images: [],
     sku: 'SSC-TRA-T', name: 'TRANQUILITY Tee', category: 'tees', collection: 'tranquility',
     price: 25000, tone: '#efebe2', featured: false, status: 'available', sort: 60, color: 'White',
     stock: { S: 1, M: 3, L: 4, XL: 2, XXL: 0 },
@@ -100,19 +100,19 @@ export const SEED_COLLECTIONS = [
   {
     slug: 'kaizen', title: 'KAIZEN', chapter: 1, accent: '#C8963E', status: 'current',
     meaning: 'A discipline to be better. Small steps, big change.',
-    images: ['/assets/img/ch1/kaizen-hoodie-back.webp', '/assets/img/ch1/kaizen-art.webp', '/assets/img/ch1/poster-kaizen-ruins.webp'],
+    images: [],
     description: 'A little better, every day. Black cotton, a puff logo on the chest and a 52 cm print on the back. For the long, quiet stretch of a chapter where the work is the whole story.',
   },
   {
     slug: 'tranquility', title: 'TRANQUILITY', chapter: 1, accent: '#A9B7BE', status: 'current',
     meaning: 'Calm in the noise. A sense of peace and quiet.',
-    images: ['/assets/img/ch1/tranquility-hoodie-rooftop.webp', '/assets/img/ch1/tranquility-art.webp', '/assets/img/ch1/poster-tranquility.webp'],
+    images: [],
     description: 'White cotton, the same cuts as KAIZEN, the opposite mood. For the chapter where you stop proving and start seeing clearly.',
   },
   {
     slug: 'vengeance', title: 'VENGEANCE', chapter: 1, accent: '#B8382E', status: 'current',
     meaning: 'The hardest chapter, turned into fuel.',
-    images: ['/assets/img/ch1/vengeance-hoodie-back.webp', '/assets/img/ch1/vengeance-art.webp', '/assets/img/ch1/poster-vengeance.webp'],
+    images: [],
     description: 'Acid-washed charcoal, cut oversized, the heaviest fabric of the three. VENGEANCE is never about people. It is what you make of the hardest chapter.',
   },
 ];
@@ -120,36 +120,16 @@ export const SEED_COLLECTIONS = [
 // The tee front and back views come from the brand's own 2024 design sheet (Stoic Sample Mock Ups.pdf).
 // One lookbook per photoshoot. Photos are the brand's own (Ali, 25 October 2026); captions say
 // what is in the frame, nothing more.
-const P = (file, caption, tag = 'campaign') => ({ image: `/assets/img/ch1/${file}.webp`, caption, alt: caption, tag });
 export const SEED_LOOKBOOKS = [
   {
-    slug: 'chapter-one', title: 'Chapter One, worn', collection: '', credit: '', status: 'published', featured: true, sort: 10,
+    slug: 'chapter-one', title: 'Chapter One, worn', collection: '', credit: '', status: 'draft', featured: true, sort: 10,
     intro: 'The first drop on the people who made it: a gym in Amman, a rooftop after dark, a painted wall.',
-    photos: [
-      P('kaizen-hoodie-bar', 'KAIZEN hoodie, the bar'),
-      P('vengeance-tee-wall', 'VENGEANCE washed tee, painted wall'),
-      P('tranquility-hoodie-rooftop', 'TRANQUILITY hoodie, rooftop, Amman'),
-      P('vengeance-hoodie-night', 'VENGEANCE washed hoodie, the city at night'),
-      P('logo-on-body', 'The chest logo'),
-      P('kaizen-hoodie-flex', 'KAIZEN hoodie, back print'),
-      P('tranquility-hoodie-front', 'TRANQUILITY hoodie, hood up'),
-      P('vengeance-tee-bar', 'VENGEANCE washed tee, pull-ups'),
-      P('cover-night', 'Hood up, over the city'),
-      P('tranquility-hoodie-wall', 'TRANQUILITY hoodie, after dark'),
-      P('kaizen-hoodie-night', 'KAIZEN hoodie, night'),
-    ],
+    photos: [],
   },
   {
-    slug: 'chapter-one-posters', title: 'Chapter One, the posters', collection: '', credit: '', status: 'published', featured: false, sort: 20,
+    slug: 'chapter-one-posters', title: 'Chapter One, the posters', collection: '', credit: '', status: 'draft', featured: false, sort: 20,
     intro: 'The announcement posters, as they ran on Instagram before and during the first drop.',
-    photos: [
-      P('poster-first-era', 'The first era is coming'),
-      P('poster-drop', 'Approaching the drop'),
-      P('poster-kaizen-ruins', 'KAIZEN: a discipline to be better'),
-      P('poster-kaizen-blossom', 'KAIZEN, second poster'),
-      P('poster-tranquility', 'TRANQUILITY: calm in the noise'),
-      P('poster-vengeance', 'VENGEANCE: turn it into fuel'),
-    ],
+    photos: [],
   },
 ];
 
@@ -158,6 +138,10 @@ export const RETIRED_WORDING = {
   ordering_text: ['Choose your size and tap Order via WhatsApp. The message is written for you; you send it. Sanad confirms availability, delivery and the total before anything is paid.'],
 };
 export const RETIRED_MEANINGS = { vengeance: ['Seeking revenge for justice. Turn it into fuel.'] };
+
+// 25 October 2026: Ali asked for every photo to come off the site ("disregard all photos I sent
+// you previously"). A live database still holding them is cleared once; the key below records it.
+export const PHOTOS_CLEARED_KEY = 'photos_cleared';
 
 export const DEFAULT_SETTINGS = {
   // The order number is never written in code. It is set in the dashboard, in international
@@ -168,11 +152,11 @@ export const DEFAULT_SETTINGS = {
   site_public: '0', // '1' removes the noindex header once the founders approve the launch
   hero_headline: "FOR THE CHAPTER YOU'RE IN.",
   hero_cta: 'Shop the drop',
-  hero_image: '/assets/img/ch1/cover-night.webp',
+  hero_image: '',
   hero_video: '',
   hero_caption: 'Chapter One, Amman, after dark',
   manifesto: 'People move through chapters. Some are about building, some about grief, some about getting your calm back.\nThe clothes are for the one you are in now, not the one you are performing.\nWear it like you mean it.',
-  manifesto_image: '/assets/img/ch1/tranquility-hoodie-rooftop.webp',
+  manifesto_image: '',
   announcement: '',
   ordering_text: 'Choose your size and tap Order via WhatsApp. The message is written for you; you send it. We confirm availability, delivery and the total before anything is paid.',
   shipping_text: 'Free delivery in Amman. 3 JOD across the rest of Jordan. International order inquiries welcome: shipping availability and cost are confirmed before purchase.',
@@ -181,7 +165,7 @@ export const DEFAULT_SETTINGS = {
   restock_inquiries: '1',
   analytics: '1',
   story_text: '',
-  story_image: '/assets/img/ch1/logo-black.webp',
+  story_image: '',
   logo_image: '/assets/img/ch1/logo-mark.webp',
   telegram_chat: '',
 };
