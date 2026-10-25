@@ -2,7 +2,7 @@
 // With no database connected (a local preview, a Pages preview without bindings) the
 // starter content is used instead, so the site always renders.
 import { getDb, getSettings } from './db.js';
-import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS } from './seed.js';
+import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, seedVariants } from './seed.js';
 
 const CACHE_MS = 20_000;
 let cache = { at: 0, site: null };
@@ -64,7 +64,7 @@ function seedSite() {
       care: p.care, story: p.story, category: p.category, collection: p.collection, price: p.price, compare_at: 0,
       images: JSON.stringify(p.images || []), tone: p.tone, featured: p.featured ? 1 : 0, status: p.status, sort: p.sort,
     };
-    const variants = Object.entries(p.stock).map(([size, stock], j) => ({ id: vid++, product_id: row.id, size, color: p.color, sku: `${p.sku}-${size}`, stock, sort: j }));
+    const variants = seedVariants(p).map((v) => ({ id: vid++, product_id: row.id, ...v }));
     return shapeProduct(row, variants);
   });
   const collections = SEED_COLLECTIONS.map((c, i) => shapeCollection({ id: i + 1, release_date: '', sort: (i + 1) * 10, ...c, images: JSON.stringify(c.images || []) }));

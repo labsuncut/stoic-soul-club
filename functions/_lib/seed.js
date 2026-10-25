@@ -5,14 +5,29 @@
 
 // Chapter One stock is the founders' count of 10 October 2026; staff keep it current in the dashboard.
 // Prices: tees 25 JOD, hoodies 35 JOD (Ali, 25 October 2026, matching the Chapter One posters).
+// stock is either { size: count } in the product's one colour, or { colour: { size: count } }.
+export function seedVariants(p) {
+  const multi = Object.values(p.stock).some((v) => typeof v === 'object');
+  const byColor = multi ? p.stock : { [p.color]: p.stock };
+  const out = [];
+  Object.entries(byColor).forEach(([color, sizes], c) => {
+    Object.entries(sizes).forEach(([size, stock], i) => {
+      const sku = c === 0 ? `${p.sku}-${size}` : `${p.sku}-${color.toUpperCase().replace(/[^A-Z0-9]+/g, '-')}-${size}`;
+      out.push({ size, color, sku, stock, sort: c * 10 + i });
+    });
+  });
+  return out;
+}
+
 export const SEED_PRODUCTS = [
   {
     slug: 'vengeance-washed-hoodie',
-    images: ['/assets/img/ch1/vengeance-hoodie-back.webp | Back print, acid-washed charcoal', '/assets/img/ch1/vengeance-hoodie-night.webp | Worn, Amman, after dark', '/assets/img/ch1/vengeance-art.webp | The print: Lady Justice, VENGEANCE', '/assets/img/ch1/cover-night.webp | Hood up, over the city'],
+    images: ['/assets/img/ch1/vengeance-hoodie-back.webp | Back print, acid-washed charcoal', '/assets/img/ch1/vengeance-hoodie-night.webp | Worn, Amman, after dark', '/assets/img/ch1/vengeance-hoodie-white.webp | Back print, white', '/assets/img/ch1/vengeance-art.webp | The print: Lady Justice, VENGEANCE', '/assets/img/ch1/cover-night.webp | Hood up, over the city'],
     sku: 'SSC-VEN-WH', name: 'VENGEANCE Washed Hoodie', category: 'hoodies', collection: 'vengeance',
     price: 35000, tone: '#55524c', featured: true, status: 'available', sort: 10, color: 'Acid-washed charcoal',
-    stock: { S: 1, M: 3, L: 1, XL: 1, XXL: 0 },
-    description: 'Acid-washed charcoal, cut oversized. Big back print, small bust on the chest.',
+    // White: real piece (Ali, 25 October 2026); count per size still to come, so it starts at 0.
+    stock: { 'Acid-washed charcoal': { S: 1, M: 3, L: 1, XL: 1, XXL: 0 }, White: { S: 0, M: 0, L: 0, XL: 0, XXL: 0 } },
+    description: 'Acid-washed charcoal or white, cut oversized. Big back print, small bust on the chest.',
     fit: 'Cut oversized. Size M: 62 cm across the chest, 72 cm long, laid flat.',
     materials: '100% cotton, 450 g/m², acid-washed.',
     care: '',
@@ -32,11 +47,12 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'kaizen-hoodie',
-    images: ['/assets/img/ch1/kaizen-hoodie-back.webp | Back print, black', '/assets/img/ch1/hoodie-front-logo.webp | Front, chest logo', '/assets/img/ch1/kaizen-art.webp | The print: the angel, KAIZEN', '/assets/img/ch1/kaizen-hoodie-bar.webp | Worn, the gym'],
+    images: ['/assets/img/ch1/kaizen-hoodie-back.webp | Back print, black', '/assets/img/ch1/hoodie-front-logo.webp | Front, chest logo', '/assets/img/ch1/kaizen-hoodie-white.webp | Back print, white', '/assets/img/ch1/kaizen-art.webp | The print: the angel, KAIZEN', '/assets/img/ch1/kaizen-hoodie-bar.webp | Worn, the gym'],
     sku: 'SSC-KAI-H', name: 'KAIZEN Hoodie', category: 'hoodies', collection: 'kaizen',
     price: 35000, tone: '#26252a', featured: true, status: 'available', sort: 30, color: 'Black',
-    stock: { S: 1, M: 3, L: 3, XL: 3, XXL: 0 },
-    description: 'Black, very boxy, dropped shoulder. Big back print, small bust on the chest.',
+    // White: real piece (Ali, 25 October 2026); count per size still to come, so it starts at 0.
+    stock: { Black: { S: 1, M: 3, L: 3, XL: 3, XXL: 0 }, White: { S: 0, M: 0, L: 0, XL: 0, XXL: 0 } },
+    description: 'Black or white, very boxy, dropped shoulder. Big back print, small bust on the chest.',
     fit: 'Very boxy, dropped shoulder. Size M: 66 cm across the chest, 72 cm long, laid flat.',
     materials: '100% cotton, 400 g/m².',
     care: '',

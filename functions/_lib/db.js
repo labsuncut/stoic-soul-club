@@ -2,7 +2,7 @@
 // so a fresh Cloudflare D1 database needs no setup beyond connecting it as DB.
 // Money is stored in fils (1 JOD = 1000 fils) so sums never get rounding errors.
 import { HttpError, sha256, clientIp } from './http.js';
-import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS } from './seed.js';
+import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, seedVariants } from './seed.js';
 
 export const PRODUCT_STATUS = ['draft', 'available', 'sold_out', 'archived'];
 export const COLLECTION_STATUS = ['draft', 'current', 'archived'];
@@ -159,9 +159,17 @@ export async function getDb(env) {
 async function fillSeedDetails(db) {
   const put = db.prepare(`UPDATE products SET materials = ?, care = ?, story = ?, fit_en = ? WHERE slug = ? AND materials = ''`);
   const pics = db.prepare(`UPDATE products SET images = ? WHERE slug = ? AND images = '[]'`);
+  // A colour that is new in the seed (the white hoodies) gets its sizes added; counts the staff
+  // already keep for existing sizes are never touched.
+  const addVariant = db.prepare(
+    `INSERT INTO variants (product_id, size, color, sku, stock, sort)
+     SELECT p.id, ?, ?, ?, ?, ? FROM products p
+     WHERE p.slug = ? AND NOT EXISTS (SELECT 1 FROM variants v WHERE v.product_id = p.id AND v.size = ? AND v.color = ?)`,
+  );
   await db.batch([
     ...SEED_PRODUCTS.map((p) => put.bind(p.materials, p.care, p.story, p.fit, p.slug)),
     ...SEED_PRODUCTS.map((p) => pics.bind(JSON.stringify(p.images || []), p.slug)),
+    ...SEED_PRODUCTS.flatMap((p) => seedVariants(p).map((v) => addVariant.bind(v.size, v.color, v.sku, v.stock, v.sort, p.slug, v.size, v.color))),
   ]);
 }
 
@@ -173,8 +181,7 @@ async function seedProducts(db) {
     ).bind(p.slug, p.name, p.description, p.fit, p.category, p.collection, p.price, JSON.stringify(p.images || []), p.tone, p.featured ? 1 : 0, p.status, p.sort, p.materials, p.care, p.story, p.sku).run();
     const id = r.meta.last_row_id;
     const ins = db.prepare('INSERT INTO variants (product_id, size, color, sku, stock, sort) VALUES (?, ?, ?, ?, ?, ?)');
-    await db.batch(Object.entries(p.stock).map(([size, stock], i) =>
-      ins.bind(id, size, p.color, `${p.sku}-${size}`, stock, i)));
+    await db.batch(seedVariants(p).map((v) => ins.bind(id, v.size, v.color, v.sku, v.stock, v.sort)));
   }
 }
 
