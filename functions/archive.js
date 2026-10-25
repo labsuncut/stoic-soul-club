@@ -1,0 +1,3 @@
+import { page } from './_lib/page.js';
+import { archive } from './_lib/pages.js';
+export const onRequestGet = page((site, origin) => archive(site, origin));
