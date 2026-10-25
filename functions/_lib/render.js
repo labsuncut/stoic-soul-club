@@ -4,6 +4,8 @@
 import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
+// Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
+export const ASSET_V = '4';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -39,7 +41,7 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
   const fullTitle = page === 'home' ? `${SITE} · ${s.hero_headline}` : `${title} · ${SITE}`;
   const desc = description || DEFAULT_DESC;
   const canonical = `${origin}${path}`;
-  const og = imgUrl(origin, image) || `${origin}/assets/img/og.png`;
+  const og = imgUrl(origin, image) || `${origin}/assets/img/og.jpg`;
   const ig = s.instagram ? `https://www.instagram.com/${esc(s.instagram)}/` : '';
   const org = {
     '@context': 'https://schema.org', '@type': 'Organization', name: SITE, url: `${origin}/`,
@@ -50,7 +52,7 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
     ? `<img class="mark" src="${esc(s.logo_image)}" alt="" width="40" height="40">`
     : BUTTERFLY;
   const tagline = s.hero_headline ? s.hero_headline.charAt(0).toUpperCase() + s.hero_headline.slice(1).toLowerCase() : '';
-  const navItems = [['/shop', 'Shop'], ['/lookbook', 'Lookbook'], ['/archive', 'Archive'], ['/story', 'Story'], ['/contact', 'Contact']];
+  const navItems = [['/shop', 'Shop'], ...(site.lookbooks.length ? [['/lookbook', 'Lookbook']] : []), ['/archive', 'Archive'], ['/story', 'Story'], ['/contact', 'Contact']];
   const nav = navItems.map(([href, label]) => `<a href="${href}"${path.startsWith(href) ? ' aria-current="page"' : ''}>${label}</a>`).join('');
   return `<!doctype html>
 <html lang="en">
@@ -71,8 +73,8 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
 <meta name="view-transition" content="same-origin">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/assets/fonts/archivo-normal.woff2" as="font" type="font/woff2" crossorigin>
-<script src="/assets/js/intro.js"></script>
-<link rel="stylesheet" href="/assets/css/site.css">
+<script src="/assets/js/intro.js?v=${ASSET_V}"></script>
+<link rel="stylesheet" href="/assets/css/site.css?v=${ASSET_V}">
 ${[org, ...ld].map((o) => `<script type="application/ld+json">${safeJson(o)}</script>`).join('\n')}
 </head>
 <body data-page="${page}" class="${bodyClass}${s.announcement ? ' has-announce' : ''}">
@@ -134,7 +136,7 @@ ${body}
   <div class="wrap"><p class="foot-giant" aria-hidden="true">Stoic Soul Club</p></div>
   <div class="wrap foot-end"><span>© ${new Date().getFullYear()} Stoic Soul Club</span><span class="folio-ch">${chapterLabel(chapter)}</span></div>
 </footer>
-<script src="/assets/js/site.js" defer></script>
+<script src="/assets/js/site.js?v=${ASSET_V}" defer></script>
 </body>
 </html>`;
 }
@@ -166,7 +168,7 @@ export function productCard(p, n, { cls = '', clone = false } = {}) {
     <figure class="frame" style="--ratio:4/5"><span class="frame-n" aria-hidden="true">${pad(n)}</span>
       <div class="frame-img">${front
         ? `<img src="${esc(front)}" alt="${esc(p.captions && p.captions[0] ? `${p.name}: ${p.captions[0]}` : p.name)}" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}" alt="" loading="lazy" decoding="async">` : ''}`
-        : `<div class="ph" role="img" aria-label="Photo to come: ${esc(p.name)}"><span class="ph-label">Photo to come</span><span class="ph-shot">${esc(p.name)}, front</span></div>`}
+        : ticket(p)}
       ${label ? `<span class="ribbon">${label}</span>` : ''}</div>
     </figure>
     <div class="product-meta"><span class="product-name">${esc(p.name)}</span><span class="product-price">${money(p.price, p.currency)}</span></div>
@@ -188,6 +190,17 @@ export function filmStrip(photos, { id = 'strip', label = 'Lookbook' } = {}) {
     <div class="strip-holes" aria-hidden="true"></div>
     <div class="strip-bar"><span class="strip-cap" data-strip-caption>${esc(photos[0].caption)}</span><span class="strip-count"><span data-strip-n>01</span> / ${pad(photos.length)}</span>
       <span class="strip-btns"><button type="button" data-strip-prev aria-label="Previous photo">←</button><button type="button" data-strip-next aria-label="Next photo">→</button></span></div>
+  </div>`;
+}
+
+// A piece without a photo: its name, chapter and weight set in type, with the chapter's colour.
+export function ticket(p, { accent = '' } = {}) {
+  const weight = (String(p.materials || '').match(/\d{3}\s?g/) || [''])[0];
+  return `<div class="ticket"${accent ? ` style="--accent:${esc(accent)}"` : ''} aria-hidden="true">
+    <span class="ticket-ch">${esc(p.collection.toUpperCase())}</span>
+    <span class="ticket-name">${esc(p.name)}</span>
+    <span class="ticket-sub">${esc([p.category, weight].filter(Boolean).join(' · '))}</span>
+    ${BUTTERFLY}
   </div>`;
 }
 

@@ -1,6 +1,6 @@
 // The public pages: home, shop, product, lookbook, archive, story, contact.
 import { money, chapterLabel, bySlug } from './content.js';
-import { layout, frame, productCard, statement, filmStrip, sectionHead, reel, ticker, esc, SITE } from './render.js';
+import { layout, frame, productCard, statement, filmStrip, sectionHead, reel, ticker, ticket, esc, SITE } from './render.js';
 
 const pad = (n) => String(n).padStart(2, '0');
 const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
@@ -31,7 +31,7 @@ export function home(site, origin) {
     ? `<video class="cover-media" autoplay muted loop playsinline preload="none" poster="${esc(s.hero_image)}" aria-hidden="true"><source src="${esc(s.hero_video)}" type="video/mp4"></video>`
     : s.hero_image
       ? `<img class="cover-media" src="${esc(s.hero_image)}" alt="" fetchpriority="high">`
-      : `<div class="cover-media ph ph-dark" role="img" aria-label="Cover photo to come"><span class="ph-label">Cover photo to come</span><span class="ph-shot">VENGEANCE washed hoodie, back print, on body, warm street light</span></div>`;
+      : `<div class="cover-media cover-void" aria-hidden="true"></div>`;
 
   // The philosophy, word by word, so it can fill in as the reader scrolls.
   const fill = String(s.manifesto || '').split(/\n+/).map((t) => t.trim()).filter(Boolean)
@@ -40,7 +40,7 @@ export function home(site, origin) {
   const body = `
 <section class="cover" id="cover">
   <div class="cover-pic">${heroMedia}<div class="cover-light" aria-hidden="true"></div></div>
-  <span class="cover-cap">${esc(s.hero_caption)}</span>
+  ${s.hero_image || s.hero_video ? `<span class="cover-cap">${esc(s.hero_caption)}</span>` : ''}
   <div class="cover-text">
     <p class="cover-kicker"><span class="folio-ch">Chapter ${words(chapter)}</span><span>Amman<span class="kicker-more">${chapters.length ? ' · ' + chapters.map((c) => esc(c.title)).join(' · ') : ''}</span></span></p>
     ${statement(s.hero_headline.replace(/\s+(YOU'RE IN\.?)$/i, '\n$1'), { tag: 'h1', cls: 'statement-xl' })}
@@ -68,7 +68,7 @@ ${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Mad
       <div class="fill" data-fill>${fill}</div>
       <p class="fill-foot"><a class="link" href="/story">Read the story</a></p>
     </div>
-    <div class="split-pic split-sticky">${frame({ image: s.manifesto_image, alt: 'A real person wearing Stoic Soul Club', n: 9, ratio: '4/5', shot: 'Real person, KAIZEN hoodie, daylight, no pose' })}</div>
+    ${s.manifesto_image ? `<div class="split-pic split-sticky">${frame({ image: s.manifesto_image, alt: 'A real person wearing Stoic Soul Club', n: 9, ratio: '4/5' })}</div>` : ''}
   </div>
 </section>
 
@@ -157,11 +157,9 @@ export function product(site, origin, p) {
   const s = site.settings;
   const col = bySlug(site.collections, p.collection);
   const chapter = col ? col.chapter : currentChapter(site);
-  const shots = [['front', `${p.name}, front`], ['back', `${p.name}, back print`], ['detail', `${p.name}, close-up detail`], ['on body', `${p.name}, on body`]];
   const real = p.images.map((u, i) => frame({ image: u, alt: p.captions[i] || `${p.name}, photo ${i + 1}`, caption: p.captions[i], n: i + 1, ratio: '4/5', eager: i === 0 }));
-  // A product with photos shows only real photos; only a product with none gets one marked placeholder.
-  const missing = p.images.length ? [] : shots.slice(0, 1).map(([, shot], j) => frame({ image: '', alt: shot, n: j + 1, ratio: '4/5', shot }));
-  const gallery = [...real, ...missing].join('');
+  // A product with photos shows only real photos; one without shows its ticket (name, chapter, weight) instead.
+  const gallery = real.length ? real.join('') : `<figure class="frame" style="--ratio:4/5"><div class="frame-img">${ticket(p, { accent: col ? col.accent : '' })}</div></figure>`;
   const colors = p.colors;
   const sizes = p.sizes;
   const stockBy = Object.fromEntries(p.variants.map((v) => [`${v.color}|${v.size}`, v.in_stock]));
@@ -230,9 +228,9 @@ export function lookbookIndex(site, origin) {
   <div class="wrap">
     ${sectionHead(4, 'Lookbook', 'SHOT WHERE / IT\'S WORN.')}
     ${books.length ? `<div class="books">${books.map((l, i) => {
-      const cover = l.photos[0];
-      return `<a class="book" href="/lookbook/${esc(l.slug)}">${frame({ image: cover ? cover.image : '', alt: cover ? cover.alt : l.title, n: i + 1, ratio: '4/5', shot: cover ? cover.caption : `${l.title} cover` })}<span class="book-title">${esc(l.title)}</span><span class="book-sub">${l.photos.length} frames${l.credit ? ` · ${esc(l.credit)}` : ''}</span></a>`;
-    }).join('')}</div>` : '<p class="lead">The first lookbook is being shot.</p>'}
+      const cover = l.photos.find((ph) => ph.image);
+      return `<a class="book" href="/lookbook/${esc(l.slug)}">${cover ? frame({ image: cover.image, alt: cover.alt, n: i + 1, ratio: '4/5' }) : ''}<span class="book-title">${esc(l.title)}</span><span class="book-sub">${l.photos.length} frames${l.credit ? ` · ${esc(l.credit)}` : ''}</span></a>`;
+    }).join('')}</div>` : '<p class="lead">The first lookbook is being shot. Until then, the pieces are in the shop.</p>'}
   </div>
 </section>`;
   return layout({ site, origin, page: 'lookbook', section: 'Lookbook', chapter, title: 'Lookbook', path: '/lookbook', description: 'Stoic Soul Club lookbooks: real campaign photographs, shot in Amman.', body });
@@ -284,7 +282,7 @@ ${chapters.map((c) => {
         <div class="manifesto">${paragraphs(c.description)}</div>
         ${live.length ? `<p><a class="link" href="/shop?collection=${esc(c.slug)}">${live.length} piece${live.length === 1 ? '' : 's'} in the shop</a></p>` : ''}
       </div>
-      <div class="split-pic">${frame({ image: c.images[0], alt: `${c.title} campaign`, ratio: '4/5', shot: `${c.title} campaign photo` })}</div>
+      ${c.images[0] ? `<div class="split-pic">${frame({ image: c.images[0], alt: `${c.title} campaign`, ratio: '4/5' })}</div>` : ''}
     </div>
     ${gone.length ? `<p class="fine-caps">Past pieces, kept as the record. Not for sale.</p><div class="sheet sheet-3">${gone.map((p, i) => productCard(p, i + 1)).join('')}</div>` : ''}
   </div>
@@ -305,7 +303,7 @@ The first three designs, KAIZEN, TRANQUILITY and VENGEANCE, were made in 2024. E
 The three founders still make it together: the clothes, the photos and the words.`;
   const body = `
 <section class="legend" id="legend">
-  <div class="legend-pic">${s.story_image ? `<img src="${esc(s.story_image)}" alt="" fetchpriority="high">` : ''}</div>
+  <div class="legend-pic${s.story_image ? '' : ' legend-void'}">${s.story_image ? `<img src="${esc(s.story_image)}" alt="" fetchpriority="high">` : `<img class="legend-mark" src="/assets/img/ch1/logo-mark-lg.webp" alt="" width="640" height="721">`}</div>
   <div class="wrap legend-text">
     ${sectionHead(6, 'Story', 'STILL / BECOMING.')}
     <p class="legend-line" data-rise>Independent streetwear from Amman. Three designs, made in 2024, for whichever chapter you are in.</p>
@@ -361,7 +359,7 @@ The three founders still make it together: the clothes, the photos and the words
             <span class="chapter-meaning">${esc(c.meaning)}</span>
             <span class="chapter-state">${live ? 'Current · in the shop' : c.status === 'archived' ? 'Archived' : 'Chapter'}</span>
           </a>
-          <div class="chapter-pic">${frame({ image: c.images[1] || c.images[0], alt: `${c.title} print`, ratio: '3/4', shot: `${c.title} print` })}</div>
+          ${(c.images[1] || c.images[0]) ? `<div class="chapter-pic">${frame({ image: c.images[1] || c.images[0], alt: `${c.title} print`, ratio: '3/4' })}</div>` : ''}
         </li>`;
       }).join('')}
     </ol>

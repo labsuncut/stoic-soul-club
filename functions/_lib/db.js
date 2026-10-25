@@ -2,7 +2,7 @@
 // so a fresh Cloudflare D1 database needs no setup beyond connecting it as DB.
 // Money is stored in fils (1 JOD = 1000 fils) so sums never get rounding errors.
 import { HttpError, sha256, clientIp } from './http.js';
-import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, RETIRED_WORDING, RETIRED_MEANINGS, seedVariants } from './seed.js';
+import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, RETIRED_WORDING, RETIRED_MEANINGS, PHOTOS_CLEARED_KEY, seedVariants } from './seed.js';
 
 export const PRODUCT_STATUS = ['draft', 'available', 'sold_out', 'archived'];
 export const COLLECTION_STATUS = ['draft', 'current', 'archived'];
@@ -156,6 +156,18 @@ export async function getDb(env) {
       ...Object.entries(RETIRED_WORDING).flatMap(([k, olds]) => olds.map((old) => reword.bind(DEFAULT_SETTINGS[k], k, old))),
       ...Object.entries(RETIRED_MEANINGS).flatMap(([slug, olds]) => olds.map((old) => remean.bind(SEED_COLLECTIONS.find((c) => c.slug === slug).meaning, slug, old))),
     ]);
+    // Every photo off the site, once (Ali, 25 October 2026). Photos the staff add later stay.
+    const cleared = await env.DB.prepare('SELECT value FROM settings WHERE key = ?').bind(PHOTOS_CLEARED_KEY).first();
+    if (!cleared) {
+      await env.DB.batch([
+        env.DB.prepare(`UPDATE products SET images = '[]'`),
+        env.DB.prepare(`UPDATE collections SET images = '[]'`),
+        env.DB.prepare('DELETE FROM lookbook_photos'),
+        env.DB.prepare(`UPDATE lookbooks SET status = 'draft'`),
+        env.DB.prepare(`UPDATE settings SET value = '' WHERE key IN ('hero_image', 'hero_video', 'manifesto_image', 'story_image')`),
+        env.DB.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').bind(PHOTOS_CLEARED_KEY, new Date().toISOString().slice(0, 10)),
+      ]);
+    }
     ready = true;
   }
   return env.DB;
@@ -205,7 +217,8 @@ async function seedLookbooks(db) {
       `INSERT INTO lookbooks (slug, title, collection, credit, intro, status, featured, sort) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     ).bind(l.slug, l.title, l.collection, l.credit, l.intro, l.status, l.featured ? 1 : 0, l.sort).run();
     const ins = db.prepare('INSERT INTO lookbook_photos (lookbook_id, image, caption, alt, tag, sort) VALUES (?, ?, ?, ?, ?, ?)');
-    await db.batch(l.photos.map((ph, i) => ins.bind(r.meta.last_row_id, ph.image || '', ph.caption, ph.alt || ph.caption, ph.tag || 'campaign', (i + 1) * 10)));
+    // D1 rejects an empty batch, and a seed lookbook may hold no photos yet.
+    if (l.photos.length) await db.batch(l.photos.map((ph, i) => ins.bind(r.meta.last_row_id, ph.image || '', ph.caption, ph.alt || ph.caption, ph.tag || 'campaign', (i + 1) * 10)));
   }
 }
 

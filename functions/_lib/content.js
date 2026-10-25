@@ -68,11 +68,12 @@ function seedSite() {
     return shapeProduct(row, variants);
   });
   const collections = SEED_COLLECTIONS.map((c, i) => shapeCollection({ id: i + 1, release_date: '', sort: (i + 1) * 10, ...c, images: JSON.stringify(c.images || []) }));
+  // Same rule as the database path: only published lookbooks reach the site.
   const lookbooks = SEED_LOOKBOOKS.map((l, i) => ({
     id: i + 1, slug: l.slug, title: l.title, collection: l.collection, credit: l.credit, intro: l.intro, status: l.status,
     featured: !!l.featured, sort: l.sort,
     photos: l.photos.map((ph, j) => ({ id: j + 1, lookbook_id: i + 1, image: ph.image || '', caption: ph.caption, alt: ph.alt || ph.caption, tag: ph.tag || 'campaign', sort: (j + 1) * 10 })),
-  }));
+  })).filter((l) => l.status === 'published');
   return { settings: { ...DEFAULT_SETTINGS }, products, collections, lookbooks, fallback: true };
 }
 

@@ -64,6 +64,7 @@ Open http://localhost:8788 and http://localhost:8788/staff/. The local database 
 ## Rules this site keeps
 - No invented facts: no made-up stories, reviews, countdowns, scarcity, prices in other currencies. Empty fields show honest placeholders ("Photo to come").
 - No third-party scripts, no cookies, no tracking pixels. The counts in the dashboard are first-party and anonymous and can be switched off.
+- Photos: on 25 October 2026 Ali asked for every photo to come off the site. The seed carries none, a live database is cleared once (`photos_cleared` in settings) and the pages are set in type until the staff upload photos from the dashboard: a piece without a photo shows its ticket (name, chapter, weight), the cover and the story show the bust.
 - The opening plays once per visit (sessionStorage `ssc-intro`), is skippable (tap, Escape, Skip) and never blocks the page for more than 9.5 s even if scripts fail. With Reduce Motion on, a short version plays (mark, name, line; no dust), the chapter stage is a plain stacked list and the reel is a plain strip. Content never waits for an animation; no scroll hijacking; no heavy video on phones.
 - The chapter stage reads where the page is and never takes over scrolling; the reel walks on its own, follows a finger 1:1 and settles one piece at a time (the glide approved on the Apollo site).
 - Sold-out pieces stay visible without an order button. "Available" with every size at 0 shows as sold out by itself.
