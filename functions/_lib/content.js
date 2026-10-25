@@ -86,6 +86,8 @@ async function loadFromDb(env) {
     db.prepare(`SELECT * FROM lookbooks WHERE status = 'published' ORDER BY sort, id`).all(),
     db.prepare('SELECT * FROM lookbook_photos ORDER BY sort, id').all(),
   ]);
+  // wa.me wants digits only; a number typed with +, spaces or dashes in the dashboard still works.
+  settings.whatsapp = String(settings.whatsapp || '').replace(/\D/g, '');
   return {
     settings,
     products: products.map((p) => shapeProduct(p, variants)),
