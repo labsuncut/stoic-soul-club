@@ -1,55 +1,35 @@
-// Stoic staff dashboard: today's numbers, orders, products and stock, settings.
+// Stoic staff dashboard: inquiries, products and stock, chapters, lookbooks, site words and photos.
 (() => {
+  'use strict';
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const PAY = { cod: 'Cash on delivery', cliq: 'CliQ', card: 'Card' };
-  const jod = (fils) => `JOD ${(fils / 1000).toFixed(fils % 1000 ? 3 : 0)}`;
-  const when = (sqlUtc) => new Date(`${sqlUtc.replace(' ', 'T')}Z`).toLocaleString('en-GB', { timeZone: 'Asia/Amman', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
-
-  const LABEL = {
-    awaiting_payment: 'Waiting for payment', new: 'To pack', packed: 'Packed', shipped: 'On the way',
-    delivered: 'Delivered', cancelled: 'Cancelled', returned: 'Returned',
-  };
-  // Buttons staff see for each status, in the order they'd use them.
-  const ACTIONS = {
-    new: [['packed', 'Mark packed'], ['cancelled', 'Cancel order']],
-    packed: [['shipped', 'Hand to courier'], ['new', 'Back to "to pack"'], ['cancelled', 'Cancel order']],
-    shipped: [['delivered', 'Mark delivered'], ['returned', 'Returned to us']],
-    delivered: [['returned', 'Customer returned it']],
-    awaiting_payment: [['cancelled', 'Cancel order']],
-  };
-  // Ready-made WhatsApp messages to the customer for each step.
-  const WA = {
-    new: (o) => `Hi ${o.name}, thanks for your Stoic order ${o.number}. We're preparing it now and will let you know when it's on the way.`,
-    packed: (o) => `Hi ${o.name}, your Stoic order ${o.number} is packed and will be handed to the courier soon.`,
-    shipped: (o) => `Hi ${o.name}, your Stoic order ${o.number} is on the way to ${o.zone}.${o.payment_method === 'cod' && o.payment_status !== 'paid' ? ` Please have ${jod(o.total)} ready in cash.` : ''}`,
-    delivered: (o) => `Hi ${o.name}, we hope you love your Stoic pieces. If a size isn't right, reply here and we'll sort an exchange.`,
-  };
+  const jod = (fils) => `${(fils / 1000).toFixed(fils % 1000 ? 3 : 0)} JOD`;
+  const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
   async function api(path, options = {}) {
-    const res = await fetch(path, { ...options, headers: options.body ? { 'content-type': 'application/json' } : {} });
+    const res = await fetch(path, { ...options, headers: options.body && !(options.body instanceof FormData) ? { 'content-type': 'application/json' } : {} });
     let data = {};
     try { data = await res.json(); } catch { /* not JSON */ }
-    if (res.status === 401 && path !== '/api/staff/login') { showLogin(); }
+    if (res.status === 401 && path !== '/api/staff/login') showLogin();
     if (!res.ok) throw new Error(data.error || 'Something went wrong.');
     return data;
   }
   const post = (path, body) => api(path, { method: 'POST', body: JSON.stringify(body) });
+  const say = (el, text, ok = true) => { el.className = `msg ${ok ? 'ok' : 'bad'}`; el.textContent = text; };
 
   // ---------- Login ----------
   function showLogin() { $('#login').hidden = false; $('#app').hidden = true; $('#logout').hidden = true; }
   function showApp() { $('#login').hidden = true; $('#app').hidden = false; $('#logout').hidden = false; openTab('overview'); }
   $('#login').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const msg = $('#login-msg');
     try { await post('/api/staff/login', { password: $('#pw').value }); $('#pw').value = ''; showApp(); }
-    catch (err) { msg.className = 'msg bad'; msg.textContent = err.message; }
+    catch (err) { say($('#login-msg'), err.message, false); }
   });
   $('#logout').addEventListener('click', async () => { await api('/api/staff/login', { method: 'DELETE' }); showLogin(); });
 
   // ---------- Tabs ----------
-  const loaders = { overview: loadOverview, orders: loadOrders, products: loadProducts, drop: loadDrop, settings: loadSettings };
+  const loaders = { overview: loadOverview, products: loadProducts, collections: loadCollections, lookbooks: loadLookbooks, site: loadSite };
   function openTab(name) {
     for (const b of $$('[data-tab]')) b.setAttribute('aria-selected', String(b.dataset.tab === name));
     for (const p of $$('[data-panel]')) p.hidden = p.dataset.panel !== name;
@@ -57,91 +37,132 @@
   }
   $('.tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (b) openTab(b.dataset.tab); });
 
-  // ---------- Today ----------
+  // ---------- Photos: shrink in the browser, upload, keep an ordered list ----------
+  // A product photo is sent as WebP at most 1600 px on its long side (about 150 to 300 KB).
+  async function shrink(file) {
+    if (!file.type.startsWith('image/') || file.type === 'image/svg+xml') return file;
+    const bitmap = await createImageBitmap(file).catch(() => null);
+    if (!bitmap) return file;
+    const max = file.dataset_logo ? 800 : 1600;
+    const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale); canvas.height = Math.round(bitmap.height * scale);
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const keepPng = file.type === 'image/png' && file.size < 600_000; // logos with transparency stay PNG
+    const blob = await new Promise((r) => canvas.toBlob(r, keepPng ? 'image/png' : 'image/webp', 0.84));
+    return blob ? new File([blob], file.name.replace(/\.\w+$/, keepPng ? '.png' : '.webp'), { type: blob.type }) : file;
+  }
+  async function upload(file, isLogo = false) {
+    if (isLogo) file.dataset_logo = true;
+    const small = file.type.startsWith('video/') ? file : await shrink(file);
+    const fd = new FormData();
+    fd.append('file', small, small.name);
+    const { url } = await api('/api/staff/upload', { method: 'POST', body: fd });
+    return url;
+  }
+  // Each photo list lives in a .photos element; lookbook lists also carry captions and tags.
+  const lists = {};
+  function photoList(name) {
+    const box = $(`[data-photos="${name}"]`);
+    const withTags = box.classList.contains('photos-cap');
+    const withCaptions = withTags || box.hasAttribute('data-captions');
+    const single = box.hasAttribute('data-single');
+    const video = box.hasAttribute('data-video');
+    const items = [];
+    const render = () => {
+      box.innerHTML = items.map((it, i) => `<div class="photo ${it.image ? '' : 'empty'}" data-i="${i}">
+        ${it.image ? (video ? `<video src="${esc(it.image)}" muted playsinline></video>` : `<img src="${esc(it.image)}" alt="">`) : `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='108' height='135'%3E%3Crect width='100%25' height='100%25' fill='%23e6e1d6'/%3E%3C/svg%3E" alt="">`}
+        <button type="button" class="x" data-x aria-label="Remove">×</button>
+        ${!single && items.length > 1 ? `<button type="button" class="mv" data-mv="-1" aria-label="Move left">‹</button><button type="button" class="mv r" data-mv="1" aria-label="Move right">›</button>` : ''}
+        ${withCaptions ? `<input placeholder="Caption, e.g. KAIZEN hoodie, chest detail" value="${esc(it.caption)}" data-cap>` : ''}${withTags ? `<select data-tag><option value="campaign"${it.tag !== 'community' ? ' selected' : ''}>Campaign</option><option value="community"${it.tag === 'community' ? ' selected' : ''}>Community</option></select>` : ''}
+      </div>`).join('');
+      const hidden = box.parentElement.querySelector('[name="images"], input[type="hidden"]');
+      if (hidden && !withTags) hidden.value = single ? (items[0]?.image || '') : items.map((it) => (it.caption ? `${it.image} | ${it.caption}` : it.image)).join('\n');
+    };
+    const list = {
+      set(arr) { items.length = 0; for (const it of arr) items.push(typeof it === 'string' ? { image: it, caption: '', tag: 'campaign' } : { image: it.image || '', caption: it.caption || '', alt: it.alt || '', tag: it.tag || 'campaign' }); render(); },
+      get() { return items.map((it) => ({ ...it })); },
+      add(it) { if (single) items.length = 0; items.push(it); render(); },
+    };
+    box.addEventListener('click', (e) => {
+      const el = e.target.closest('.photo'); if (!el) return;
+      const i = Number(el.dataset.i);
+      if (e.target.closest('[data-x]')) { items.splice(i, 1); render(); }
+      const mv = e.target.closest('[data-mv]');
+      if (mv) { const j = i + Number(mv.dataset.mv); if (j >= 0 && j < items.length) { [items[i], items[j]] = [items[j], items[i]]; render(); } }
+    });
+    box.addEventListener('input', (e) => {
+      const el = e.target.closest('.photo'); if (!el) return;
+      const it = items[Number(el.dataset.i)];
+      if (e.target.matches('[data-cap]')) it.caption = e.target.value;
+      if (e.target.matches('[data-tag]')) it.tag = e.target.value;
+    });
+    lists[name] = list;
+    return list;
+  }
+  for (const box of $$('[data-photos]')) photoList(box.dataset.photos);
+  document.addEventListener('change', async (e) => {
+    const input = e.target.closest('[data-upload]');
+    if (!input || !input.files.length) return;
+    const list = lists[input.dataset.upload];
+    const wrap = input.closest('.field') || input.parentElement;
+    wrap.classList.add('uploading');
+    try {
+      for (const file of input.files) list.add({ image: await upload(file, input.hasAttribute('data-logo')), caption: '', tag: 'campaign' });
+    } catch (err) { alert(err.message); }
+    finally { wrap.classList.remove('uploading'); input.value = ''; }
+  });
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-addlink]');
+    if (link) { const url = prompt('Paste the photo or video link (https://…):'); if (url && /^https:\/\//.test(url.trim())) lists[link.dataset.addlink].add({ image: url.trim(), caption: '', tag: 'campaign' }); }
+    const cap = e.target.closest('[data-addcaption]');
+    if (cap) lists[cap.dataset.addcaption].add({ image: '', caption: '', tag: 'campaign' });
+  });
+
+  // ---------- Inquiries ----------
   async function loadOverview() {
     const d = await api('/api/staff/overview');
+    const n = (m, k) => m[k] || 0;
     $('#kpis').innerHTML = [
-      [d.to_handle, 'Orders to pack or send'],
-      [d.today.orders, `Orders today · ${jod(d.today.sales)}`],
-      [d.week.orders, `Orders last 7 days · ${jod(d.week.sales)}`],
-      [d.by_status.awaiting_payment || 0, 'Waiting for card payment'],
-    ].map(([n, label]) => `<div class="kpi"><b>${n}</b><span>${esc(label)}</span></div>`).join('');
+      [n(d.today, 'wa_click'), 'WhatsApp inquiries today'],
+      [n(d.week, 'wa_click'), 'Inquiries, last 7 days'],
+      [n(d.week, 'product_view'), 'Product views, last 7 days'],
+      [n(d.week, 'page_view') + n(d.week, 'product_view'), 'Visits, last 7 days'],
+      [n(d.month, 'wa_click'), 'Inquiries, last 30 days'],
+      [d.pieces_in_stock, 'Pieces in stock'],
+    ].map(([v, label]) => `<div class="kpi"><b>${v}</b><span>${esc(label)}</span></div>`).join('');
+    $('#top').innerHTML = d.top.length
+      ? `<table class="tbl"><tr><th>Product</th><th>Views</th><th>Inquiries</th></tr>${d.top.map((r) => `<tr><td>${esc(r.product)}</td><td>${r.views}</td><td>${r.inquiries}</td></tr>`).join('')}</table>`
+      : '<p class="fine">No product views counted yet.</p>';
+    $('#sources').innerHTML = d.sources.length
+      ? `<table class="tbl"><tr><th>Source</th><th>Visits</th></tr>${d.sources.map((r) => `<tr><td>${esc(r.source)}</td><td>${r.n}</td></tr>`).join('')}</table>`
+      : '<p class="fine">Nothing counted yet.</p>';
+    const maxV = Math.max(1, ...d.daily.map((r) => r.views));
+    $('#daily').innerHTML = d.daily.length
+      ? `<div class="daily">${d.daily.map((r) => `<div title="${r.day}: ${r.views} views, ${r.inquiries} inquiries"><b style="height:${Math.round(100 * r.views / maxV)}px"></b><i style="height:${Math.round(100 * r.inquiries / maxV)}px"></i>${r.day.slice(5)}</div>`).join('')}</div><p class="fine">Dark = views, blue = WhatsApp inquiries.</p>`
+      : '<p class="fine">No visits counted in the last 14 days.</p>';
     $('#low').innerHTML = d.low_stock.length
-      ? `<table class="tbl"><tr><th>Product</th><th>Colour</th><th>Size</th><th>Left</th></tr>${d.low_stock.map((r) => `<tr><td>${esc(r.name_en)}</td><td>${esc(r.color)}</td><td>${esc(r.size)}</td><td>${r.stock}</td></tr>`).join('')}</table>`
-      : '<p class="fine">Nothing is running low.</p>';
+      ? `<table class="tbl"><tr><th>Product</th><th>Colour</th><th>Size</th><th>Left</th></tr>${d.low_stock.map((r) => `<tr><td>${esc(r.name)}</td><td>${esc(r.color)}</td><td>${esc(r.size)}</td><td>${r.stock}</td></tr>`).join('')}</table>`
+      : '<p class="fine">Nothing at 1 or 0.</p>';
   }
-
-  // ---------- Orders ----------
-  let currentOrder = null;
-  async function loadOrders() {
-    const q = new URLSearchParams({ status: $('#o-status').value, q: $('#o-q').value.trim() });
-    const { orders } = await api(`/api/staff/orders?${q}`);
-    $('#o-list').innerHTML = orders.length ? orders.map((o) => `
-      <button type="button" class="orow" data-id="${o.id}" aria-current="${o.id === currentOrder}">
-        <span>${esc(o.number)}</span><span class="who">${esc(o.name)}</span><span class="pill ${o.status}">${LABEL[o.status]}</span>
-        <span class="sub">${when(o.created_at)} · ${o.pieces} pc · ${jod(o.total)} · ${PAY[o.payment_method]} ${o.payment_status === 'paid' ? '(paid)' : ''} · ${esc(o.zone)}${o.test ? ' · test' : ''}</span>
-      </button>`).join('') : '<p class="fine">No orders here yet.</p>';
-  }
-  let searchTimer;
-  $('#o-status').addEventListener('change', loadOrders);
-  $('#o-q').addEventListener('input', () => { clearTimeout(searchTimer); searchTimer = setTimeout(loadOrders, 300); });
-  $('#o-list').addEventListener('click', (e) => { const b = e.target.closest('[data-id]'); if (b) showOrder(Number(b.dataset.id)); });
-
-  async function showOrder(id) {
-    currentOrder = id;
-    for (const b of $$('.orow')) b.setAttribute('aria-current', String(Number(b.dataset.id) === id));
-    const { order: o } = await api(`/api/staff/order?id=${id}`);
-    const phone = o.phone.replace(/\D/g, '').replace(/^0/, '962');
-    const wa = WA[o.status] ? `https://wa.me/${phone}?text=${encodeURIComponent(WA[o.status](o))}` : `https://wa.me/${phone}`;
-    $('#o-detail').innerHTML = `
-      <div class="prod-head"><h2 style="margin:0">${esc(o.number)}</h2><span class="pill ${o.status}">${LABEL[o.status]}</span>${o.test ? '<span class="pill test">Test order</span>' : ''}</div>
-      <p class="fine">${when(o.created_at)} · ${PAY[o.payment_method]} · ${o.payment_status}${o.payment_ref ? ` (${esc(o.payment_ref)})` : ''}</p>
-      <div class="actions">${(ACTIONS[o.status] || []).map(([s, label]) => `<button type="button" class="btn ${s === 'cancelled' || s === 'returned' || s === 'new' ? 'ghost' : ''}" data-status="${s}">${label}</button>`).join('')}
-        ${o.payment_status === 'unpaid' && o.payment_method !== 'card' && !['cancelled', 'returned'].includes(o.status) ? `<button type="button" class="btn ghost" data-paid>${o.payment_method === 'cliq' ? 'CliQ received' : 'Cash received'}</button>` : ''}
-        <a class="btn ghost" href="${wa}" target="_blank" rel="noopener">WhatsApp customer</a></div>
-      <h3>Customer</h3>
-      <p>${esc(o.name)} · <a href="tel:${esc(o.phone)}">${esc(o.phone)}</a>${o.email ? ` · ${esc(o.email)}` : ''}<br>${esc(o.zone)} · ${esc(o.address)}${o.note ? `<br><i>${esc(o.note)}</i>` : ''}</p>
-      <h3>Items</h3>
-      <table class="tbl">${o.items.map((i) => `<tr><td>${esc(i.name_en)}</td><td>${esc(i.color)} ${esc(i.size)}</td><td>× ${i.qty}</td><td>${jod(i.unit_price * i.qty)}</td></tr>`).join('')}
-        <tr><td colspan="3">Delivery</td><td>${jod(o.delivery_fee)}</td></tr><tr><th colspan="3">Total</th><th>${jod(o.total)}</th></tr></table>
-      <h3>Private note</h3>
-      <textarea id="o-note" maxlength="500">${esc(o.staff_note)}</textarea>
-      <button class="link" type="button" id="o-note-save">Save note</button>
-      <h3>History</h3>
-      <ul class="timeline">${o.events.map((ev) => `<li>${when(ev.at)} · ${LABEL[ev.status] || ev.status}${ev.note ? ` · ${esc(ev.note)}` : ''}</li>`).join('')}</ul>
-      <p class="fine" style="margin-top:14px"><a href="${esc(o.link)}" target="_blank" rel="noopener">Customer's order page</a></p>`;
-  }
-  $('#o-detail').addEventListener('click', async (e) => {
-    const b = e.target.closest('[data-status]');
-    try {
-      if (b) {
-        const s = b.dataset.status;
-        if ((s === 'cancelled' || s === 'returned') && !confirm(`${b.textContent}? Its items go back into stock.`)) return;
-        await post('/api/staff/order', { id: currentOrder, status: s });
-        await Promise.all([showOrder(currentOrder), loadOrders()]);
-      }
-      if (e.target.closest('[data-paid]')) {
-        const ref = prompt('Reference (optional, e.g. CliQ transfer number):') ?? null;
-        if (ref === null) return;
-        await post('/api/staff/order', { id: currentOrder, paid: true, ref });
-        await Promise.all([showOrder(currentOrder), loadOrders()]);
-      }
-      if (e.target.id === 'o-note-save') {
-        await post('/api/staff/order', { id: currentOrder, staff_note: $('#o-note').value });
-        e.target.textContent = 'Saved';
-      }
-    } catch (err) { alert(err.message); }
-  });
 
   // ---------- Products and stock ----------
   let products = [];
+  let collections = [];
+  async function fetchCollections() {
+    ({ collections } = await api('/api/staff/collections'));
+    const opts = `<option value="">None</option>${collections.map((c) => `<option value="${esc(c.slug)}">${esc(c.title)} (CH. ${c.chapter})</option>`).join('')}`;
+    $('#p-collection').innerHTML = opts; $('#l-collection').innerHTML = opts;
+  }
   async function loadProducts() {
-    ({ products } = await api('/api/staff/products'));
+    [{ products }] = await Promise.all([api('/api/staff/products'), fetchCollections()]);
     $('#p-list').innerHTML = products.map((p) => `
-      <div class="prod">
-        <div class="prod-head">
-          <h3>${esc(p.name_en)}</h3><span class="fine">${jod(p.price)}</span>
-          ${p.sample ? '<span class="pill test">Sample</span>' : ''}${p.active ? '' : '<span class="pill cancelled">Hidden</span>'}${p.featured ? '<span class="pill">Home page</span>' : ''}
+      <div class="card">
+        <div class="card-head">
+          ${p.images[0] ? `<img class="thumb" src="${esc(p.images[0])}" alt="">` : '<span class="thumb"></span>'}
+          <h3>${esc(p.name)}</h3><span class="fine">${jod(p.price)}</span>
+          <span class="pill ${p.raw_status}">${p.raw_status.replace('_', ' ')}</span>${p.status === 'sold_out' && p.raw_status === 'available' ? '<span class="pill sold_out">shows sold out</span>' : ''}
+          ${p.featured ? '<span class="pill">Lead piece</span>' : ''}<span class="pill">${esc(p.collection || 'no chapter')}</span>
           <button type="button" class="link" data-edit="${p.id}">Edit</button>
           <a class="link" href="/product/${encodeURIComponent(p.slug)}" target="_blank" rel="noopener">View</a>
         </div>
@@ -150,13 +171,13 @@
             <td><input class="stock" type="number" min="0" value="${v.stock}" data-variant="${v.id}" aria-label="Stock"></td>
             <td><button type="button" class="link" data-remove="${v.id}">Remove</button></td></tr>`).join('')}
         </table>
-        <div class="add-size"><input placeholder="Size" data-new-size="${p.id}"><input placeholder="Colour" data-new-colour="${p.id}"><input type="number" min="0" placeholder="Stock" data-new-stock="${p.id}"><button class="link" type="button" data-add="${p.id}">Add size</button></div>
-      </div>`).join('');
+        <div class="add-size"><input placeholder="Size" data-new-size="${p.id}"><input placeholder="Colour" data-new-colour="${p.id}" value="${esc(p.colors[0] || '')}"><input type="number" min="0" placeholder="Stock" data-new-stock="${p.id}"><button class="link" type="button" data-add="${p.id}">Add size</button></div>
+      </div>`).join('') || '<p class="fine">No products yet.</p>';
   }
   $('#p-list').addEventListener('change', async (e) => {
     const input = e.target.closest('[data-variant]');
     if (!input) return;
-    try { await post('/api/staff/variants', { variant_id: Number(input.dataset.variant), stock: input.value }); input.style.borderColor = 'var(--ok)'; }
+    try { await post('/api/staff/variants', { variant_id: Number(input.dataset.variant), stock: input.value }); input.style.borderColor = '#2f6b3f'; }
     catch (err) { alert(err.message); }
   });
   $('#p-list').addEventListener('click', async (e) => {
@@ -166,103 +187,133 @@
       if (t.dataset.remove && confirm('Remove this size?')) { await post('/api/staff/variants', { variant_id: Number(t.dataset.remove), remove: true }); await loadProducts(); }
       if (t.dataset.add) {
         const id = t.dataset.add;
-        await post('/api/staff/variants', {
-          product_id: Number(id), size: $(`[data-new-size="${id}"]`).value, color: $(`[data-new-colour="${id}"]`).value, stock: $(`[data-new-stock="${id}"]`).value || 0,
-        });
+        await post('/api/staff/variants', { product_id: Number(id), size: $(`[data-new-size="${id}"]`).value, color: $(`[data-new-colour="${id}"]`).value, stock: $(`[data-new-stock="${id}"]`).value || 0 });
         await loadProducts();
       }
     } catch (err) { alert(err.message); }
   });
-
-  const dialog = $('#p-dialog');
+  const pdialog = $('#p-dialog');
   const pform = $('#p-form');
   function openProduct(p) {
-    pform.reset();
-    $('#p-msg').textContent = '';
-    $('#p-title').textContent = p ? `Edit ${p.name_en}` : 'Add a product';
-    const v = p || { tone: '#2b2b2b', active: true, sort: 100, category: 'tees', images: [] };
-    for (const [k, val] of Object.entries({
-      id: v.id ?? '', name_en: v.name_en ?? '', name_ar: v.name_ar ?? '', desc_en: v.desc_en ?? '', desc_ar: v.desc_ar ?? '',
-      fit_en: v.fit_en ?? '', fit_ar: v.fit_ar ?? '',
-      price: v.price != null ? v.price / 1000 : '', compare_at: v.compare_at ? v.compare_at / 1000 : '', category: v.category,
-      slug: v.slug ?? '', images: (v.images || []).join('\n'), tone: v.tone, sort: v.sort,
-    })) pform.elements[k].value = val;
+    pform.reset(); $('#p-msg').textContent = '';
+    $('#p-title').textContent = p ? `Edit ${p.name}` : 'Add a product';
+    const v = p || { tone: '#2b2b2b', status: 'draft', sort: 100, category: 'tees', images: [], collection: '' };
+    for (const k of ['id', 'name', 'slug', 'status', 'collection', 'category', 'sku', 'description', 'fit', 'materials', 'care', 'story', 'sort', 'tone']) pform.elements[k].value = v[k] ?? (k === 'id' ? '' : '');
+    pform.elements.status.value = p ? p.raw_status : 'draft';
+    pform.elements.price.value = v.price != null ? v.price / 1000 : '';
+    pform.elements.compare_at.value = v.compare_at ? v.compare_at / 1000 : '';
     pform.elements.featured.checked = !!v.featured;
-    pform.elements.active.checked = v.active !== false;
-    dialog.showModal();
+    lists.product.set((v.images || []).map((image, i) => ({ image, caption: (v.captions || [])[i] || '' })));
+    pdialog.showModal();
   }
   $('#p-new').addEventListener('click', () => openProduct(null));
-  $('#p-cancel').addEventListener('click', () => dialog.close());
-  pform.elements.name_en.addEventListener('input', () => {
-    if (!pform.elements.id.value) pform.elements.slug.value = pform.elements.name_en.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-  });
+  $('#p-cancel').addEventListener('click', () => pdialog.close());
+  pform.elements.name.addEventListener('input', () => { if (!pform.elements.id.value) pform.elements.slug.value = slugify(pform.elements.name.value); });
   pform.addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = pform.elements;
     try {
-      await post('/api/staff/products', { product: {
-        id: f.id.value || undefined, name_en: f.name_en.value, name_ar: f.name_ar.value, desc_en: f.desc_en.value, desc_ar: f.desc_ar.value,
-        fit_en: f.fit_en.value, fit_ar: f.fit_ar.value,
-        price: f.price.value, compare_at: f.compare_at.value || 0, category: f.category.value, slug: f.slug.value,
-        images: f.images.value, tone: f.tone.value, sort: f.sort.value, featured: f.featured.checked, active: f.active.checked,
-      } });
-      dialog.close();
-      await loadProducts();
-    } catch (err) { $('#p-msg').className = 'msg bad'; $('#p-msg').textContent = err.message; }
+      const product = Object.fromEntries(['id', 'name', 'slug', 'status', 'collection', 'category', 'sku', 'description', 'fit', 'materials', 'care', 'story', 'sort', 'tone', 'price', 'compare_at'].map((k) => [k, f[k].value]));
+      product.id = product.id || undefined; product.featured = f.featured.checked; product.images = lists.product.get().filter((it) => it.image).map((it) => (it.caption ? `${it.image} | ${it.caption}` : it.image));
+      await post('/api/staff/products', { product });
+      pdialog.close(); await loadProducts();
+    } catch (err) { say($('#p-msg'), err.message, false); }
   });
 
-  // ---------- Drop list ----------
-  const dropText = {
-    en: `Hi, it's Stoic Soul Club. Early access to Chapter One is open now: ${location.origin}/shop`,
-    ar: `مرحبا، معك Stoic Soul Club. الطلب المبكر للفصل الأول فتح هلأ: ${location.origin}/shop`,
-  };
-  async function loadDrop() {
-    const { subscribers: list } = await api('/api/staff/subscribers');
-    $('#d-count').textContent = `${list.length} ${list.length === 1 ? 'person' : 'people'} on the list`;
-    $('#d-list').innerHTML = list.length
-      ? `<table class="tbl"><tr><th>Contact</th><th>Language</th><th>Signed up (UTC)</th><th></th></tr>${list.map((r) => `<tr>
-          <td>${esc(r.kind === 'phone' ? `+${r.contact}` : r.contact)}</td><td>${r.lang === 'ar' ? 'Arabic' : 'English'}</td><td>${esc(r.created_at)}</td>
-          <td>${r.kind === 'phone'
-            ? `<a href="https://wa.me/${esc(r.contact)}?text=${encodeURIComponent(dropText[r.lang] || dropText.en)}" target="_blank" rel="noopener">WhatsApp</a>`
-            : `<a href="mailto:${esc(r.contact)}?subject=${encodeURIComponent('Stoic Soul Club: early access is open')}&body=${encodeURIComponent(dropText[r.lang] || dropText.en)}">Email</a>`}</td></tr>`).join('')}</table>`
-      : '<p class="fine">Nobody yet.</p>';
+  // ---------- Chapters ----------
+  async function loadCollections() {
+    await fetchCollections();
+    $('#c-list').innerHTML = collections.map((c) => `<div class="card"><div class="card-head">
+      ${c.images[0] ? `<img class="thumb" src="${esc(c.images[0])}" alt="">` : '<span class="thumb"></span>'}
+      <h3>${esc(c.title)}</h3><span class="fine">CH. ${c.chapter}</span><span class="pill ${c.status}">${c.status}</span><span class="pill" style="border-color:${esc(c.accent)};color:${esc(c.accent)}">${esc(c.accent)}</span>
+      <button type="button" class="link" data-cedit="${c.id}">Edit</button></div><p class="fine">${esc(c.meaning)}</p></div>`).join('') || '<p class="fine">No chapters yet.</p>';
   }
+  const cdialog = $('#c-dialog'); const cform = $('#c-form');
+  function openCollection(c) {
+    cform.reset(); $('#c-msg').textContent = '';
+    $('#c-title').textContent = c ? `Edit ${c.title}` : 'Add a chapter';
+    const v = c || { chapter: Math.max(1, ...collections.map((x) => x.chapter)), status: 'draft', accent: '#6888A0', sort: 100, images: [] };
+    for (const k of ['id', 'title', 'slug', 'chapter', 'meaning', 'description', 'status', 'release_date', 'accent', 'sort']) cform.elements[k].value = v[k] ?? '';
+    lists.collection.set(v.images || []);
+    cdialog.showModal();
+  }
+  $('#c-new').addEventListener('click', () => openCollection(null));
+  $('#c-cancel').addEventListener('click', () => cdialog.close());
+  $('#c-list').addEventListener('click', (e) => { const b = e.target.closest('[data-cedit]'); if (b) openCollection(collections.find((c) => c.id === Number(b.dataset.cedit))); });
+  cform.elements.title.addEventListener('input', () => { if (!cform.elements.id.value) cform.elements.slug.value = slugify(cform.elements.title.value); });
+  cform.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = cform.elements;
+    try {
+      const collection = Object.fromEntries(['id', 'title', 'slug', 'chapter', 'meaning', 'description', 'status', 'release_date', 'accent', 'sort'].map((k) => [k, f[k].value]));
+      collection.id = collection.id || undefined; collection.images = lists.collection.get().map((it) => it.image).filter(Boolean);
+      await post('/api/staff/collections', { collection });
+      cdialog.close(); await loadCollections();
+    } catch (err) { say($('#c-msg'), err.message, false); }
+  });
 
-  // ---------- Settings ----------
-  const zoneRow = (z = { en: '', ar: '', fee: 0, id: '' }) => `<tr data-zone="${esc(z.id)}">
-    <td><input value="${esc(z.en)}" data-k="en" required></td><td><input value="${esc(z.ar)}" data-k="ar" dir="rtl"></td>
-    <td><input type="number" step="0.5" min="0" value="${z.fee / 1000}" data-k="fee"></td><td><button type="button" class="link" data-zrm>Remove</button></td></tr>`;
-  async function loadSettings() {
-    const { settings: s } = await api('/api/staff/settings');
+  // ---------- Lookbooks ----------
+  let lookbooks = [];
+  async function loadLookbooks() {
+    [{ lookbooks }] = await Promise.all([api('/api/staff/lookbooks'), fetchCollections()]);
+    $('#l-list').innerHTML = lookbooks.map((l) => `<div class="card"><div class="card-head">
+      ${(l.photos.find((ph) => ph.image) || {}).image ? `<img class="thumb" src="${esc(l.photos.find((ph) => ph.image).image)}" alt="">` : '<span class="thumb"></span>'}
+      <h3>${esc(l.title)}</h3><span class="fine">${l.photos.length} photos${l.photos.some((ph) => !ph.image) ? ` (${l.photos.filter((ph) => !ph.image).length} still to shoot)` : ''}</span>
+      <span class="pill ${l.status}">${l.status}</span>${l.featured ? '<span class="pill">Home page strip</span>' : ''}
+      <button type="button" class="link" data-ledit="${l.id}">Edit</button><a class="link" href="/lookbook/${encodeURIComponent(l.slug)}" target="_blank" rel="noopener">View</a></div></div>`).join('') || '<p class="fine">No lookbooks yet.</p>';
+  }
+  const ldialog = $('#l-dialog'); const lform = $('#l-form');
+  function openLookbook(l) {
+    lform.reset(); $('#l-msg').textContent = '';
+    $('#l-title').textContent = l ? `Edit ${l.title}` : 'Add a lookbook';
+    const v = l || { status: 'draft', sort: 100, photos: [], collection: '' };
+    for (const k of ['id', 'title', 'slug', 'collection', 'intro', 'credit', 'status', 'sort']) lform.elements[k].value = v[k] ?? '';
+    lform.elements.featured.checked = !!v.featured;
+    $('#l-remove').hidden = !l;
+    lists.lookbook.set(v.photos || []);
+    ldialog.showModal();
+  }
+  $('#l-new').addEventListener('click', () => openLookbook(null));
+  $('#l-cancel').addEventListener('click', () => ldialog.close());
+  $('#l-list').addEventListener('click', (e) => { const b = e.target.closest('[data-ledit]'); if (b) openLookbook(lookbooks.find((l) => l.id === Number(b.dataset.ledit))); });
+  lform.elements.title.addEventListener('input', () => { if (!lform.elements.id.value) lform.elements.slug.value = slugify(lform.elements.title.value); });
+  $('#l-remove').addEventListener('click', async () => {
+    if (!confirm('Delete this lookbook and its captions? The photo files stay in storage.')) return;
+    try { await post('/api/staff/lookbooks', { lookbook: { id: lform.elements.id.value, slug: lform.elements.slug.value || 'x', remove: true } }); ldialog.close(); await loadLookbooks(); }
+    catch (err) { say($('#l-msg'), err.message, false); }
+  });
+  lform.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = lform.elements;
+    try {
+      const lookbook = Object.fromEntries(['id', 'title', 'slug', 'collection', 'intro', 'credit', 'status', 'sort'].map((k) => [k, f[k].value]));
+      lookbook.id = lookbook.id || undefined; lookbook.featured = f.featured.checked; lookbook.photos = lists.lookbook.get();
+      await post('/api/staff/lookbooks', { lookbook });
+      ldialog.close(); await loadLookbooks();
+    } catch (err) { say($('#l-msg'), err.message, false); }
+  });
+
+  // ---------- Site ----------
+  const SITE_TEXT = ['whatsapp', 'instagram', 'contact_email', 'hero_headline', 'hero_cta', 'hero_caption', 'announcement', 'manifesto', 'story_text', 'ordering_text', 'shipping_text', 'payment_text', 'swap_text'];
+  const SITE_IMG = ['hero_image', 'hero_video', 'manifesto_image', 'story_image', 'logo_image'];
+  const SITE_SWITCH = ['restock_inquiries', 'analytics', 'site_public'];
+  async function loadSite() {
+    const { settings: s, images } = await api('/api/staff/settings');
     const f = $('#s-form').elements;
-    for (const k of ['store_open', 'cod_enabled', 'card_enabled', 'cliq_enabled', 'drop_signup']) f[k].checked = s[k] === '1';
-    for (const k of ['whatsapp', 'cliq_alias', 'notice_en', 'notice_ar']) f[k].value = s[k] || '';
-    f.free_delivery_over.value = (Number(s.free_delivery_over) || 0) / 1000;
-    $('#zones tbody').innerHTML = s.zones.map(zoneRow).join('');
-    $('#tg-state').textContent = s.telegram_chat ? 'Telegram alerts are on.' : 'Telegram alerts are off.';
-    $('#tg-off').hidden = !s.telegram_chat;
+    for (const k of SITE_TEXT) f[k].value = s[k] || '';
+    for (const k of SITE_SWITCH) f[k].checked = s[k] === '1';
+    for (const k of SITE_IMG) lists[k].set(s[k] ? [s[k]] : []);
+    if (!images) say($('#s-msg'), 'Photo uploads are not set up yet (no R2 bucket bound as IMAGES). Pasting links still works.', false);
   }
-  $('#tg-connect').addEventListener('click', async () => {
-    try { const r = await post('/api/staff/telegram', {}); $('#tg-state').textContent = `Alerts go to ${r.chat}. A test message was sent.`; $('#tg-off').hidden = false; }
-    catch (err) { $('#tg-state').textContent = err.message; }
-  });
-  $('#tg-off').addEventListener('click', async () => {
-    await post('/api/staff/settings', { telegram_chat: '' }); await loadSettings();
-  });
-  $('#z-add').addEventListener('click', () => $('#zones tbody').insertAdjacentHTML('beforeend', zoneRow()));
-  $('#zones').addEventListener('click', (e) => { if (e.target.matches('[data-zrm]')) e.target.closest('tr').remove(); });
   $('#s-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = e.target.elements;
-    const msg = $('#s-msg');
-    try {
-      await post('/api/staff/settings', {
-        store_open: f.store_open.checked, cod_enabled: f.cod_enabled.checked, card_enabled: f.card_enabled.checked, cliq_enabled: f.cliq_enabled.checked, drop_signup: f.drop_signup.checked, cliq_alias: f.cliq_alias.value,
-        whatsapp: f.whatsapp.value, notice_en: f.notice_en.value, notice_ar: f.notice_ar.value, free_delivery_over: f.free_delivery_over.value || 0,
-        zones: $$('#zones tbody tr').map((tr) => ({ id: tr.dataset.zone || $('[data-k="en"]', tr).value, en: $('[data-k="en"]', tr).value, ar: $('[data-k="ar"]', tr).value, fee: $('[data-k="fee"]', tr).value })),
-      });
-      msg.className = 'msg ok'; msg.textContent = 'Saved.';
-    } catch (err) { msg.className = 'msg bad'; msg.textContent = err.message; }
+    const body = {};
+    for (const k of SITE_TEXT) body[k] = f[k].value;
+    for (const k of SITE_SWITCH) body[k] = f[k].checked;
+    for (const k of SITE_IMG) body[k] = (lists[k].get()[0] || {}).image || '';
+    try { await post('/api/staff/settings', body); say($('#s-msg'), 'Saved. The site shows it within a minute.'); }
+    catch (err) { say($('#s-msg'), err.message, false); }
   });
 
   api('/api/staff/login').then((d) => (d.staff ? showApp() : showLogin())).catch(showLogin);

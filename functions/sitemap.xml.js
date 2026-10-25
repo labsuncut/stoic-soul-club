@@ -1,12 +1,12 @@
-// /sitemap.xml: the list of pages Google should know about, including every product.
-import { getDb } from './_lib/db.js';
-import { listProducts } from './_lib/store.js';
+// /sitemap.xml: every public page, product and lookbook, from the database.
+import { loadSite } from './_lib/content.js';
 
 export async function onRequestGet({ request, env }) {
   const origin = new URL(request.url).origin;
-  let products = [];
-  try { products = await listProducts(await getDb(env)); } catch (err) { console.error(err); }
-  const urls = ['/', '/shop', '/about', '/help', ...products.map((p) => `/product/${p.slug}`)];
+  const site = await loadSite(env);
+  const urls = ['/', '/shop', '/lookbook', '/archive', '/story', '/contact',
+    ...site.products.map((p) => `/product/${p.slug}`),
+    ...site.lookbooks.map((l) => `/lookbook/${l.slug}`)];
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${origin}${u}</loc></url>`).join('\n')}

@@ -1,8 +1,4 @@
 User-agent: *
 Disallow: /staff/
 Disallow: /api/
-Disallow: /pay/
-Disallow: /order/
-Disallow: /bag
-
 Sitemap: https://stoicsoulclub.com/sitemap.xml

@@ -9,136 +9,201 @@
 <link rel="stylesheet" href="/assets/css/site.css">
 <link rel="stylesheet" href="/assets/css/staff.css">
 </head>
-<body>
-<header class="top">
-  <div class="wrap">
-    <a class="logo" href="/" target="_blank" rel="noopener"><svg width="22" height="18" viewBox="0 0 44 36" aria-hidden="true"><path fill="#6888A0" d="M22 18C18 6 8 0 3 3s0 14 8 15c-7 3-8 12-2 14s11-6 13-14c2 8 7 16 13 14s5-11-2-14c8-1 13-12 8-15S26 6 22 18z"/></svg><span>Stoic Soul Club</span></a>
-    <span class="fine">Staff</span>
-    <button class="tool" id="logout" type="button" hidden style="margin-inline-start:auto">Log out</button>
-  </div>
+<body class="staff-body">
+<header class="masthead">
+  <div class="folio"><span class="folio-ch">Staff</span></div>
+  <a class="wordmark" href="/" target="_blank" rel="noopener"><svg class="butterfly" viewBox="0 0 44 36" aria-hidden="true"><path fill="currentColor" d="M22 18C18 6 8 0 3 3s0 14 8 15c-7 3-8 12-2 14s11-6 13-14c2 8 7 16 13 14s5-11-2-14c8-1 13-12 8-15S26 6 22 18z"/></svg><span>Stoic Soul Club</span></a>
+  <div class="masthead-end"><button class="link" id="logout" type="button" hidden>Log out</button></div>
 </header>
 
 <main class="wrap staff">
   <form id="login" class="panel login" hidden>
-    <h1>Staff login</h1>
+    <h1 class="h">Staff login</h1>
     <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
-    <button class="btn block" type="submit">Log in</button>
+    <button class="btn" type="submit">Log in</button>
     <p class="msg" id="login-msg" role="status"></p>
   </form>
 
   <div id="app" hidden>
     <nav class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="overview" aria-selected="true">Today</button>
-      <button type="button" role="tab" data-tab="orders">Orders</button>
+      <button type="button" role="tab" data-tab="overview" aria-selected="true">Inquiries</button>
       <button type="button" role="tab" data-tab="products">Products and stock</button>
-      <button type="button" role="tab" data-tab="drop">Drop list</button>
-      <button type="button" role="tab" data-tab="settings">Settings</button>
+      <button type="button" role="tab" data-tab="collections">Chapters</button>
+      <button type="button" role="tab" data-tab="lookbooks">Lookbooks</button>
+      <button type="button" role="tab" data-tab="site">Site</button>
     </nav>
 
     <section data-panel="overview">
+      <p class="fine">Counts from the site itself, with no cookies and nothing personal. A WhatsApp inquiry is someone opening a chat, not a sale.</p>
       <div class="kpis" id="kpis"></div>
-      <h2>Low stock</h2>
+      <div class="cols">
+        <div><h2 class="h">Most asked about (30 days)</h2><div id="top"></div></div>
+        <div><h2 class="h">Where visitors come from (30 days)</h2><div id="sources"></div></div>
+      </div>
+      <h2 class="h">Last 14 days</h2>
+      <div id="daily"></div>
+      <h2 class="h">Running out</h2>
       <div id="low"></div>
     </section>
 
-    <section data-panel="orders" hidden>
-      <div class="bar">
-        <select id="o-status">
-          <option value="open">Open (to pack, packed, on the way)</option>
-          <option value="new">New: to pack</option>
-          <option value="packed">Packed</option>
-          <option value="shipped">On the way</option>
-          <option value="delivered">Delivered</option>
-          <option value="awaiting_payment">Waiting for card payment</option>
-          <option value="cancelled">Cancelled</option>
-          <option value="returned">Returned</option>
-          <option value="">All orders</option>
-        </select>
-        <input id="o-q" type="text" placeholder="Search name, phone or S1001">
-        <a class="btn ghost" href="/api/staff/export">Download CSV</a>
-      </div>
-      <div class="split">
-        <div id="o-list" class="list"></div>
-        <div id="o-detail" class="panel detail"><p class="fine">Pick an order.</p></div>
-      </div>
-    </section>
-
     <section data-panel="products" hidden>
-      <div class="bar"><button class="btn" type="button" id="p-new">Add a product</button></div>
+      <div class="bar"><button class="btn" type="button" id="p-new">Add a product</button><span class="fine">Change stock in the boxes; it saves as you type. "Available" with every size at 0 shows as sold out by itself.</span></div>
       <div id="p-list"></div>
       <dialog id="p-dialog">
         <form id="p-form" method="dialog">
-          <h2 id="p-title">Product</h2>
+          <h2 class="h" id="p-title">Product</h2>
           <input type="hidden" name="id">
           <div class="row2">
-            <div class="field"><label>Name (English)</label><input name="name_en" type="text" required></div>
-            <div class="field"><label>Name (Arabic)</label><input name="name_ar" type="text" dir="rtl"></div>
+            <div class="field"><label>Name</label><input name="name" type="text" required maxlength="80" placeholder="KAIZEN Hoodie"></div>
+            <div class="field"><label>Web name (in the link)</label><input name="slug" type="text" required pattern="[a-z0-9-]+" placeholder="kaizen-hoodie"></div>
           </div>
-          <div class="row2">
-            <div class="field"><label>Description (English)</label><textarea name="desc_en"></textarea></div>
-            <div class="field"><label>Description (Arabic)</label><textarea name="desc_ar" dir="rtl"></textarea></div>
+          <div class="row3">
+            <div class="field"><label>Status</label><select name="status"><option value="draft">Draft (hidden)</option><option value="available">Available</option><option value="sold_out">Sold out</option><option value="archived">Archived</option></select></div>
+            <div class="field"><label>Chapter</label><select name="collection" id="p-collection"></select></div>
+            <div class="field"><label>Type</label><select name="category"><option value="tees">Tees</option><option value="hoodies">Hoodies</option><option value="bottoms">Bottoms</option><option value="accessories">Accessories</option></select></div>
           </div>
-          <div class="row2">
-            <div class="field"><label>Fit note (English), shown above sizes. Example: Cut oversized. Ali is 180 cm and wears L.</label><input name="fit_en" type="text" maxlength="160"></div>
-            <div class="field"><label>Fit note (Arabic)</label><input name="fit_ar" type="text" maxlength="160" dir="rtl"></div>
-          </div>
-          <div class="row2">
+          <div class="row3">
             <div class="field"><label>Price (JOD)</label><input name="price" type="number" step="0.001" min="0" required></div>
-            <div class="field"><label>Old price, for a sale (JOD, optional)</label><input name="compare_at" type="number" step="0.001" min="0"></div>
+            <div class="field"><label>Old price, for a sale (optional)</label><input name="compare_at" type="number" step="0.001" min="0"></div>
+            <div class="field"><label>SKU (optional)</label><input name="sku" type="text" maxlength="40"></div>
+          </div>
+          <div class="field"><label>One-line description, shown under the name</label><input name="description" type="text" maxlength="300" placeholder="Black, very boxy, dropped shoulder. Big back print, small bust on the chest."></div>
+          <div class="field"><label>Photos, in order (the first is the main one, the second shows on hover). A short caption under each is optional.</label>
+            <div class="photos" data-photos="product" data-captions></div>
+            <div class="bar"><label class="btn btn-ghost btn-s">Upload photos<input type="file" accept="image/*" multiple hidden data-upload="product"></label><button type="button" class="link" data-addlink="product">Paste a link instead</button></div>
+            <textarea name="images" rows="2" hidden></textarea>
           </div>
           <div class="row2">
-            <div class="field"><label>Category</label><select name="category"><option value="tees">Tees</option><option value="hoodies">Hoodies</option><option value="bottoms">Bottoms</option><option value="accessories">Accessories</option></select></div>
-            <div class="field"><label>Web name (in the link)</label><input name="slug" type="text" required pattern="[a-z0-9-]+"></div>
+            <div class="field"><label>Fit (measurements laid flat, who wears what)</label><textarea name="fit" rows="2" maxlength="200"></textarea></div>
+            <div class="field"><label>Materials</label><textarea name="materials" rows="2"></textarea></div>
           </div>
-          <div class="field"><label>Photo links, one per line (https://… or /assets/…)</label><textarea name="images"></textarea></div>
           <div class="row2">
-            <div class="field"><label>Placeholder colour</label><input name="tone" type="color"></div>
+            <div class="field"><label>Care (leave empty until confirmed)</label><textarea name="care" rows="2"></textarea></div>
+            <div class="field"><label>The chapter: what this piece means, in your words</label><textarea name="story" rows="2"></textarea></div>
+          </div>
+          <div class="row3">
             <div class="field"><label>Order on the page (lower first)</label><input name="sort" type="number"></div>
+            <div class="field"><label>Placeholder colour</label><input name="tone" type="color"></div>
+            <div class="field"><label class="check"><input type="checkbox" name="featured"> Lead piece on the home page</label></div>
           </div>
-          <label class="check"><input type="checkbox" name="featured"> Show on the home page</label>
-          <label class="check"><input type="checkbox" name="active" checked> On sale (untick to hide)</label>
           <p class="msg" id="p-msg" role="status"></p>
-          <div class="bar"><button class="btn" type="submit" value="save">Save</button><button class="btn ghost" type="button" id="p-cancel">Cancel</button></div>
+          <div class="bar"><button class="btn" type="submit" value="save">Save</button><button class="btn btn-ghost" type="button" id="p-cancel">Cancel</button></div>
         </form>
       </dialog>
     </section>
 
-    <section data-panel="drop" hidden>
-      <div class="bar"><p id="d-count" class="fine"></p><a class="btn ghost" href="/api/staff/subscribers?csv=1">Download list (CSV)</a></div>
-      <p class="fine">People who asked to hear when the drop opens, from the home page. When early access opens, message each one. The WhatsApp link fills in the message for you.</p>
-      <div id="d-list"></div>
+    <section data-panel="collections" hidden>
+      <div class="bar"><button class="btn" type="button" id="c-new">Add a chapter</button><span class="fine">A chapter is a collection: KAIZEN, TRANQUILITY, VENGEANCE, and the next ones. "Current" shows in the shop; "Archived" shows in the archive only.</span></div>
+      <div id="c-list"></div>
+      <dialog id="c-dialog">
+        <form id="c-form" method="dialog">
+          <h2 class="h" id="c-title">Chapter</h2>
+          <input type="hidden" name="id">
+          <div class="row3">
+            <div class="field"><label>Title</label><input name="title" type="text" required maxlength="60"></div>
+            <div class="field"><label>Web name</label><input name="slug" type="text" required pattern="[a-z0-9-]+"></div>
+            <div class="field"><label>Chapter number</label><input name="chapter" type="number" min="1" required></div>
+          </div>
+          <div class="field"><label>Meaning, one line</label><input name="meaning" type="text" maxlength="200"></div>
+          <div class="field"><label>Editorial description</label><textarea name="description" rows="3"></textarea></div>
+          <div class="field"><label>Campaign photos</label>
+            <div class="photos" data-photos="collection"></div>
+            <div class="bar"><label class="btn btn-ghost btn-s">Upload photos<input type="file" accept="image/*" multiple hidden data-upload="collection"></label><button type="button" class="link" data-addlink="collection">Paste a link instead</button></div>
+            <textarea name="images" rows="2" hidden></textarea>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Status</label><select name="status"><option value="draft">Draft (hidden)</option><option value="current">Current</option><option value="archived">Archived</option></select></div>
+            <div class="field"><label>Release (only if certain, e.g. October 2026)</label><input name="release_date" type="text" maxlength="40"></div>
+            <div class="field"><label>Accent colour</label><input name="accent" type="color"></div>
+          </div>
+          <div class="field"><label>Order (lower first)</label><input name="sort" type="number"></div>
+          <p class="msg" id="c-msg" role="status"></p>
+          <div class="bar"><button class="btn" type="submit">Save</button><button class="btn btn-ghost" type="button" id="c-cancel">Cancel</button></div>
+        </form>
+      </dialog>
     </section>
 
-    <section data-panel="settings" hidden>
+    <section data-panel="lookbooks" hidden>
+      <div class="bar"><button class="btn" type="button" id="l-new">Add a lookbook</button><span class="fine">One lookbook per photoshoot. The featured one is the film strip on the home page. Photos tagged "community" show in "Seen in the wild" instead (only with the person's permission).</span></div>
+      <div id="l-list"></div>
+      <dialog id="l-dialog">
+        <form id="l-form" method="dialog">
+          <h2 class="h" id="l-title">Lookbook</h2>
+          <input type="hidden" name="id">
+          <div class="row3">
+            <div class="field"><label>Title</label><input name="title" type="text" required maxlength="80"></div>
+            <div class="field"><label>Web name</label><input name="slug" type="text" required pattern="[a-z0-9-]+"></div>
+            <div class="field"><label>Chapter (optional)</label><select name="collection" id="l-collection"></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Intro, one or two lines</label><input name="intro" type="text" maxlength="600"></div>
+            <div class="field"><label>Photographer credit (optional)</label><input name="credit" type="text" maxlength="120"></div>
+          </div>
+          <div class="field"><label>Photos, in order, each with a caption</label>
+            <div class="photos photos-cap" data-photos="lookbook"></div>
+            <div class="bar"><label class="btn btn-ghost btn-s">Upload photos<input type="file" accept="image/*" multiple hidden data-upload="lookbook"></label><button type="button" class="link" data-addlink="lookbook">Paste a link instead</button><button type="button" class="link" data-addcaption="lookbook">Add a caption without a photo</button></div>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Status</label><select name="status"><option value="draft">Draft (hidden)</option><option value="published">Published</option></select></div>
+            <div class="field"><label class="check"><input type="checkbox" name="featured"> Featured on the home page</label></div>
+            <div class="field"><label>Order (lower first)</label><input name="sort" type="number"></div>
+          </div>
+          <p class="msg" id="l-msg" role="status"></p>
+          <div class="bar"><button class="btn" type="submit">Save</button><button class="btn btn-ghost" type="button" id="l-cancel">Cancel</button><button class="link" type="button" id="l-remove" hidden>Delete this lookbook</button></div>
+        </form>
+      </dialog>
+    </section>
+
+    <section data-panel="site" hidden>
       <form id="s-form" class="panel">
-        <h2>Shop</h2>
-        <label class="check"><input type="checkbox" name="store_open"> Shop open for orders</label>
-        <label class="check"><input type="checkbox" name="cod_enabled"> Cash on delivery</label>
-        <label class="check"><input type="checkbox" name="cliq_enabled"> CliQ transfer (shows at checkout once the alias below is filled in)</label>
-        <label class="check"><input type="checkbox" name="card_enabled"> Card payment (test mode: practice cards only)</label>
-        <label class="check"><input type="checkbox" name="drop_signup"> "Notify me" drop sign-up on the home page</label>
-        <div class="field"><label>CliQ alias customers send money to</label><input name="cliq_alias" type="text" maxlength="40"></div>
+        <h2 class="h">Ordering</h2>
         <div class="row2">
-          <div class="field"><label>WhatsApp number for customers (with 962, digits only)</label><input name="whatsapp" type="tel" placeholder="9627XXXXXXXX"></div>
-          <div class="field"><label>Free delivery over (JOD, 0 = never)</label><input name="free_delivery_over" type="number" step="0.5" min="0"></div>
+          <div class="field"><label>WhatsApp number that takes orders (international, digits only)</label><input name="whatsapp" type="tel" placeholder="9627XXXXXXXX" inputmode="numeric"><span class="fine">Empty switches ordering off: the button says "Ordering opens soon".</span></div>
+          <div class="field"><label>Instagram handle (without @)</label><input name="instagram" type="text" maxlength="60"></div>
+        </div>
+        <div class="field"><label>Email for the footer (optional)</label><input name="contact_email" type="email" maxlength="120"></div>
+        <label class="check"><input type="checkbox" name="restock_inquiries"> Let people ask about a restock on sold-out pieces (only if someone will answer)</label>
+        <label class="check"><input type="checkbox" name="analytics"> Count page views and WhatsApp clicks (no cookies, nothing personal)</label>
+
+        <h2 class="h">Home page</h2>
+        <div class="row2">
+          <div class="field"><label>Headline</label><input name="hero_headline" type="text" maxlength="80"></div>
+          <div class="field"><label>Button text</label><input name="hero_cta" type="text" maxlength="40"></div>
         </div>
         <div class="row2">
-          <div class="field"><label>Notice bar (English, optional)</label><input name="notice_en" type="text" maxlength="200"></div>
-          <div class="field"><label>Notice bar (Arabic, optional)</label><input name="notice_ar" type="text" maxlength="200" dir="rtl"></div>
+          <div class="field"><label>Cover photo</label><div class="photos" data-photos="hero_image" data-single></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="image/*" hidden data-upload="hero_image"></label><button type="button" class="link" data-addlink="hero_image">Paste a link</button></div><input name="hero_image" type="hidden"></div>
+          <div class="field"><label>Cover video (optional, MP4 under 12 MB, muted; phones show the photo)</label><div class="photos" data-photos="hero_video" data-single data-video></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="video/mp4" hidden data-upload="hero_video"></label><button type="button" class="link" data-addlink="hero_video">Paste a link</button></div><input name="hero_video" type="hidden"></div>
         </div>
-        <h2>New-order alerts</h2>
-        <p class="fine" id="tg-state">Telegram alerts are off.</p>
-        <button class="btn ghost" type="button" id="tg-connect">Connect Telegram</button>
-        <button class="link" type="button" id="tg-off" hidden>Turn alerts off</button>
-        <h2>Delivery areas</h2>
-        <table class="tbl" id="zones"><thead><tr><th>Area (English)</th><th>Area (Arabic)</th><th>Fee (JOD)</th><th></th></tr></thead><tbody></tbody></table>
-        <button class="link" type="button" id="z-add">Add an area</button>
+        <div class="field"><label>Caption on the cover photo</label><input name="hero_caption" type="text" maxlength="80"></div>
+        <div class="field"><label>Announcement bar (empty = none). Only for things that are decided.</label><input name="announcement" type="text" maxlength="160"></div>
+        <div class="row2">
+          <div class="field"><label>The philosophy (a few short lines; one line per paragraph)</label><textarea name="manifesto" rows="5"></textarea></div>
+          <div class="field"><label>Photo beside it</label><div class="photos" data-photos="manifesto_image" data-single></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="image/*" hidden data-upload="manifesto_image"></label><button type="button" class="link" data-addlink="manifesto_image">Paste a link</button></div><input name="manifesto_image" type="hidden"></div>
+        </div>
+
+        <h2 class="h">Story page</h2>
+        <div class="row2">
+          <div class="field"><label>Our story, in the founders' words (one line per paragraph; empty shows the short confirmed version)</label><textarea name="story_text" rows="6"></textarea></div>
+          <div class="field"><label>Photo</label><div class="photos" data-photos="story_image" data-single></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="image/*" hidden data-upload="story_image"></label><button type="button" class="link" data-addlink="story_image">Paste a link</button></div><input name="story_image" type="hidden"></div>
+        </div>
+
+        <h2 class="h">Policies and wording</h2>
+        <div class="field"><label>How ordering works (shown on product pages, the footer and the contact page)</label><textarea name="ordering_text" rows="2"></textarea></div>
+        <div class="field"><label>Delivery and shipping</label><textarea name="shipping_text" rows="2"></textarea></div>
+        <div class="field"><label>Payment</label><textarea name="payment_text" rows="2"></textarea></div>
+        <div class="field"><label>Size swaps and defects</label><textarea name="swap_text" rows="2"></textarea></div>
+
+        <h2 class="h">Brand</h2>
+        <div class="row2">
+          <div class="field"><label>Logo (PNG with transparent background; the butterfly shows until one is set)</label><div class="photos" data-photos="logo_image" data-single></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="image/*" hidden data-upload="logo_image" data-logo></label><button type="button" class="link" data-addlink="logo_image">Paste a link</button></div><input name="logo_image" type="hidden"></div>
+          <div class="field"><label class="check"><input type="checkbox" name="site_public"> Site is public (lets Google list it). Leave off until the founders approve the launch.</label></div>
+        </div>
         <p class="msg" id="s-msg" role="status"></p>
-        <button class="btn" type="submit">Save settings</button>
+        <button class="btn" type="submit">Save site</button>
       </form>
     </section>
   </div>
 </main>
-<script src="/assets/js/staff.js"></script>
+<script src="/assets/js/staff.js" defer></script>
 </body>
 </html>
