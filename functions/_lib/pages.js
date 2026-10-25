@@ -148,7 +148,9 @@ export function product(site, origin, p) {
   const col = bySlug(site.collections, p.collection);
   const chapter = col ? col.chapter : currentChapter(site);
   const shots = [['front', `${p.name}, front`], ['back', `${p.name}, back print`], ['detail', `${p.name}, close-up detail`], ['on body', `${p.name}, on body`]];
-  const gallery = shots.map(([kind, shot], i) => frame({ image: p.images[i], alt: shot, n: i + 1, ratio: '4/5', shot, eager: i === 0, cls: `g-${kind.replace(' ', '-')}` })).join('');
+  const real = p.images.map((u, i) => frame({ image: u, alt: p.captions[i] || `${p.name}, photo ${i + 1}`, caption: p.captions[i], n: i + 1, ratio: '4/5', eager: i === 0 }));
+  const missing = shots.slice(p.images.length).map(([, shot], j) => frame({ image: '', alt: shot, n: p.images.length + j + 1, ratio: '4/5', shot }));
+  const gallery = [...real, ...missing].join('');
   const colors = p.colors;
   const sizes = p.sizes;
   const stockBy = Object.fromEntries(p.variants.map((v) => [`${v.color}|${v.size}`, v.in_stock]));

@@ -68,8 +68,8 @@
             <div class="field"><label>SKU (optional)</label><input name="sku" type="text" maxlength="40"></div>
           </div>
           <div class="field"><label>One-line description, shown under the name</label><input name="description" type="text" maxlength="300" placeholder="Black, very boxy, dropped shoulder. Big back print, small bust on the chest."></div>
-          <div class="field"><label>Photos, in order: front, back, detail, on body</label>
-            <div class="photos" data-photos="product"></div>
+          <div class="field"><label>Photos, in order (the first is the main one, the second shows on hover). A short caption under each is optional.</label>
+            <div class="photos" data-photos="product" data-captions></div>
             <div class="bar"><label class="btn btn-ghost btn-s">Upload photos<input type="file" accept="image/*" multiple hidden data-upload="product"></label><button type="button" class="link" data-addlink="product">Paste a link instead</button></div>
             <textarea name="images" rows="2" hidden></textarea>
           </div>

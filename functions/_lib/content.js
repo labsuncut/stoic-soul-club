@@ -16,7 +16,15 @@ function parseList(raw) {
   }
 }
 
+// A photo entry is "url" or "url | caption".
+export function splitImage(s) {
+  const str = String(s || '');
+  const i = str.indexOf(' | ');
+  return i < 0 ? { url: str.trim(), caption: '' } : { url: str.slice(0, i).trim(), caption: str.slice(i + 3).trim() };
+}
+
 export function shapeProduct(p, variants, { staff = false } = {}) {
+  const photos = parseList(p.images).map(splitImage);
   const vs = variants.filter((v) => v.product_id === p.id).map((v) => ({
     id: v.id, size: v.size, color: v.color, sku: v.sku, in_stock: v.stock > 0, ...(staff ? { stock: v.stock } : {}),
   }));
@@ -28,7 +36,7 @@ export function shapeProduct(p, variants, { staff = false } = {}) {
     fit: p.fit_en || '', materials: p.materials || '', care: p.care || '', story: p.story || '',
     category: p.category, collection: p.collection || '',
     price: p.price, currency: 'JOD', compare_at: p.compare_at || 0,
-    images: parseList(p.images), tone: p.tone, featured: !!p.featured,
+    images: photos.map((ph) => ph.url), captions: photos.map((ph) => ph.caption), tone: p.tone, featured: !!p.featured,
     status, sort: p.sort,
     colors: [...new Set(vs.map((v) => v.color).filter(Boolean))],
     sizes: [...new Set(vs.map((v) => v.size).filter(Boolean))],
@@ -38,7 +46,7 @@ export function shapeProduct(p, variants, { staff = false } = {}) {
 }
 
 function shapeCollection(c) {
-  return { ...c, images: parseList(c.images) };
+  return { ...c, images: parseList(c.images).map((s) => splitImage(s).url) };
 }
 
 function shapeLookbook(l, photos) {
@@ -54,12 +62,12 @@ function seedSite() {
     const row = {
       id: i + 1, slug: p.slug, sku: p.sku, name_en: p.name, desc_en: p.description, fit_en: p.fit, materials: p.materials,
       care: p.care, story: p.story, category: p.category, collection: p.collection, price: p.price, compare_at: 0,
-      images: '[]', tone: p.tone, featured: p.featured ? 1 : 0, status: p.status, sort: p.sort,
+      images: JSON.stringify(p.images || []), tone: p.tone, featured: p.featured ? 1 : 0, status: p.status, sort: p.sort,
     };
     const variants = Object.entries(p.stock).map(([size, stock], j) => ({ id: vid++, product_id: row.id, size, color: p.color, sku: `${p.sku}-${size}`, stock, sort: j }));
     return shapeProduct(row, variants);
   });
-  const collections = SEED_COLLECTIONS.map((c, i) => shapeCollection({ id: i + 1, images: '[]', release_date: '', sort: (i + 1) * 10, ...c }));
+  const collections = SEED_COLLECTIONS.map((c, i) => shapeCollection({ id: i + 1, release_date: '', sort: (i + 1) * 10, ...c, images: JSON.stringify(c.images || []) }));
   const lookbooks = SEED_LOOKBOOKS.map((l, i) => ({
     id: i + 1, slug: l.slug, title: l.title, collection: l.collection, credit: l.credit, intro: l.intro, status: l.status,
     featured: !!l.featured, sort: l.sort,
@@ -113,8 +121,10 @@ export const money = (fils, currency = 'JOD') => `${(fils / 1000).toFixed(fils %
 export const bySlug = (list, slug) => list.find((x) => x.slug === slug) || null;
 export const chapterLabel = (n) => `CH. ${String(n).padStart(2, '0')}`;
 
-// Photo addresses from the dashboard: uploaded files (/img/...), bundled assets or https links.
+// Photo addresses from the dashboard: uploaded files (/img/...), bundled assets or https links,
+// each optionally followed by " | caption". Anything else is dropped.
 export function imageList(raw) {
   return (Array.isArray(raw) ? raw : String(raw || '').split('\n'))
-    .map((u) => String(u).trim()).filter((u) => /^(https:\/\/|\/img\/|\/assets\/)[^\s"'<>]+$/.test(u)).slice(0, 12);
+    .map(splitImage).filter(({ url }) => /^(https:\/\/|\/img\/|\/assets\/)[^\s"'<>|]+$/.test(url))
+    .map(({ url, caption }) => (caption ? `${url} | ${caption.slice(0, 160)}` : url)).slice(0, 12);
 }

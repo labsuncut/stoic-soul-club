@@ -438,6 +438,7 @@ select { height: 48px; padding: 0 12px; border: 1.5px solid var(--ink); border-r
 .js .frame[data-reveal] .frame-img img, .js .frame[data-reveal] .frame-img .ph { transform: scale(1.04); }
 .js .frame[data-reveal].in .frame-img { clip-path: inset(0 0 0 0); transition: clip-path var(--t-reveal) var(--ease); }
 .js .frame[data-reveal].in .frame-img img, .js .frame[data-reveal].in .frame-img .ph { transform: none; transition: transform var(--t-reveal) var(--ease); }
+.js .frame[data-reveal].in .frame-img img.alt { transition: transform var(--t-reveal) var(--ease), opacity 250ms var(--ease); }
 .js .cover-pic { opacity: 0; }
 .js .cover.in .cover-pic { opacity: 1; transition: opacity 700ms var(--ease); }
 
@@ -446,6 +447,9 @@ select { height: 48px; padding: 0 12px; border: 1.5px solid var(--ink); border-r
   .js .statement[data-animate] .line-in, .js .frame[data-reveal] .frame-img, .js .frame[data-reveal] .frame-img img, .js .frame[data-reveal] .frame-img .ph,
   .js .cover-sub, .js .cover-cta, .js .cover-cap, .js .cover-scroll, .js .cover-pic { transform: none; clip-path: none; opacity: 1; transition: opacity 200ms linear !important; }
   .frame-img img.alt, .btn, .chip span, .nav a { transition-duration: 0ms !important; }
+  /* The second product photo stays hidden until hover, with or without motion. */
+  .js .frame[data-reveal] .frame-img img.alt { opacity: 0; }
+  .js .product:hover .frame[data-reveal] .frame-img img.alt { opacity: 1; }
 }
 @media (prefers-reduced-motion: no-preference) {
   @view-transition { navigation: auto; }

@@ -155,15 +155,19 @@ export async function getDb(env) {
 // Materials, care, fit and story for the trial products that were loaded before these fields existed.
 async function fillSeedDetails(db) {
   const put = db.prepare(`UPDATE products SET materials = ?, care = ?, story = ?, fit_en = ? WHERE slug = ? AND materials = ''`);
-  await db.batch(SEED_PRODUCTS.map((p) => put.bind(p.materials, p.care, p.story, p.fit, p.slug)));
+  const pics = db.prepare(`UPDATE products SET images = ? WHERE slug = ? AND images = '[]'`);
+  await db.batch([
+    ...SEED_PRODUCTS.map((p) => put.bind(p.materials, p.care, p.story, p.fit, p.slug)),
+    ...SEED_PRODUCTS.map((p) => pics.bind(JSON.stringify(p.images || []), p.slug)),
+  ]);
 }
 
 async function seedProducts(db) {
   for (const p of SEED_PRODUCTS) {
     const r = await db.prepare(
       `INSERT INTO products (slug, name_en, desc_en, fit_en, category, collection, price, images, tone, featured, status, sort, materials, care, story, sku)
-       VALUES (?, ?, ?, ?, ?, ?, ?, '[]', ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).bind(p.slug, p.name, p.description, p.fit, p.category, p.collection, p.price, p.tone, p.featured ? 1 : 0, p.status, p.sort, p.materials, p.care, p.story, p.sku).run();
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(p.slug, p.name, p.description, p.fit, p.category, p.collection, p.price, JSON.stringify(p.images || []), p.tone, p.featured ? 1 : 0, p.status, p.sort, p.materials, p.care, p.story, p.sku).run();
     const id = r.meta.last_row_id;
     const ins = db.prepare('INSERT INTO variants (product_id, size, color, sku, stock, sort) VALUES (?, ?, ?, ?, ?, ?)');
     await db.batch(Object.entries(p.stock).map(([size, stock], i) =>
@@ -174,9 +178,9 @@ async function seedProducts(db) {
 async function seedCollections(db) {
   const ins = db.prepare(
     `INSERT INTO collections (slug, title, chapter, meaning, description, accent, images, release_date, status, sort)
-     VALUES (?, ?, ?, ?, ?, ?, '[]', '', ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, '', ?, ?)`,
   );
-  await db.batch(SEED_COLLECTIONS.map((c, i) => ins.bind(c.slug, c.title, c.chapter, c.meaning, c.description, c.accent, c.status, (i + 1) * 10)));
+  await db.batch(SEED_COLLECTIONS.map((c, i) => ins.bind(c.slug, c.title, c.chapter, c.meaning, c.description, c.accent, JSON.stringify(c.images || []), c.status, (i + 1) * 10)));
 }
 
 async function seedLookbooks(db) {

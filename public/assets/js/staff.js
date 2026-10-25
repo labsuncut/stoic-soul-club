@@ -64,7 +64,8 @@
   const lists = {};
   function photoList(name) {
     const box = $(`[data-photos="${name}"]`);
-    const withCaptions = box.classList.contains('photos-cap');
+    const withTags = box.classList.contains('photos-cap');
+    const withCaptions = withTags || box.hasAttribute('data-captions');
     const single = box.hasAttribute('data-single');
     const video = box.hasAttribute('data-video');
     const items = [];
@@ -73,10 +74,10 @@
         ${it.image ? (video ? `<video src="${esc(it.image)}" muted playsinline></video>` : `<img src="${esc(it.image)}" alt="">`) : `<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='108' height='135'%3E%3Crect width='100%25' height='100%25' fill='%23e6e1d6'/%3E%3C/svg%3E" alt="">`}
         <button type="button" class="x" data-x aria-label="Remove">×</button>
         ${!single && items.length > 1 ? `<button type="button" class="mv" data-mv="-1" aria-label="Move left">‹</button><button type="button" class="mv r" data-mv="1" aria-label="Move right">›</button>` : ''}
-        ${withCaptions ? `<input placeholder="Caption, e.g. KAIZEN hoodie, chest detail" value="${esc(it.caption)}" data-cap><select data-tag><option value="campaign"${it.tag !== 'community' ? ' selected' : ''}>Campaign</option><option value="community"${it.tag === 'community' ? ' selected' : ''}>Community</option></select>` : ''}
+        ${withCaptions ? `<input placeholder="Caption, e.g. KAIZEN hoodie, chest detail" value="${esc(it.caption)}" data-cap>` : ''}${withTags ? `<select data-tag><option value="campaign"${it.tag !== 'community' ? ' selected' : ''}>Campaign</option><option value="community"${it.tag === 'community' ? ' selected' : ''}>Community</option></select>` : ''}
       </div>`).join('');
       const hidden = box.parentElement.querySelector('[name="images"], input[type="hidden"]');
-      if (hidden && !withCaptions) hidden.value = single ? (items[0]?.image || '') : items.map((it) => it.image).join('\n');
+      if (hidden && !withTags) hidden.value = single ? (items[0]?.image || '') : items.map((it) => (it.caption ? `${it.image} | ${it.caption}` : it.image)).join('\n');
     };
     const list = {
       set(arr) { items.length = 0; for (const it of arr) items.push(typeof it === 'string' ? { image: it, caption: '', tag: 'campaign' } : { image: it.image || '', caption: it.caption || '', alt: it.alt || '', tag: it.tag || 'campaign' }); render(); },
@@ -202,7 +203,7 @@
     pform.elements.price.value = v.price != null ? v.price / 1000 : '';
     pform.elements.compare_at.value = v.compare_at ? v.compare_at / 1000 : '';
     pform.elements.featured.checked = !!v.featured;
-    lists.product.set(v.images || []);
+    lists.product.set((v.images || []).map((image, i) => ({ image, caption: (v.captions || [])[i] || '' })));
     pdialog.showModal();
   }
   $('#p-new').addEventListener('click', () => openProduct(null));
@@ -213,7 +214,7 @@
     const f = pform.elements;
     try {
       const product = Object.fromEntries(['id', 'name', 'slug', 'status', 'collection', 'category', 'sku', 'description', 'fit', 'materials', 'care', 'story', 'sort', 'tone', 'price', 'compare_at'].map((k) => [k, f[k].value]));
-      product.id = product.id || undefined; product.featured = f.featured.checked; product.images = lists.product.get().map((it) => it.image).filter(Boolean);
+      product.id = product.id || undefined; product.featured = f.featured.checked; product.images = lists.product.get().filter((it) => it.image).map((it) => (it.caption ? `${it.image} | ${it.caption}` : it.image));
       await post('/api/staff/products', { product });
       pdialog.close(); await loadProducts();
     } catch (err) { say($('#p-msg'), err.message, false); }
