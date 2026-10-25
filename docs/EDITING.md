@@ -14,7 +14,7 @@ Changes show on the site within about 20 seconds. If a page looks old, pull to r
 
 ## Photos
 - **Upload** takes a JPG, PNG or WebP from your phone or computer. The browser shrinks it to 1600 px before sending, so a straight-from-camera photo is fine.
-- The first photo is the main one; the second shows on hover on the shop grid. Portrait photos work best on product frames; the cover is landscape on desktop.
+- The first photo is the main one; the second shows on hover on the shop grid. The caption box under each photo is optional and shows under the photo on the product page (for example "Back print, on body"). Portrait photos work best on product frames; the cover is landscape on desktop.
 - **Paste a link** works for a photo that already lives on the internet (an https address).
 - Logo: a PNG with a transparent background. Until one is set the butterfly mark is used.
 
