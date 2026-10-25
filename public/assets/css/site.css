@@ -316,6 +316,14 @@ figure { margin: 0; }
 .chapter-link:hover .chapter-title { color: var(--accent, var(--butterfly)); }
 .chapter-meaning { grid-column: 2; color: var(--muted); font-size: 16px; max-width: 48ch; }
 .chapter-state { grid-column: 2; color: var(--gray); }
+.chapter-band { padding-block: clamp(40px, 6vw, 88px); }
+.chapter-band + .chapter-band { border-top: 1px solid var(--line); }
+.state-line { margin: 10px 0 0; }
+.state { display: inline-block; font-family: var(--sans); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; padding: 6px 10px; border: 1px solid currentColor; line-height: 1; }
+.state-now { color: var(--ink); background: var(--bone); border-color: var(--ink); }
+.band-ink .state-now, .pdp .state-now { color: var(--bone); background: var(--ink); }
+.state-past { color: var(--gray); }
+.pdp .state-line { margin: 0 0 12px; }
 .chapter-pic { max-width: 420px; }
 @media (min-width: 900px) {
   .chapter { grid-template-columns: 1fr 320px; align-items: center; }
@@ -432,7 +440,7 @@ select { height: 48px; padding: 0 12px; border: 1.5px solid var(--ink); border-r
 .js .statement[data-animate].in .line:nth-child(2) .line-in { transition-delay: 70ms; }
 .js .statement[data-animate].in .line:nth-child(3) .line-in { transition-delay: 140ms; }
 .js .statement[data-animate].in .line:nth-child(4) .line-in { transition-delay: 210ms; }
-.js .cover-sub, .js .cover-cta, .js .cover-cap, .js .cover-scroll { opacity: 0; transform: translateY(8px); }
+.js .cover .cover-sub, .js .cover .cover-cta, .js .cover .cover-cap, .js .cover .cover-scroll { opacity: 0; transform: translateY(8px); }
 .js .cover.in .cover-sub, .js .cover.in .cover-cta, .js .cover.in .cover-cap, .js .cover.in .cover-scroll { opacity: 1; transform: none; transition: opacity 500ms var(--ease) 420ms, transform 500ms var(--ease) 420ms; }
 .js .frame[data-reveal] .frame-img { clip-path: inset(100% 0 0 0); }
 .js .frame[data-reveal] .frame-img img, .js .frame[data-reveal] .frame-img .ph { transform: scale(1.04); }

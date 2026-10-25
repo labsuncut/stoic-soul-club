@@ -138,7 +138,7 @@ export function frame({ image, alt, caption = '', n, ratio = '4/5', cls = '', ea
 }
 
 export function availability(p) {
-  if (p.status === 'archived') return '<span class="tag tag-archived">Archived</span>';
+  if (p.status === 'archived') return '<span class="tag tag-archived">Past release · not for sale</span>';
   if (p.status === 'sold_out') return '<span class="tag tag-soldout">Sold out</span>';
   const left = p.variants.filter((v) => v.in_stock).map((v) => v.size);
   return `<span class="tag tag-available">Available · ${esc(left.join(' '))}</span>`;
@@ -147,11 +147,11 @@ export function availability(p) {
 export function productCard(p, n, { cls = '' } = {}) {
   const front = p.images[0] || '';
   const back = p.images[1] || '';
-  const label = p.status === 'archived' ? 'Archived' : p.status === 'sold_out' ? 'Sold out' : '';
+  const label = p.status === 'archived' ? 'Not for sale' : p.status === 'sold_out' ? 'Sold out' : '';
   return `<a class="product ${cls} ${p.status}" href="/product/${esc(p.slug)}" data-collection="${esc(p.collection)}">
     <figure class="frame" style="--ratio:4/5"><span class="frame-n" aria-hidden="true">${pad(n)}</span>
       <div class="frame-img">${front
-        ? `<img src="${esc(front)}" alt="${esc(p.name)}, front" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}" alt="" loading="lazy" decoding="async">` : ''}`
+        ? `<img src="${esc(front)}" alt="${esc(p.captions && p.captions[0] ? `${p.name}: ${p.captions[0]}` : p.name)}" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}" alt="" loading="lazy" decoding="async">` : ''}`
         : `<div class="ph" role="img" aria-label="Photo to come: ${esc(p.name)}"><span class="ph-label">Photo to come</span><span class="ph-shot">${esc(p.name)}, front</span></div>`}
       ${label ? `<span class="ribbon">${label}</span>` : ''}</div>
     </figure>

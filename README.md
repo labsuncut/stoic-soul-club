@@ -21,9 +21,11 @@ Every page is rendered on the server from the database, so Google, WhatsApp link
 ## How ordering works
 1. The customer picks a size (and colour) that is in stock.
 2. The button opens WhatsApp with the inquiry already written: product, variant, size, displayed price, destination country, link.
-3. The customer sends it. Sanad confirms availability, delivery and the total. Nothing is reserved or paid on the site.
+3. The customer sends it. Stoic confirms availability, delivery and the total in the chat. Nothing is reserved or paid on the site.
 
 The WhatsApp number lives only in the dashboard (Site tab). When it is empty the button reads "Ordering opens soon". Clicks are counted as inquiries, never as sales.
+
+`/api/health` says, without secrets, whether the database is connected, whether the pages come from it or from the starter content, whether ordering is on, and whether photo uploads are connected. The dashboard's Inquiries tab shows the same things as warnings.
 
 ## Layout
 ```

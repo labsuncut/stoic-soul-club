@@ -1,13 +1,13 @@
 // GET /api/staff/overview: what people looked at and how many opened WhatsApp. Inquiries, never sales.
 import { handle, json } from '../../_lib/http.js';
-import { getDb } from '../../_lib/db.js';
+import { getDb, getSettings } from '../../_lib/db.js';
 
 export const onRequestGet = handle(async ({ env }) => {
   const db = await getDb(env);
   const since = (days) => `date('now', '+3 hours', '-${days} days')`;
   const counts = (days) => db.prepare(`SELECT kind, COUNT(*) AS n FROM events WHERE day >= ${since(days)} GROUP BY kind`).all();
-  const [today, week, month, top, sources, daily, low, stock] = await Promise.all([
-    counts(0), counts(7), counts(30),
+  const [settings, today, week, month, top, sources, daily, low, stock] = await Promise.all([
+    getSettings(db), counts(0), counts(7), counts(30),
     db.prepare(`SELECT product, SUM(kind = 'wa_click') AS inquiries, SUM(kind = 'product_view') AS views FROM events WHERE day >= ${since(30)} AND product != '' AND product != 'general' GROUP BY product ORDER BY inquiries DESC, views DESC LIMIT 10`).all(),
     db.prepare(`SELECT CASE WHEN source = '' THEN 'direct' ELSE source END AS source, COUNT(*) AS n FROM events WHERE day >= ${since(30)} AND kind IN ('page_view','product_view') GROUP BY 1 ORDER BY n DESC LIMIT 8`).all(),
     db.prepare(`SELECT day, SUM(kind IN ('page_view','product_view')) AS views, SUM(kind = 'wa_click') AS inquiries FROM events WHERE day >= ${since(14)} GROUP BY day ORDER BY day`).all(),
@@ -15,7 +15,12 @@ export const onRequestGet = handle(async ({ env }) => {
     db.prepare(`SELECT COALESCE(SUM(v.stock), 0) AS pieces FROM variants v JOIN products p ON p.id = v.product_id WHERE p.status = 'available'`).first(),
   ]);
   const toMap = (r) => Object.fromEntries(r.results.map((x) => [x.kind, x.n]));
+  const alerts = [];
+  if (!String(settings.whatsapp || '').replace(/\D/g, '')) alerts.push({ level: 'bad', text: 'Ordering is OFF: no WhatsApp number is saved. Site tab, WhatsApp number, then Save.' });
+  if (!env.IMAGES) alerts.push({ level: 'warn', text: 'Photo uploads are not connected: the R2 bucket is not bound as IMAGES (LAUNCH.md step 5). Photos can still be set by address.' });
+  if (settings.site_public !== '1') alerts.push({ level: 'info', text: 'The site is hidden from search engines until Site tab, Public, is switched on.' });
   return json({
+    alerts,
     today: toMap(today), week: toMap(week), month: toMap(month),
     top: top.results, sources: sources.results, daily: daily.results, low_stock: low.results, pieces_in_stock: stock.pieces,
   });

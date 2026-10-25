@@ -2,7 +2,7 @@
 // so a fresh Cloudflare D1 database needs no setup beyond connecting it as DB.
 // Money is stored in fils (1 JOD = 1000 fils) so sums never get rounding errors.
 import { HttpError, sha256, clientIp } from './http.js';
-import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, seedVariants } from './seed.js';
+import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, RETIRED_WORDING, RETIRED_MEANINGS, seedVariants } from './seed.js';
 
 export const PRODUCT_STATUS = ['draft', 'available', 'sold_out', 'archived'];
 export const COLLECTION_STATUS = ['draft', 'current', 'archived'];
@@ -150,6 +150,12 @@ export async function getDb(env) {
     if (l === 0) await seedLookbooks(env.DB);
     const seed = env.DB.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
     await env.DB.batch(Object.entries(DEFAULT_SETTINGS).map(([k, v]) => seed.bind(k, v)));
+    const reword = env.DB.prepare('UPDATE settings SET value = ? WHERE key = ? AND value = ?');
+    const remean = env.DB.prepare('UPDATE collections SET meaning = ? WHERE slug = ? AND meaning = ?');
+    await env.DB.batch([
+      ...Object.entries(RETIRED_WORDING).flatMap(([k, olds]) => olds.map((old) => reword.bind(DEFAULT_SETTINGS[k], k, old))),
+      ...Object.entries(RETIRED_MEANINGS).flatMap(([slug, olds]) => olds.map((old) => remean.bind(SEED_COLLECTIONS.find((c) => c.slug === slug).meaning, slug, old))),
+    ]);
     ready = true;
   }
   return env.DB;

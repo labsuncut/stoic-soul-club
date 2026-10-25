@@ -65,3 +65,8 @@ dialog form { display: grid; gap: 14px; }
 .daily b { display: block; background: var(--ink); min-height: 2px; }
 .daily i { display: block; background: var(--butterfly); min-height: 2px; }
 .uploading { opacity: .5; pointer-events: none; }
+
+.alert { padding: 12px 14px; border: 1px solid; margin: 0 0 14px; font-weight: 500; }
+.alert.bad { border-color: #b8382e; color: #8a2a22; background: #fbeeec; }
+.alert.warn { border-color: #c8963e; color: #7a5a22; background: #fbf4e6; }
+.alert.info { border-color: #cfc9bc; color: #555; background: #f4f1ea; }

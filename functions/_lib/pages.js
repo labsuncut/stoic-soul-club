@@ -149,7 +149,8 @@ export function product(site, origin, p) {
   const chapter = col ? col.chapter : currentChapter(site);
   const shots = [['front', `${p.name}, front`], ['back', `${p.name}, back print`], ['detail', `${p.name}, close-up detail`], ['on body', `${p.name}, on body`]];
   const real = p.images.map((u, i) => frame({ image: u, alt: p.captions[i] || `${p.name}, photo ${i + 1}`, caption: p.captions[i], n: i + 1, ratio: '4/5', eager: i === 0 }));
-  const missing = shots.slice(p.images.length).map(([, shot], j) => frame({ image: '', alt: shot, n: p.images.length + j + 1, ratio: '4/5', shot }));
+  // A product with photos shows only real photos; only a product with none gets one marked placeholder.
+  const missing = p.images.length ? [] : shots.slice(0, 1).map(([, shot], j) => frame({ image: '', alt: shot, n: j + 1, ratio: '4/5', shot }));
   const gallery = [...real, ...missing].join('');
   const colors = p.colors;
   const sizes = p.sizes;
@@ -176,7 +177,7 @@ export function product(site, origin, p) {
       <h1 class="pdp-name">${esc(p.name)}</h1>
       <p class="pdp-price"><span data-price>${money(p.price, p.currency)}</span>${p.compare_at > p.price ? ` <s>${money(p.compare_at, p.currency)}</s>` : ''}</p>
       <p class="pdp-desc">${esc(p.description)}</p>
-      ${p.status === 'archived' ? `<p class="notice-line">This piece is archived. It is not for sale.</p>` : ''}
+      ${p.status === 'archived' ? `<p class="state-line"><span class="state state-past">Past release · not for sale</span></p><p class="notice-line">This piece is in the archive as the record. Nothing on this page can be ordered.</p>` : ''}
       ${p.status === 'sold_out' ? `<p class="notice-line">Sold out.${waOn && s.restock_inquiries === '1' ? ` <a class="link" data-restock href="#">Ask about a restock</a>` : ''}</p>` : ''}
       ${p.orderable ? `
       <form class="order" data-order novalidate>
@@ -268,13 +269,14 @@ ${chapters.map((c) => {
       <div class="split-text">
         <p class="chapter-n">${chapterLabel(c.chapter)}${c.release_date ? ` · ${esc(c.release_date)}` : ''}</p>
         <h2 class="statement statement-s"><span class="line"><span class="line-in">${esc(c.title)}</span></span></h2>
+        <p class="state-line"><span class="state ${live.length ? 'state-now' : 'state-past'}">${live.length ? 'Available now' : c.status === 'archived' ? 'Past release · not for sale' : 'Not in the shop'}</span></p>
         <p class="lead">${esc(c.meaning)}</p>
         <div class="manifesto">${paragraphs(c.description)}</div>
         ${live.length ? `<p><a class="link" href="/shop?collection=${esc(c.slug)}">${live.length} piece${live.length === 1 ? '' : 's'} in the shop</a></p>` : ''}
       </div>
       <div class="split-pic">${frame({ image: c.images[0], alt: `${c.title} campaign`, ratio: '4/5', shot: `${c.title} campaign photo` })}</div>
     </div>
-    ${gone.length ? `<div class="sheet sheet-3">${gone.map((p, i) => productCard(p, i + 1)).join('')}</div>` : ''}
+    ${gone.length ? `<p class="fine-caps">Past pieces, kept as the record. Not for sale.</p><div class="sheet sheet-3">${gone.map((p, i) => productCard(p, i + 1)).join('')}</div>` : ''}
   </div>
 </section>`;
   }).join('')}`;
@@ -289,7 +291,7 @@ export function story(site, origin) {
   const fallback = `Stoic Soul Club is an independent streetwear brand from Amman, started by three friends with Libyan, Iraqi and Jordanian-Palestinian roots.
 The idea was always the same: people move through chapters, and there is pride in the one you are in, not only the one you are aiming for.
 The first three designs, KAIZEN, TRANQUILITY and VENGEANCE, were made in 2024. Every piece carries a small bust on the chest and a large print on the back.
-Today Ali runs the brand's channels and orders, Kishta runs manufacturing, Mahmoud makes content with them, and Sanad runs the day to day.`;
+The three founders still make it together: the clothes, the photos and the words.`;
   const body = `
 <section class="band band-first">
   <div class="wrap split">
@@ -298,14 +300,14 @@ Today Ali runs the brand's channels and orders, Kishta runs manufacturing, Mahmo
       <div class="manifesto story-text">${paragraphs(s.story_text || fallback)}</div>
       <p><a class="link" href="/archive">See every chapter</a></p>
     </div>
-    <div class="split-pic">${frame({ image: s.story_image, alt: 'The people behind Stoic Soul Club', n: 1, ratio: '4/5', shot: 'The founders and Sanad, together, in daylight' })}</div>
+    <div class="split-pic">${frame({ image: s.story_image, alt: 'The people behind Stoic Soul Club', n: 1, ratio: '4/5', shot: 'The founders, together' })}</div>
   </div>
 </section>
 <section class="band band-paper">
   <div class="wrap">
     <div class="beliefs">
       <div><span class="sec-n">01</span><h3>Garment first</h3><p>The piece has to be wanted with the words covered up. The meaning is the second thing you notice.</p></div>
-      <div><span class="sec-n">02</span><h3>Real people, real places</h3><p>No statues, no stock models. The photos are friends, in Amman, in daylight.</p></div>
+      <div><span class="sec-n">02</span><h3>Real people, real places</h3><p>No stock models, no AI. The photos are friends, in Amman: a gym, a rooftop, a painted wall.</p></div>
       <div><span class="sec-n">03</span><h3>Nobody has arrived</h3><p>The clothes are for people building something who have not finished yet, and do not pretend to have.</p></div>
       <div><span class="sec-n">04</span><h3>Warm, not cold</h3><p>Confidence without arrogance, discipline without cruelty. Belonging never requires buying.</p></div>
     </div>
