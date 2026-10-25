@@ -4,6 +4,7 @@
 // Ali's master brief (25 October 2026). Photos are the brand's own, sent by Ali on 25 October 2026.
 
 // Chapter One stock is the founders' count of 10 October 2026; staff keep it current in the dashboard.
+// Prices: tees 25 JOD, hoodies 35 JOD (Ali, 25 October 2026, matching the Chapter One posters).
 export const SEED_PRODUCTS = [
   {
     slug: 'vengeance-washed-hoodie',
@@ -21,7 +22,7 @@ export const SEED_PRODUCTS = [
     slug: 'vengeance-washed-tee',
     images: ['/assets/img/ch1/vengeance-tee-wall.webp | Back print, on body, painted wall', '/assets/img/ch1/vengeance-tee-bar.webp | Worn, the gym', '/assets/img/ch1/vengeance-art.webp | The print: Lady Justice, VENGEANCE', '/assets/img/ch1/vengeance-tee-bar-2.webp | Pull-ups, Amman'],
     sku: 'SSC-VEN-WT', name: 'VENGEANCE Washed Tee', category: 'tees', collection: 'vengeance',
-    price: 24000, tone: '#5e5b55', featured: true, status: 'available', sort: 20, color: 'Acid-washed charcoal',
+    price: 25000, tone: '#5e5b55', featured: true, status: 'available', sort: 20, color: 'Acid-washed charcoal',
     stock: { S: 0, M: 1, L: 2, XL: 2, XXL: 2 },
     description: 'Acid-washed charcoal, cut oversized. Big back print, small bust on the chest.',
     fit: 'Cut oversized. Size M: 58 cm across the chest, 72 cm long, laid flat.',
@@ -33,7 +34,7 @@ export const SEED_PRODUCTS = [
     slug: 'kaizen-hoodie',
     images: ['/assets/img/ch1/kaizen-hoodie-back.webp | Back print, black', '/assets/img/ch1/hoodie-front-logo.webp | Front, chest logo', '/assets/img/ch1/kaizen-art.webp | The print: the angel, KAIZEN', '/assets/img/ch1/kaizen-hoodie-bar.webp | Worn, the gym'],
     sku: 'SSC-KAI-H', name: 'KAIZEN Hoodie', category: 'hoodies', collection: 'kaizen',
-    price: 32000, tone: '#26252a', featured: true, status: 'available', sort: 30, color: 'Black',
+    price: 35000, tone: '#26252a', featured: true, status: 'available', sort: 30, color: 'Black',
     stock: { S: 1, M: 3, L: 3, XL: 3, XXL: 0 },
     description: 'Black, very boxy, dropped shoulder. Big back print, small bust on the chest.',
     fit: 'Very boxy, dropped shoulder. Size M: 66 cm across the chest, 72 cm long, laid flat.',
@@ -45,7 +46,7 @@ export const SEED_PRODUCTS = [
     slug: 'kaizen-tee',
     images: ['/assets/img/ch1/poster-kaizen-blossom.webp | Tee and hoodie, Chapter One poster', '/assets/img/ch1/kaizen-art.webp | The print: the angel, KAIZEN'],
     sku: 'SSC-KAI-T', name: 'KAIZEN Tee', category: 'tees', collection: 'kaizen',
-    price: 22000, tone: '#2c2b30', featured: false, status: 'available', sort: 40, color: 'Black',
+    price: 25000, tone: '#2c2b30', featured: false, status: 'available', sort: 40, color: 'Black',
     stock: { S: 0, M: 2, L: 3, XL: 1, XXL: 0 },
     description: 'Black, puff logo on the chest, big back print. Relaxed regular fit.',
     fit: 'Relaxed regular fit; size up for baggy. Size M: 53 cm across the chest, 68 cm long, laid flat.',
@@ -57,7 +58,7 @@ export const SEED_PRODUCTS = [
     slug: 'tranquility-hoodie',
     images: ['/assets/img/ch1/tranquility-hoodie-rooftop.webp | Back print, rooftop, Amman', '/assets/img/ch1/tranquility-hoodie-front.webp | Front, chest logo, hood up', '/assets/img/ch1/tranquility-art.webp | The print: TRANQUILITY', '/assets/img/ch1/tranquility-hoodie-wall.webp | Worn, after dark'],
     sku: 'SSC-TRA-H', name: 'TRANQUILITY Hoodie', category: 'hoodies', collection: 'tranquility',
-    price: 32000, tone: '#e8e3d8', featured: false, status: 'available', sort: 50, color: 'White',
+    price: 35000, tone: '#e8e3d8', featured: false, status: 'available', sort: 50, color: 'White',
     stock: { S: 1, M: 3, L: 2, XL: 3, XXL: 0 },
     description: 'White, very boxy, dropped shoulder. Big back print, small bust on the chest.',
     fit: 'Very boxy, dropped shoulder. Size M: 66 cm across the chest, 72 cm long, laid flat.',
@@ -69,7 +70,7 @@ export const SEED_PRODUCTS = [
     slug: 'tranquility-tee',
     images: ['/assets/img/ch1/poster-tranquility.webp | Tee and hoodie, Chapter One poster', '/assets/img/ch1/tranquility-art.webp | The print: TRANQUILITY'],
     sku: 'SSC-TRA-T', name: 'TRANQUILITY Tee', category: 'tees', collection: 'tranquility',
-    price: 22000, tone: '#efebe2', featured: false, status: 'available', sort: 60, color: 'White',
+    price: 25000, tone: '#efebe2', featured: false, status: 'available', sort: 60, color: 'White',
     stock: { S: 1, M: 3, L: 4, XL: 2, XXL: 0 },
     description: 'White, puff logo on the chest, big back print. Relaxed regular fit.',
     fit: 'Relaxed regular fit; size up for baggy. Size M: 53 cm across the chest, 68 cm long, laid flat.',

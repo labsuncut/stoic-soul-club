@@ -133,6 +133,9 @@ export async function getDb(env) {
     if (added.includes('status')) {
       // Products from the trial store: active ones stay on sale, hidden ones become drafts.
       await env.DB.prepare(`UPDATE products SET status = CASE active WHEN 1 THEN 'available' ELSE 'draft' END`).run();
+      // The trial store carried the brand brief's draft prices; Ali confirmed the real ones on 25 October 2026.
+      const price = env.DB.prepare('UPDATE products SET price = ? WHERE slug = ?');
+      await env.DB.batch(SEED_PRODUCTS.map((p) => price.bind(p.price, p.slug)));
     }
     if (added.includes('collection')) {
       // The trial products are named "KAIZEN Tee", "VENGEANCE Washed Hoodie": the first word is the chapter.
