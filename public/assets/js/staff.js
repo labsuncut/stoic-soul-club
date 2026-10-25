@@ -123,6 +123,7 @@
   async function loadOverview() {
     const d = await api('/api/staff/overview');
     const n = (m, k) => m[k] || 0;
+    $('#alerts').innerHTML = (d.alerts || []).map((a) => `<p class="alert ${esc(a.level)}">${esc(a.text)}</p>`).join('');
     $('#kpis').innerHTML = [
       [n(d.today, 'wa_click'), 'WhatsApp inquiries today'],
       [n(d.week, 'wa_click'), 'Inquiries, last 7 days'],

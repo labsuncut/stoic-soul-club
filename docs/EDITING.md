@@ -17,6 +17,7 @@ Changes show on the site within about 20 seconds. If a page looks old, pull to r
 - The first photo is the main one; the second shows on hover on the shop grid. The caption box under each photo is optional and shows under the photo on the product page (for example "Back print, on body"). Portrait photos work best on product frames; the cover is landscape on desktop.
 - **Paste a link** works for a photo that already lives on the internet (an https address).
 - Logo: a PNG with a transparent background. Until one is set the butterfly mark is used.
+- The tee front and back views on the KAIZEN, TRANQUILITY and VENGEANCE tee pages are cut from the brand's own 2024 design sheet; replace them with real photos of the tees (front, back, on body) when you have them.
 
 ## Chapters
 A chapter is a collection: KAIZEN, TRANQUILITY, VENGEANCE and the next ones. Each has a number, a one-line meaning, a description, an accent colour, photos and a status (*Draft*, *Current*, *Archived*). Current chapters appear on the home page; archived ones stay in the archive.
@@ -34,7 +35,7 @@ One lookbook per photoshoot or campaign: title, chapter, photographer credit, a 
 - **Switches**: restock questions on sold-out pieces (only if someone will answer), anonymous counts (page views and WhatsApp clicks; no cookies, nothing personal), and **Site is public** (lets Google list the site; leave off until the founders approve the launch).
 
 ## Inquiries tab
-Counts of page views and WhatsApp clicks today, this week and this month, the most viewed pieces, where visitors came from (Instagram or direct), and sizes that are at 0. A WhatsApp click is an inquiry, not a sale: the sale happens in the chat.
+Warnings at the top tell you when ordering is off (no WhatsApp number saved), when photo uploads are not connected, and that the site is still hidden from Google. Below them: counts of page views and WhatsApp clicks today, this week and this month, the most viewed pieces, where visitors came from (Instagram or direct), and sizes that are at 0. A WhatsApp click is an inquiry, not a sale: the sale happens in the chat.
 
 ## If something breaks
 - "Photo uploads are not set up yet": the R2 bucket is not connected; see LAUNCH.md step 5. Paste a link meanwhile.

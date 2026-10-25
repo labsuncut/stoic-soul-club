@@ -28,6 +28,7 @@ Follow [docs/EDITING.md](docs/EDITING.md). The minimum before launch:
 - Chapters: a photo each; Lookbooks: the Chapter One shoot.
 
 ## 7. Test on the preview address
+- Open `/api/health`: it should say `"database":"connected"`, `"content":"database"` and `"ordering":"on"`. If ordering is off, the WhatsApp number is not saved (dashboard, Site tab).
 - On a phone: open a product, pick a size, tap **Order via WhatsApp**, check the message and the number it opens.
 - Check a sold-out size cannot be chosen and a sold-out piece shows no order button.
 - Open `/staff/` and change a stock number; reload the product page.
