@@ -1,12 +1,14 @@
-// Stoic Soul Club: motion, the lookbook film strip, the product order message and the
-// cookie-free counters. The pages work without this file; it only adds to them.
+// Stoic Soul Club: the opening, motion, the pieces reel, the chapter stage, the lookbook film
+// strip, the product order message and the cookie-free counters. The pages work without this
+// file; it only adds to them.
 (() => {
   'use strict';
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const coarse = matchMedia('(pointer: coarse)');
-  document.documentElement.classList.add('js');
+  const root = document.documentElement;
+  root.classList.add('js');
 
   // ---------- Counters (no cookies, no ids, nothing personal) ----------
   const source = (() => {
@@ -37,29 +39,235 @@
     addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) menuBtn.click(); });
   }
 
-  // ---------- Motion A and B: cover type, image reveals ----------
+  // ---------- One frame loop for everything that follows the scroll ----------
+  const followers = [];
+  let queued = false;
+  const runFollowers = () => { queued = false; for (const fn of followers) fn(); };
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(runFollowers); } };
+  addEventListener('scroll', schedule, { passive: true });
+  addEventListener('resize', schedule);
+  const head = $('.masthead');
+  if (head) followers.push(() => head.classList.toggle('scrolled', scrollY > 24));
+
+  // ---------- Motion A and B: statements, frames, things that rise ----------
   const statements = $$('.statement');
   for (const el of statements) el.setAttribute('data-animate', '');
-  const frames = $$('.frame').filter((f) => !f.closest('.strip') && !f.closest('.pdp-gallery'));
+  const frames = $$('.frame').filter((f) => !f.closest('.strip') && !f.closest('.pdp-gallery') && !f.closest('.reel'));
   for (const f of frames) f.setAttribute('data-reveal', '');
+  const risers = $$('[data-rise], .legend');
   const cover = $('.cover');
   const show = (el) => el.classList.add('in');
+  const watched = [...statements, ...frames, ...risers].filter((el) => !cover || !cover.contains(el));
   if ('IntersectionObserver' in window && !reduced.matches) {
     const io = new IntersectionObserver((entries) => {
       for (const en of entries) if (en.isIntersecting) { show(en.target); io.unobserve(en.target); }
     }, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
-    for (const el of [...statements, ...frames]) io.observe(el);
+    for (const el of watched) io.observe(el);
   } else {
-    for (const el of [...statements, ...frames]) show(el);
+    for (const el of watched) show(el);
   }
-  // The cover runs once on load, after the fonts are ready so the lines do not reflow mid-move.
-  const start = () => { if (cover) show(cover); const h = cover && $('.statement', cover); if (h) show(h); };
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(start); else start();
-  setTimeout(start, 900);
+  // The cover runs once, after the opening and after the fonts are ready so the lines do not reflow mid-move.
+  let coverStarted = false;
+  function startCover() {
+    if (coverStarted) return;
+    coverStarted = true;
+    const go = () => { if (cover) { show(cover); const h = $('.statement', cover); if (h) show(h); } };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
+    setTimeout(go, 900);
+  }
+  // The cover photo sinks slower than the page, and a soft light follows the pointer across it.
+  if (cover) {
+    if (!reduced.matches) followers.push(() => cover.style.setProperty('--sy', String(Math.min(scrollY, innerHeight * 1.3))));
+    if (matchMedia('(hover: hover)').matches) cover.addEventListener('pointermove', (e) => {
+      const r = cover.getBoundingClientRect();
+      cover.style.setProperty('--mx', `${e.clientX - r.left}px`); cover.style.setProperty('--my', `${e.clientY - r.top}px`);
+    });
+  }
+
+  // ---------- The opening ----------
+  // Dust gathers into the bust, the name writes itself, then both fly to their places in the
+  // masthead. Once per visit; a tap, Escape or Skip ends it. People who asked their phone for
+  // less motion get the short version (mark, name, line) instead of the dust.
+  const intro = $('#intro');
+  const I = window.SSCIntro;
+  const wordmark = $('.masthead .wordmark');
+  if (intro && I && !I.seen) {
+    I.started = true;
+    let done = false, scene = null, timer = 0;
+    const markImg = $('#intro-mark'), word = $('#intro-word');
+    const flyTo = (el, target) => {
+      if (!el) return;
+      if (!target) { el.style.opacity = '0'; return; }
+      const a = el.getBoundingClientRect(), b = target.getBoundingClientRect();
+      el.style.transform = `translate(${b.left - a.left}px, ${b.top - a.top}px) scale(${b.width / a.width})`;
+    };
+    const end = () => {
+      if (done) return;
+      done = true; clearTimeout(timer);
+      try { sessionStorage.setItem('ssc-intro', '1'); } catch { /* private mode */ }
+      if (wordmark) wordmark.classList.add('landing');
+      intro.classList.add('done');
+      root.classList.remove('intro-on');
+      flyTo(markImg, wordmark && $('.mark', wordmark)); flyTo(word, wordmark && $('span', wordmark));
+      setTimeout(() => { if (wordmark) wordmark.classList.remove('landing'); }, 800);
+      setTimeout(() => { intro.classList.remove('play'); intro.hidden = true; if (scene) scene.stop(); startCover(); }, 1200);
+    };
+    intro.classList.add('play');
+    const begin = () => {
+      if (done || intro.classList.contains('rolling')) return;
+      if (I.reduced) { intro.classList.add('rolling', 'quick'); timer = setTimeout(end, 2600); return; }
+      try { scene = I.start($('#intro-canvas'), markImg); } catch { end(); return; }
+      intro.classList.add('rolling');
+      timer = setTimeout(end, 5600);
+    };
+    // The scene needs the bust's picture to know its shape; start the clock once it is ready (or at once if it never loads).
+    if (markImg.decode) markImg.decode().then(begin, begin); else if (markImg.complete) begin(); else { markImg.onload = begin; markImg.onerror = begin; }
+    setTimeout(begin, 1500);
+    intro.addEventListener('click', end);
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') end(); });
+    setTimeout(end, 9500); // safety net
+  } else {
+    if (intro) intro.hidden = true;
+    root.classList.remove('intro-on');
+    startCover();
+  }
+
+  // ---------- The shared glide: one frame, starting at the finger's speed, ending at rest ----------
+  // (the engine approved on the Apollo site: no jump at release, no long tail)
+  function tween(from, to, v0, apply, onDone) {
+    const dist = to - from;
+    if (reduced.matches || Math.abs(dist) < 1) { apply(to); if (onDone) onDone(); return () => {}; }
+    const speed = Math.min(Math.abs(v0), 3);
+    const dur = 300 + 260 * (1 - speed / 3);
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now) => {
+      const u = Math.min(1, (now - t0) / dur);
+      const a = 1 - Math.pow(1 - u, 3) * (1 + 3 * u);
+      const b = 1 - Math.pow(1 - u, 3);
+      const k = speed / 3;
+      apply(from + dist * (a * (1 - k) + b * k));
+      if (u < 1) raf = requestAnimationFrame(tick); else if (onDone) onDone();
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }
+  // After a real drag, the click that ends it must not open the piece under the finger.
+  function swallowClick(track) {
+    const kill = (ev) => { ev.preventDefault(); ev.stopPropagation(); };
+    track.addEventListener('click', kill, { capture: true, once: true });
+    setTimeout(() => track.removeEventListener('click', kill, { capture: true }), 50);
+  }
+
+  // ---------- The pieces reel ----------
+  // The track walks on its own, endlessly (the pieces are laid twice), a little faster while the
+  // page scrolls. A finger or mouse takes it 1:1; on release it settles on the next piece and
+  // rests for a while before walking again. Hovering pauses it.
+  for (const reelEl of $$('[data-reel]')) {
+    const track = $('.reel-track', reelEl);
+    const cells = $$('.reel-cell', track);
+    const n = cells.length / 2;
+    if (!(n >= 2) || reduced.matches) continue;
+    track.classList.add('is-engine');
+    const walk = coarse.matches ? 20 : 30; // px per second
+    let x = 0, lap = 0, last = 0, boost = 0, lastScroll = scrollY, holdUntil = 0, hover = false;
+    let dragging = false, startX = 0, lastX = 0, lastT = 0, vel = 0, base = 0, cancelGlide = () => {}, gliding = false;
+    const measure = () => { lap = cells[n].offsetLeft - cells[0].offsetLeft; };
+    const step = () => cells[1].offsetLeft - cells[0].offsetLeft;
+    const wrap = (v) => ((v % lap) + lap) % lap;
+    const apply = () => { track.style.transform = `translate3d(${-x}px,0,0)`; };
+    measure();
+    followers.push(() => { const dy = scrollY - lastScroll; lastScroll = scrollY; boost = Math.max(-900, Math.min(900, boost + dy * 1.1)); });
+    const frame = (now) => {
+      const dt = Math.min(50, now - (last || now)); last = now;
+      if (!dragging && !gliding) {
+        const moving = Math.abs(boost) > 1;
+        if ((!hover && now > holdUntil) || moving) { x = wrap(x + ((hover || now <= holdUntil ? 0 : walk) + boost) * dt / 1000); apply(); }
+        boost *= 0.93;
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+    const settle = (dir, v0) => {
+      const st = step(), near = Math.round(x / st);
+      const target = dir > 0 ? Math.max(near, Math.floor(x / st + 1e-6) + 1) : dir < 0 ? Math.min(near, Math.ceil(x / st - 1e-6) - 1) : near;
+      gliding = true;
+      cancelGlide = tween(x, target * st, v0, (v) => { x = v; apply(); }, () => { gliding = false; x = wrap(x); apply(); holdUntil = performance.now() + 4000; });
+    };
+    track.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      cancelGlide(); gliding = false; boost = 0;
+      dragging = true; startX = lastX = e.clientX; lastT = performance.now(); base = x; vel = 0;
+      track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
+    });
+    track.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const now = performance.now();
+      vel = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now;
+      x = base - (e.clientX - startX); apply();
+    });
+    const up = (e) => {
+      if (!dragging) return;
+      dragging = false; track.classList.remove('dragging');
+      const dx = e.clientX - startX;
+      const dir = Math.abs(dx) > 12 || Math.abs(vel) > 0.2 ? (dx < 0 ? 1 : -1) : 0;
+      if (Math.abs(dx) > 6) swallowClick(track);
+      settle(dir, -vel);
+    };
+    track.addEventListener('pointerup', up);
+    track.addEventListener('pointercancel', up);
+    track.addEventListener('dragstart', (e) => e.preventDefault());
+    if (matchMedia('(hover: hover)').matches) { reelEl.addEventListener('pointerenter', () => { hover = true; }); reelEl.addEventListener('pointerleave', () => { hover = false; }); }
+    addEventListener('resize', () => { measure(); x = wrap(x); apply(); });
+    apply();
+  }
+
+  // ---------- The chapter stage ----------
+  // The stage stays on screen while the page scrolls one chapter at a time through it. The
+  // page's own scrolling is never taken over; the stage only reads where the page is.
+  const sceneEl = $('[data-scene]');
+  if (sceneEl && !reduced.matches) {
+    const stage = $('.scene-stage', sceneEl);
+    const panels = $$('[data-panel]', sceneEl);
+    const dots = $$('.scene-rail li', sceneEl);
+    const n = panels.length;
+    let active = -1;
+    if (n) followers.push(() => {
+      const top = sceneEl.getBoundingClientRect().top;
+      const span = Math.max(1, sceneEl.offsetHeight - stage.offsetHeight);
+      const p = Math.min(1, Math.max(0, -top / span));
+      const seg = Math.min(n - 1e-4, p * n);
+      const i = Math.floor(seg), local = seg - i;
+      if (i !== active) {
+        active = i;
+        panels.forEach((el, k) => { el.classList.toggle('is-active', k === i); el.classList.toggle('is-past', k < i); });
+        dots.forEach((el, k) => el.classList.toggle('on', k === i));
+        stage.style.setProperty('--accent', panels[i].style.getPropertyValue('--accent'));
+      }
+      panels[i].style.setProperty('--p', local.toFixed(4));
+    });
+  } else if (sceneEl) {
+    for (const el of $$('[data-panel]', sceneEl)) el.classList.add('is-active');
+  }
+
+  // ---------- The philosophy: words fill as the reader reaches them ----------
+  for (const fillEl of $$('[data-fill]')) {
+    const ws = $$('.w', fillEl);
+    if (reduced.matches || !ws.length) { for (const w of ws) w.classList.add('on'); continue; }
+    let lastK = -1;
+    followers.push(() => {
+      const r = fillEl.getBoundingClientRect(), vh = innerHeight;
+      const p = Math.min(1, Math.max(0, (vh * 0.82 - r.top) / (r.height + vh * 0.25)));
+      const k = Math.round(p * ws.length);
+      if (k === lastK) return;
+      lastK = k;
+      ws.forEach((w, i) => w.classList.toggle('on', i < k));
+    });
+  }
 
   // ---------- Motion C: the film strip ----------
   // The track follows the finger 1:1; on release it glides exactly one frame, starting at the
-  // finger's own speed and ending at zero speed (the engine approved on the Apollo site).
+  // finger's own speed and ending at zero speed.
   for (const strip of $$('[data-strip]')) {
     const track = $('.strip-track', strip);
     const cells = $$('.strip-cell', track);
@@ -77,40 +285,22 @@
     const step = () => cells[1].offsetLeft - cells[0].offsetLeft;
     const max = () => cells.length - Math.max(1, Math.floor((track.clientWidth - parseFloat(getComputedStyle(track).paddingLeft) * 2 + 12) / step()));
     track.classList.add('is-engine');
-    let x = 0, raf = 0, dragging = false, startX = 0, startT = 0, lastX = 0, lastT = 0, vel = 0, base = 0;
+    let x = 0, dragging = false, startX = 0, lastX = 0, lastT = 0, vel = 0, base = 0, cancelGlide = () => {};
     const apply = () => { track.style.transform = `translate3d(${-x}px,0,0)`; };
     const clamp = (n) => Math.max(0, Math.min(max(), n));
-    function glide(to, v0) {
-      cancelAnimationFrame(raf);
-      const from = x, dist = to - from;
-      if (reduced.matches || Math.abs(dist) < 1) { x = to; apply(); return; }
-      const speed = Math.min(Math.abs(v0), 3);
-      const dur = 300 + 260 * (1 - speed / 3);
-      const t0 = performance.now();
-      const tick = (now) => {
-        const u = Math.min(1, (now - t0) / dur);
-        const a = 1 - Math.pow(1 - u, 3) * (1 + 3 * u);
-        const b = 1 - Math.pow(1 - u, 3);
-        const k = speed / 3;
-        const e = a * (1 - k) + b * k;
-        x = from + dist * e; apply();
-        if (u < 1) raf = requestAnimationFrame(tick);
-      };
-      raf = requestAnimationFrame(tick);
-    }
-    const go = (n, v = 0) => { i = clamp(n); glide(i * step(), v); setLabel(); };
-    const onDown = (e) => {
+    const go = (n, v = 0) => { i = clamp(n); cancelGlide(); cancelGlide = tween(x, i * step(), v, (val) => { x = val; apply(); }); setLabel(); };
+    track.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      cancelAnimationFrame(raf);
-      dragging = true; startX = lastX = e.clientX; startT = lastT = performance.now(); base = x; vel = 0;
+      cancelGlide();
+      dragging = true; startX = lastX = e.clientX; lastT = performance.now(); base = x; vel = 0;
       track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
-    };
-    const onMove = (e) => {
+    });
+    track.addEventListener('pointermove', (e) => {
       if (!dragging) return;
       const now = performance.now();
       vel = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now;
       x = Math.max(-40, Math.min(max() * step() + 40, base - (e.clientX - startX))); apply();
-    };
+    });
     const onUp = (e) => {
       if (!dragging) return;
       dragging = false; track.classList.remove('dragging');
@@ -119,10 +309,8 @@
       let n = near;
       if (Math.abs(dx) > 12 || Math.abs(vel) > 0.2) n = dx < 0 ? Math.max(near, i + 1) : Math.min(near, i - 1);
       go(n, -vel);
-      if (Math.abs(dx) > 6) { const kill = (ev) => { ev.preventDefault(); ev.stopPropagation(); }; track.addEventListener('click', kill, { capture: true, once: true }); setTimeout(() => track.removeEventListener('click', kill, { capture: true }), 50); }
+      if (Math.abs(dx) > 6) swallowClick(track);
     };
-    track.addEventListener('pointerdown', onDown);
-    track.addEventListener('pointermove', onMove);
     track.addEventListener('pointerup', onUp);
     track.addEventListener('pointercancel', onUp);
     track.addEventListener('dragstart', (e) => e.preventDefault());
@@ -204,4 +392,7 @@
     track('page_view');
   }
   $('[data-wa-general]')?.addEventListener('click', () => track('wa_click', { product: 'general' }));
+
+  runFollowers();
+  addEventListener('load', schedule);
 })();

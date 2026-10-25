@@ -1,13 +1,13 @@
 # Stoic Soul Club: the digital flagship
 
-The website of Stoic Soul Club, the Amman streetwear brand (stoicsoulclub.com). It is built like a magazine issue, not a shop template: a cover, the drop as a contact sheet, chapters, lookbooks, the archive and the story. Orders are inquiries on WhatsApp; there is no cart or checkout.
+The website of Stoic Soul Club, the Amman streetwear brand (stoicsoulclub.com). It is built like a magazine issue, not a shop template: an opening, a cover, the pieces on a reel, chapters on a stage, lookbooks, the archive and the story, all in a dark stone-and-bone world with one butterfly accent. Orders are inquiries on WhatsApp; there is no cart or checkout.
 
 Status: **preview**. The site stays `noindex` and the order line stays off until the founders approve the launch (see [LAUNCH.md](LAUNCH.md)).
 
 ## Pages
 | Address | What it is |
 | --- | --- |
-| `/` | Cover, the drop (contact sheet), the philosophy, the current chapters, a lookbook strip |
+| `/` | The opening (once per visit), cover, the pieces reel, the philosophy (words fill as you scroll), the chapter stage, a lookbook strip |
 | `/shop` | Every piece on sale, with sold-out pieces still shown |
 | `/product/<name>` | One piece: photos, sizes, materials, the WhatsApp order button |
 | `/lookbook`, `/lookbook/<name>` | Photoshoots and community photos, as film strips |
@@ -32,7 +32,8 @@ The WhatsApp number lives only in the dashboard (Site tab). When it is empty the
 public/                 static files (no build step)
   assets/css/site.css   the public site's styles (fonts first, then the design)
   assets/css/staff.css  the dashboard's styles
-  assets/js/site.js     menu, reveals, film strip, product gallery, the order message
+  assets/js/intro.js    the opening: dust gathers into the bust (loaded in the head, before paint)
+  assets/js/site.js     menu, the opening's timing, cover, reel, chapter stage, word fill, film strip, product gallery, the order message
   assets/js/staff.js    the dashboard
   assets/fonts/         Archivo, Instrument Serif, DM Sans (self-hosted)
   staff/index.html      the dashboard page
@@ -41,7 +42,7 @@ functions/              Cloudflare Pages Functions
   _lib/seed.js          starter content and default settings (no phone number in code)
   _lib/db.js            tables, migrations, settings, rate limit
   _lib/content.js       loads everything a page needs; falls back to seed.js without a database
-  _lib/render.js        layout, frames, cards, film strip, headers (CSP, noindex)
+  _lib/render.js        layout (with the opening's markup), frames, cards, reel, ticker, film strip, headers (CSP, noindex)
   _lib/pages.js         the page templates
   index.js, shop.js, product/, lookbook/, archive.js, story.js, contact.js, sitemap.xml.js
   api/event.js          first-party, cookie-free counts (page views, WhatsApp clicks)
@@ -63,7 +64,8 @@ Open http://localhost:8788 and http://localhost:8788/staff/. The local database 
 ## Rules this site keeps
 - No invented facts: no made-up stories, reviews, countdowns, scarcity, prices in other currencies. Empty fields show honest placeholders ("Photo to come").
 - No third-party scripts, no cookies, no tracking pixels. The counts in the dashboard are first-party and anonymous and can be switched off.
-- `prefers-reduced-motion` is honoured; content never waits for an animation; no scroll hijacking; no heavy video on phones.
+- The opening plays once per visit (sessionStorage `ssc-intro`), is skippable (tap, Escape, Skip) and never blocks the page for more than 9.5 s even if scripts fail. With Reduce Motion on, a short version plays (mark, name, line; no dust), the chapter stage is a plain stacked list and the reel is a plain strip. Content never waits for an animation; no scroll hijacking; no heavy video on phones.
+- The chapter stage reads where the page is and never takes over scrolling; the reel walks on its own, follows a finger 1:1 and settles one piece at a time (the glide approved on the Apollo site).
 - Sold-out pieces stay visible without an order button. "Available" with every size at 0 shows as sold out by itself.
 - Secrets (`STAFF_PASSWORD`) live in Cloudflare only.
 

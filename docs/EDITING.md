@@ -20,7 +20,7 @@ Changes show on the site within about 20 seconds. If a page looks old, pull to r
 - The tee front and back views on the KAIZEN, TRANQUILITY and VENGEANCE tee pages are cut from the brand's own 2024 design sheet; replace them with real photos of the tees (front, back, on body) when you have them.
 
 ## Chapters
-A chapter is a collection: KAIZEN, TRANQUILITY, VENGEANCE and the next ones. Each has a number, a one-line meaning, a description, an accent colour, photos and a status (*Draft*, *Current*, *Archived*). Current chapters appear on the home page; archived ones stay in the archive.
+A chapter is a collection: KAIZEN, TRANQUILITY, VENGEANCE and the next ones. Each has a number, a one-line meaning, a description, an accent colour, photos and a status (*Draft*, *Current*, *Archived*). Current chapters appear on the home page; archived ones stay in the archive. The chapter's **second** photo is the big one on the home page stage and on the story page (the print artwork works best there); the first is used in the archive.
 
 ## Lookbooks
 One lookbook per photoshoot or campaign: title, chapter, photographer credit, a short intro, then the photos in order with a caption and an alt text (a one-line description for people who cannot see the photo). Tag a photo *Community* when a customer took it (only with their permission); those show under "Seen in the wild" instead of the film strip. The featured lookbook feeds the film strip on the home page. Only *Published* lookbooks are visible.

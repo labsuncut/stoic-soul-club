@@ -49,6 +49,7 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
   const logo = s.logo_image
     ? `<img class="mark" src="${esc(s.logo_image)}" alt="" width="40" height="40">`
     : BUTTERFLY;
+  const tagline = s.hero_headline ? s.hero_headline.charAt(0).toUpperCase() + s.hero_headline.slice(1).toLowerCase() : '';
   const navItems = [['/shop', 'Shop'], ['/lookbook', 'Lookbook'], ['/archive', 'Archive'], ['/story', 'Story'], ['/contact', 'Contact']];
   const nav = navItems.map(([href, label]) => `<a href="${href}"${path.startsWith(href) ? ' aria-current="page"' : ''}>${label}</a>`).join('');
   return `<!doctype html>
@@ -70,10 +71,22 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
 <meta name="view-transition" content="same-origin">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/assets/fonts/archivo-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script src="/assets/js/intro.js"></script>
 <link rel="stylesheet" href="/assets/css/site.css">
 ${[org, ...ld].map((o) => `<script type="application/ld+json">${safeJson(o)}</script>`).join('\n')}
 </head>
-<body data-page="${page}" class="${bodyClass}">
+<body data-page="${page}" class="${bodyClass}${s.announcement ? ' has-announce' : ''}">
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="intro-bg"></div>
+  <canvas class="intro-canvas" id="intro-canvas"></canvas>
+  <div class="intro-bloom"></div>
+  <div class="intro-lock">
+    <img class="intro-mark" id="intro-mark" src="/assets/img/ch1/logo-mark-lg.webp" alt="" width="640" height="721" decoding="async" fetchpriority="high">
+    <span class="intro-word" id="intro-word">Stoic Soul Club</span>
+  </div>
+  <p class="intro-tag">${esc(tagline)}</p>
+  <button class="intro-skip" type="button">Skip</button>
+</div>
 <a class="skip" href="#main">Skip to content</a>
 ${s.announcement ? `<div class="announce"><div class="wrap">${esc(s.announcement)}</div></div>` : ''}
 <header class="masthead">
@@ -118,6 +131,7 @@ ${body}
       </ul>
     </div>
   </div>
+  <div class="wrap"><p class="foot-giant" aria-hidden="true">Stoic Soul Club</p></div>
   <div class="wrap foot-end"><span>© ${new Date().getFullYear()} Stoic Soul Club</span><span class="folio-ch">${chapterLabel(chapter)}</span></div>
 </footer>
 <script src="/assets/js/site.js" defer></script>
@@ -144,11 +158,11 @@ export function availability(p) {
   return `<span class="tag tag-available">Available · ${esc(left.join(' '))}</span>`;
 }
 
-export function productCard(p, n, { cls = '' } = {}) {
+export function productCard(p, n, { cls = '', clone = false } = {}) {
   const front = p.images[0] || '';
   const back = p.images[1] || '';
   const label = p.status === 'archived' ? 'Not for sale' : p.status === 'sold_out' ? 'Sold out' : '';
-  return `<a class="product ${cls} ${p.status}" href="/product/${esc(p.slug)}" data-collection="${esc(p.collection)}">
+  return `<a class="product ${cls} ${p.status}" href="/product/${esc(p.slug)}" data-collection="${esc(p.collection)}"${clone ? ' aria-hidden="true" tabindex="-1"' : ''}>
     <figure class="frame" style="--ratio:4/5"><span class="frame-n" aria-hidden="true">${pad(n)}</span>
       <div class="frame-img">${front
         ? `<img src="${esc(front)}" alt="${esc(p.captions && p.captions[0] ? `${p.name}: ${p.captions[0]}` : p.name)}" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}" alt="" loading="lazy" decoding="async">` : ''}`
@@ -175,6 +189,22 @@ export function filmStrip(photos, { id = 'strip', label = 'Lookbook' } = {}) {
     <div class="strip-bar"><span class="strip-cap" data-strip-caption>${esc(photos[0].caption)}</span><span class="strip-count"><span data-strip-n>01</span> / ${pad(photos.length)}</span>
       <span class="strip-btns"><button type="button" data-strip-prev aria-label="Previous photo">←</button><button type="button" data-strip-next aria-label="Next photo">→</button></span></div>
   </div>`;
+}
+
+// The pieces reel: every product laid twice so the track can drift without an end. The second
+// lap is hidden from assistive tech; without scripts it is not shown at all.
+export function reel(products, { id = 'reel', label = 'The pieces' } = {}) {
+  if (!products.length) return '';
+  const lap = (clone) => products.map((p, i) => `<div class="reel-cell${clone ? ' is-clone' : ''}">${productCard(p, i + 1, { clone })}</div>`).join('');
+  return `<div class="reel" id="${id}" data-reel aria-label="${esc(label)}">
+    <div class="reel-track">${lap(false)}${lap(true)}</div>
+  </div>`;
+}
+
+// A slow line of words between sections, repeated so it never runs out.
+export function ticker(items) {
+  const set = `<span class="ticker-set">${items.map((t) => `<span>${esc(t)}</span>${BUTTERFLY}`).join('')}</span>`;
+  return `<div class="ticker" aria-hidden="true"><div class="ticker-track">${set}${set}${set}${set}</div></div>`;
 }
 
 export const sectionHead = (n, label, text, { tag = 'h2', cls = '' } = {}) =>
