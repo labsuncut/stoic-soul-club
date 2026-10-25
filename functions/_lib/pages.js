@@ -1,6 +1,6 @@
 // The public pages: home, shop, product, lookbook, archive, story, contact.
 import { money, chapterLabel, bySlug } from './content.js';
-import { layout, frame, productCard, statement, filmStrip, sectionHead, esc, SITE } from './render.js';
+import { layout, frame, productCard, statement, filmStrip, sectionHead, reel, ticker, esc, SITE } from './render.js';
 
 const pad = (n) => String(n).padStart(2, '0');
 const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
@@ -22,8 +22,6 @@ export function home(site, origin) {
   const s = site.settings;
   const chapter = currentChapter(site);
   const drop = onSale(site);
-  const hero = drop.find((p) => p.featured) || drop[0];
-  const rest = drop.filter((p) => p !== hero);
   const featuredBook = site.lookbooks.find((l) => l.featured) || site.lookbooks[0];
   const strip = featuredBook ? featuredBook.photos.filter((ph) => ph.tag !== 'community') : [];
   const community = site.lookbooks.flatMap((l) => l.photos.filter((ph) => ph.tag === 'community')).slice(0, 6);
@@ -35,64 +33,76 @@ export function home(site, origin) {
       ? `<img class="cover-media" src="${esc(s.hero_image)}" alt="" fetchpriority="high">`
       : `<div class="cover-media ph ph-dark" role="img" aria-label="Cover photo to come"><span class="ph-label">Cover photo to come</span><span class="ph-shot">VENGEANCE washed hoodie, back print, on body, warm street light</span></div>`;
 
+  // The philosophy, word by word, so it can fill in as the reader scrolls.
+  const fill = String(s.manifesto || '').split(/\n+/).map((t) => t.trim()).filter(Boolean)
+    .map((t) => `<p>${t.split(/\s+/).map((w) => `<span class="w">${esc(w)}</span>`).join(' ')}</p>`).join('');
+
   const body = `
 <section class="cover" id="cover">
-  <div class="cover-pic">${heroMedia}<span class="cover-cap">${esc(s.hero_caption)}</span></div>
+  <div class="cover-pic">${heroMedia}<div class="cover-light" aria-hidden="true"></div></div>
+  <span class="cover-cap">${esc(s.hero_caption)}</span>
   <div class="cover-text">
+    <p class="cover-kicker"><span class="folio-ch">Chapter ${words(chapter)}</span><span>Amman<span class="kicker-more">${chapters.length ? ' · ' + chapters.map((c) => esc(c.title)).join(' · ') : ''}</span></span></p>
     ${statement(s.hero_headline.replace(/\s+(YOU'RE IN\.?)$/i, '\n$1'), { tag: 'h1', cls: 'statement-xl' })}
-    <p class="cover-sub"><em>Chapter ${words(chapter)}</em> is out. Heavy cotton tees and hoodies, three designs, a print on the back that says where you are.</p>
-    <p class="cover-cta"><a class="btn" href="/shop">${esc(s.hero_cta)}</a><a class="link" href="/lookbook">See the lookbook</a></p>
+    <p class="cover-sub"><em>Chapter ${words(chapter)}</em> is out. Heavy cotton tees and hoodies, ${words(chapters.length).toLowerCase()} designs, a print on the back that says where you are.</p>
+    <p class="cover-cta"><a class="btn" href="/shop">${esc(s.hero_cta)}</a><a class="link" href="/story">Read the story</a></p>
   </div>
-  <a class="cover-scroll" href="#drop" aria-label="Scroll to the drop">Scroll</a>
+  <a class="cover-scroll" href="#drop" aria-label="Scroll to the pieces">Scroll</a>
 </section>
 
-<section class="band" id="drop">
+${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Made in Amman', 'Ordered on WhatsApp'])}
+
+<section class="band band-reel" id="drop">
   <div class="wrap">
-    ${sectionHead(2, `${chapterLabel(chapter)} · Current drop`, 'THE DROP.')}
-    ${drop.length ? `<div class="sheet sheet-drop">${hero ? productCard(hero, 1, { cls: 'product-lead' }) : ''}${rest.map((p, i) => productCard(p, i + 2)).join('')}</div>
-    <p class="sheet-foot"><a class="link" href="/shop">Everything in the shop</a></p>`
-      : `<p class="lead">Nothing is on sale right now. The next chapter is being made.</p>`}
+    ${sectionHead(2, `${chapterLabel(chapter)} · The pieces`, 'THE / DROP.')}
+    <p class="lead" data-rise>Three designs, cut heavy, each with a 52 cm print on the back. Drag the reel, or let it pass.</p>
   </div>
+  ${drop.length ? reel(drop, { id: 'home-reel' }) : `<div class="wrap"><p class="lead">Nothing is on sale right now. The next chapter is being made.</p></div>`}
+  <div class="wrap reel-bar"><a class="link" href="/shop">Everything in the shop</a><span class="reel-count">${pad(drop.length)} pieces</span></div>
 </section>
 
-<section class="band band-paper" id="philosophy">
+<section class="band band-fill" id="philosophy">
   <div class="wrap split">
     <div class="split-text">
       ${sectionHead(3, 'The philosophy', 'WEAR THE / CHAPTER / YOU\'RE IN.')}
-      <div class="manifesto">${paragraphs(s.manifesto)}</div>
-      <p><a class="link" href="/story">Read the story</a></p>
+      <div class="fill" data-fill>${fill}</div>
+      <p class="fill-foot"><a class="link" href="/story">Read the story</a></p>
     </div>
-    <div class="split-pic">${frame({ image: s.manifesto_image, alt: 'A real person wearing Stoic Soul Club', n: 9, ratio: '4/5', shot: 'Real person, KAIZEN hoodie, daylight, no pose' })}</div>
+    <div class="split-pic split-sticky">${frame({ image: s.manifesto_image, alt: 'A real person wearing Stoic Soul Club', n: 9, ratio: '4/5', shot: 'Real person, KAIZEN hoodie, daylight, no pose' })}</div>
+  </div>
+</section>
+
+<section class="scene" id="archive" data-scene style="--n:${chapters.length || 1}" aria-label="The chapters">
+  <div class="scene-stage" style="--accent:${esc((chapters[0] || {}).accent || '')}">
+    <div class="scene-bg" aria-hidden="true"></div>
+    <div class="scene-vignette" aria-hidden="true"></div>
+    <div class="scene-head sec-head"><span class="sec-n">04</span><span class="sec-label">Every design is a chapter</span></div>
+    <ol class="scene-panels">
+      ${chapters.map((c, i) => {
+        const pieces = visible(site).filter((p) => p.collection === c.slug);
+        const live = pieces.some((p) => p.status === 'available');
+        const art = c.images[1] || c.images[0] || '';
+        return `<li class="scene-panel${i === 0 ? ' is-active' : ''}" style="--accent:${esc(c.accent)}" data-panel>
+          <div class="scene-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">` : ''}</div>
+          <div class="scene-copy">
+            <span class="scene-n">${chapterLabel(c.chapter)} · ${pad(i + 1)} / ${pad(chapters.length)}</span>
+            <h3 class="scene-title">${esc(c.title)}</h3>
+            <p class="scene-meaning">${esc(c.meaning)}</p>
+            ${c.description ? `<p class="scene-desc">${esc(c.description)}</p>` : ''}
+            <p class="scene-cta"><a class="link link-light" href="${live ? `/shop?collection=${esc(c.slug)}` : `/archive#${esc(c.slug)}`}">${live ? 'Shop the chapter' : 'In the archive'}</a></p>
+          </div>
+        </li>`;
+      }).join('')}
+    </ol>
+    <ol class="scene-rail" aria-hidden="true">${chapters.map((c, i) => `<li${i === 0 ? ' class="on"' : ''}></li>`).join('')}</ol>
   </div>
 </section>
 
 ${strip.length ? `<section class="band band-strip" id="lookbook">
-  <div class="wrap">${sectionHead(4, 'Lookbook', featuredBook.title.toUpperCase())}</div>
+  <div class="wrap">${sectionHead(5, 'Lookbook', featuredBook.title.toUpperCase())}</div>
   ${filmStrip(strip, { id: 'home-strip', label: featuredBook.title })}
   <div class="wrap"><p class="sheet-foot"><a class="link" href="/lookbook/${esc(featuredBook.slug)}">Open the lookbook</a></p></div>
 </section>` : ''}
-
-<section class="band band-ink" id="archive">
-  <div class="wrap">
-    ${sectionHead(5, 'Chapters so far', 'EVERY DESIGN / IS A CHAPTER.')}
-    <ol class="chapters">
-      ${chapters.map((c) => {
-        const pieces = visible(site).filter((p) => p.collection === c.slug);
-        const live = pieces.some((p) => p.status === 'available');
-        return `<li class="chapter" style="--accent:${esc(c.accent)}">
-          <a class="chapter-link" href="${live ? `/shop?collection=${esc(c.slug)}` : `/archive#${esc(c.slug)}`}">
-            <span class="chapter-n">${chapterLabel(c.chapter)}</span>
-            <span class="chapter-title">${esc(c.title)}</span>
-            <span class="chapter-meaning">${esc(c.meaning)}</span>
-            <span class="chapter-state">${live ? 'Current · in the shop' : c.status === 'archived' ? 'Archived' : 'Chapter'}</span>
-          </a>
-          <div class="chapter-pic">${frame({ image: c.images[0], alt: `${c.title} campaign`, ratio: '3/2', shot: `${c.title} campaign photo` })}</div>
-        </li>`;
-      }).join('')}
-    </ol>
-    <p class="sheet-foot"><a class="link link-light" href="/archive">Open the archive</a></p>
-  </div>
-</section>
 
 ${(community.length || s.instagram) ? `<section class="band" id="community">
   <div class="wrap">
@@ -287,30 +297,74 @@ ${chapters.map((c) => {
 export function story(site, origin) {
   const s = site.settings;
   const chapter = currentChapter(site);
+  const chapters = [...site.collections].sort((a, b) => b.chapter - a.chapter || a.sort - b.sort);
   // Only confirmed facts from the brand brief; the founders replace this text from the dashboard.
   const fallback = `Stoic Soul Club is an independent streetwear brand from Amman, started by three friends with Libyan, Iraqi and Jordanian-Palestinian roots.
 The idea was always the same: people move through chapters, and there is pride in the one you are in, not only the one you are aiming for.
 The first three designs, KAIZEN, TRANQUILITY and VENGEANCE, were made in 2024. Every piece carries a small bust on the chest and a large print on the back.
 The three founders still make it together: the clothes, the photos and the words.`;
   const body = `
-<section class="band band-first">
+<section class="legend" id="legend">
+  <div class="legend-pic">${s.story_image ? `<img src="${esc(s.story_image)}" alt="" fetchpriority="high">` : ''}</div>
+  <div class="wrap legend-text">
+    ${sectionHead(6, 'Story', 'STILL / BECOMING.')}
+    <p class="legend-line" data-rise>Independent streetwear from Amman. Three designs, made in 2024, for whichever chapter you are in.</p>
+  </div>
+</section>
+<section class="band" id="story-text">
   <div class="wrap split">
     <div class="split-text">
-      ${sectionHead(6, 'Story', 'STILL / BECOMING.')}
       <div class="manifesto story-text">${paragraphs(s.story_text || fallback)}</div>
-      <p><a class="link" href="/archive">See every chapter</a></p>
+      <div class="roots">
+        <p class="roots-line"><span class="folio-ch">Roots</span><em>Libyan · Iraqi · Jordanian-Palestinian</em></p>
+        <p class="roots-line"><span class="folio-ch">Made in</span><em>Amman, Jordan</em></p>
+        <p class="roots-line"><span class="folio-ch">Chapters so far</span><em>${esc(words(chapters.length))}</em></p>
+      </div>
+      <p class="fill-foot"><a class="link" href="/archive">See every chapter</a></p>
     </div>
-    <div class="split-pic">${frame({ image: s.story_image, alt: 'The people behind Stoic Soul Club', n: 1, ratio: '4/5', shot: 'The founders, together' })}</div>
+    <aside class="split-pic split-sticky" aria-label="The piece">
+      <p class="spec-h fine-caps">The piece</p>
+      <dl class="spec">
+        <div><dt>Fabric</dt><dd>100% cotton</dd></div>
+        <div><dt>Tee</dt><dd>260 g, puff-print bust, back print</dd></div>
+        <div><dt>Washed tee</dt><dd>250 g</dd></div>
+        <div><dt>Hoodie</dt><dd>400 g</dd></div>
+        <div><dt>Washed hoodie</dt><dd>450 g</dd></div>
+        <div><dt>Chest bust</dt><dd>about 10 × 11 cm</dd></div>
+        <div><dt>Back print</dt><dd>about 52 cm</dd></div>
+      </dl>
+    </aside>
   </div>
 </section>
 <section class="band band-paper">
   <div class="wrap">
+    ${sectionHead(7, 'What we hold to', 'FOUR / THINGS.')}
     <div class="beliefs">
       <div><span class="sec-n">01</span><h3>Garment first</h3><p>The piece has to be wanted with the words covered up. The meaning is the second thing you notice.</p></div>
       <div><span class="sec-n">02</span><h3>Real people, real places</h3><p>No stock models, no AI. The photos are friends, in Amman: a gym, a rooftop, a painted wall.</p></div>
       <div><span class="sec-n">03</span><h3>Nobody has arrived</h3><p>The clothes are for people building something who have not finished yet, and do not pretend to have.</p></div>
       <div><span class="sec-n">04</span><h3>Warm, not cold</h3><p>Confidence without arrogance, discipline without cruelty. Belonging never requires buying.</p></div>
     </div>
+  </div>
+</section>
+<section class="band" id="story-chapters">
+  <div class="wrap">
+    ${sectionHead(8, 'The chapters', 'EVERY DESIGN / IS A CHAPTER.')}
+    <ol class="chapters">
+      ${chapters.map((c) => {
+        const pieces = visible(site).filter((p) => p.collection === c.slug);
+        const live = pieces.some((p) => p.status === 'available');
+        return `<li class="chapter" style="--accent:${esc(c.accent)}">
+          <a class="chapter-link" href="${live ? `/shop?collection=${esc(c.slug)}` : `/archive#${esc(c.slug)}`}">
+            <span class="chapter-n">${chapterLabel(c.chapter)}</span>
+            <span class="chapter-title">${esc(c.title)}</span>
+            <span class="chapter-meaning">${esc(c.meaning)}</span>
+            <span class="chapter-state">${live ? 'Current · in the shop' : c.status === 'archived' ? 'Archived' : 'Chapter'}</span>
+          </a>
+          <div class="chapter-pic">${frame({ image: c.images[1] || c.images[0], alt: `${c.title} print`, ratio: '3/4', shot: `${c.title} print` })}</div>
+        </li>`;
+      }).join('')}
+    </ol>
   </div>
 </section>`;
   return layout({ site, origin, page: 'story', section: 'Story', chapter, title: 'Our story', path: '/story', description: 'Where Stoic Soul Club comes from, who makes it, and what the chapters mean.', image: s.story_image, body });

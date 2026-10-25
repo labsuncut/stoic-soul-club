@@ -32,7 +32,8 @@ Follow [docs/EDITING.md](docs/EDITING.md). The minimum before launch:
 - On a phone: open a product, pick a size, tap **Order via WhatsApp**, check the message and the number it opens.
 - Check a sold-out size cannot be chosen and a sold-out piece shows no order button.
 - Open `/staff/` and change a stock number; reload the product page.
-- Check the site with Reduce Motion on (iPhone: Settings → Accessibility → Motion).
+- Check the site with Reduce Motion on (iPhone: Settings → Accessibility → Motion): the short opening plays (no dust), the chapters are a plain list.
+- Watch the opening once on a phone and once on a laptop; tap it once to confirm Skip works. It plays once per visit: close the tab to see it again.
 
 ## 8. Make it public (needs the founders' go-ahead)
 1. Dashboard → Site → tick **Site is public** → Save. Rendered pages drop their `noindex`.
