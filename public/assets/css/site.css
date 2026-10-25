@@ -353,6 +353,11 @@ figure { margin: 0; }
 .pdp { display: grid; gap: 28px; width: min(100% - 2 * var(--gutter), var(--wrap)); margin: clamp(20px, 3vw, 40px) auto var(--band); }
 .pdp-gallery { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
 .pdp-gallery .frame:first-child { grid-column: 1 / -1; }
+/* Phones: the gallery swipes like a contact strip, one shot at a time, with the next peeking in. */
+.pdp-gallery.is-swipe { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin-inline: calc(-1 * var(--gutter)); padding-inline: var(--gutter); scroll-padding-inline: var(--gutter); }
+.pdp-gallery.is-swipe::-webkit-scrollbar { display: none; }
+.pdp-gallery.is-swipe .frame { flex: 0 0 84%; scroll-snap-align: start; }
+.pdp-gallery.is-swipe .frame:first-child { grid-column: auto; }
 .pdp-panel { }
 .pdp-sticky { display: grid; gap: 18px; }
 .pdp-chapter a { color: var(--accent, var(--butterfly)); }
@@ -363,7 +368,7 @@ figure { margin: 0; }
 .notice-line { font-family: var(--serif); font-style: italic; font-size: 20px; }
 .order { display: grid; gap: 18px; padding-top: 6px; border-top: 1px solid var(--rule); }
 .opt { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
-legend, .opt > label { padding: 0; margin-bottom: 2px; display: flex; justify-content: space-between; align-items: baseline; }
+legend, .opt > label { width: 100%; padding: 0; margin-bottom: 2px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
 legend .link { text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip { position: relative; }
