@@ -46,7 +46,8 @@ export function shapeProduct(p, variants, { staff = false } = {}) {
 }
 
 function shapeCollection(c) {
-  return { ...c, images: parseList(c.images).map((s) => splitImage(s).url) };
+  const photos = parseList(c.images).map(splitImage);
+  return { ...c, images: photos.map((ph) => ph.url), captions: photos.map((ph) => ph.caption) };
 }
 
 function shapeLookbook(l, photos) {

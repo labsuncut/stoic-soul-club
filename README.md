@@ -7,7 +7,7 @@ Status: **preview**. The site stays `noindex` and the order line stays off until
 ## Pages
 | Address | What it is |
 | --- | --- |
-| `/` | The opening (once per visit), cover, the pieces reel, the philosophy (words fill as you scroll), the chapter stage, a lookbook strip |
+| `/` | The opening (once per visit), cover, the pieces reel, one wide photograph, the philosophy (words fill as you scroll), the chapter stage, a lookbook strip |
 | `/shop` | Every piece on sale, with sold-out pieces still shown |
 | `/product/<name>` | One piece: photos, sizes, materials, the WhatsApp order button |
 | `/lookbook`, `/lookbook/<name>` | Photoshoots and community photos, as film strips |
@@ -32,7 +32,7 @@ The WhatsApp number lives only in the dashboard (Site tab). When it is empty the
 public/                 static files (no build step)
   assets/css/site.css   the public site's styles (fonts first, then the design)
   assets/css/staff.css  the dashboard's styles
-  assets/js/intro.js    the opening: dust gathers into the bust (loaded in the head, before paint)
+  assets/js/intro.js    the opening: butterflies gather, one lands on the bust (loaded in the head, before paint)
   assets/js/site.js     menu, the opening's timing, cover, reel, chapter stage, word fill, film strip, product gallery, the order message
   assets/js/staff.js    the dashboard
   assets/fonts/         Archivo, Instrument Serif, DM Sans (self-hosted)
@@ -65,7 +65,7 @@ Open http://localhost:8788 and http://localhost:8788/staff/. The local database 
 - No invented facts: no made-up stories, reviews, countdowns, scarcity, prices in other currencies. Empty fields show honest placeholders ("Photo to come").
 - No third-party scripts, no cookies, no tracking pixels. The counts in the dashboard are first-party and anonymous and can be switched off.
 - Photos: on 25 October 2026 Ali asked for every photo to come off the site. The seed carries none, a live database is cleared once (`photos_cleared` in settings) and the pages are set in type until the staff upload photos from the dashboard: a piece without a photo shows its ticket (name, chapter, weight), the cover and the story show the bust. On 26 October Ali approved the first five graded photographs (the photo benchmark); they are in the seed and a live database gets them once (`photos_v2`), only where a field is still empty.
-- The opening plays once per visit (sessionStorage `ssc-intro`), is skippable (tap, Escape, Skip) and never blocks the page for more than 9.5 s even if scripts fail. With Reduce Motion on, a short version plays (mark, name, line; no dust), the chapter stage is a plain stacked list and the reel is a plain strip. Content never waits for an animation; no scroll hijacking; no heavy video on phones.
+- The opening plays once per visit (sessionStorage `ssc-intro`), is skippable (tap, Escape, Skip) and never blocks the page for more than 9.5 s even if scripts fail. With Reduce Motion on, a short version plays (mark, name, line; no butterflies), the chapter stage is a plain stacked list and the reel is a plain strip. Content never waits for an animation; no scroll hijacking; no heavy video on phones.
 - The chapter stage reads where the page is and never takes over scrolling; the reel walks on its own, follows a finger 1:1 and settles one piece at a time (the glide approved on the Apollo site).
 - Sold-out pieces stay visible without an order button. "Available" with every size at 0 shows as sold out by itself.
 - Secrets (`STAFF_PASSWORD`) live in Cloudflare only.

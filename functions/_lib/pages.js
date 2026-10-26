@@ -33,14 +33,20 @@ export function home(site, origin) {
       ? `<img class="cover-media" src="${esc(s.hero_image)}" alt="" fetchpriority="high">`
       : `<div class="cover-media cover-void" aria-hidden="true"></div>`;
 
+  // One wide photograph between the pieces and the philosophy: the second frame of the chapter
+  // the cover opened with, so the page has one quiet moment that is only picture. Skipped
+  // while there is no such photo.
+  const lead = chapters.find((c) => c.images.includes(s.hero_image) && c.images.length > 1) || chapters.find((c) => c.images.some((im) => im !== s.hero_image));
+  const idx = lead ? lead.images.findIndex((im) => im !== s.hero_image) : -1;
+  const interlude = idx >= 0 ? { image: lead.images[idx], caption: (lead.captions && lead.captions[idx]) || '' } : null;
+
   // The philosophy, word by word, so it can fill in as the reader scrolls.
   const fill = String(s.manifesto || '').split(/\n+/).map((t) => t.trim()).filter(Boolean)
     .map((t) => `<p>${t.split(/\s+/).map((w) => `<span class="w">${esc(w)}</span>`).join(' ')}</p>`).join('');
 
   const body = `
 <section class="cover" id="cover">
-  <div class="cover-pic">${heroMedia}<div class="cover-light" aria-hidden="true"></div></div>
-  ${s.hero_image || s.hero_video ? `<span class="cover-cap">${esc(s.hero_caption)}</span>` : ''}
+  <div class="cover-pic">${heroMedia}<div class="cover-light" aria-hidden="true"></div>${(s.hero_image || s.hero_video) && s.hero_caption ? `<span class="cover-cap">${esc(s.hero_caption)}</span>` : ''}</div>
   <div class="cover-text">
     <p class="cover-kicker"><span class="folio-ch">Chapter ${words(chapter)}</span><span>Amman<span class="kicker-more">${chapters.length ? ' · ' + chapters.map((c) => esc(c.title)).join(' · ') : ''}</span></span></p>
     ${statement(s.hero_headline.replace(/\s+(YOU'RE IN\.?)$/i, '\n$1'), { tag: 'h1', cls: 'statement-xl' })}
@@ -60,6 +66,15 @@ ${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Mad
   ${drop.length ? reel(drop, { id: 'home-reel' }) : `<div class="wrap"><p class="lead">Nothing is on sale right now. The next chapter is being made.</p></div>`}
   <div class="wrap reel-bar"><a class="link" href="/shop">Everything in the shop</a><span class="reel-count">${pad(drop.length)} pieces</span></div>
 </section>
+
+${interlude ? `<section class="interlude" id="interlude" aria-label="Amman, after dark">
+  <div class="interlude-pic" aria-hidden="true"><img src="${esc(interlude.image)}" alt="" loading="lazy" decoding="async" data-parallax="-.12"></div>
+  <div class="interlude-text">
+    ${statement('NOBODY / HAS ARRIVED.', { tag: 'p', cls: 'statement-s' })}
+    <p class="interlude-line" data-rise>The clothes are for people building something who have not finished yet.</p>
+  </div>
+  ${interlude.caption ? `<span class="interlude-cap">${esc(interlude.caption)}</span>` : ''}
+</section>` : ''}
 
 <section class="band band-fill" id="philosophy">
   <div class="wrap split">
@@ -83,7 +98,7 @@ ${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Mad
         const live = pieces.some((p) => p.status === 'available');
         const art = c.images[1] || c.images[0] || '';
         return `<li class="scene-panel${i === 0 ? ' is-active' : ''}" style="--accent:${esc(c.accent)}" data-panel>
-          <div class="scene-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">` : ''}</div>
+          <div class="scene-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">` : '<span class="scene-void"></span>'}</div>
           <div class="scene-copy">
             <span class="scene-n">${chapterLabel(c.chapter)} · ${pad(i + 1)} / ${pad(chapters.length)}</span>
             <h3 class="scene-title">${esc(c.title)}</h3>
@@ -104,7 +119,7 @@ ${strip.length ? `<section class="band band-strip" id="lookbook">
   <div class="wrap"><p class="sheet-foot"><a class="link" href="/lookbook/${esc(featuredBook.slug)}">Open the lookbook</a></p></div>
 </section>` : ''}
 
-${(community.length || s.instagram) ? `<section class="band" id="community">
+${(community.length || s.instagram) ? `<section class="band band-tight" id="community">
   <div class="wrap">
     ${sectionHead(6, 'People and places', 'SEEN / IN THE WILD.')}
     ${community.length ? `<div class="sheet sheet-3">${community.map((ph, i) => frame({ image: ph.image, alt: ph.alt, caption: ph.caption, n: i + 1, ratio: '1/1' })).join('')}</div>` : ''}

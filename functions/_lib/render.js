@@ -5,7 +5,7 @@ import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
 // Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
-export const ASSET_V = '5';
+export const ASSET_V = '6';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -221,7 +221,7 @@ export function ticker(items) {
 }
 
 export const sectionHead = (n, label, text, { tag = 'h2', cls = '' } = {}) =>
-  `<div class="sec-head ${cls}"><span class="sec-n">${pad(n)}</span><span class="sec-label">${esc(label)}</span></div>${text ? statement(text, { tag, cls: 'statement-s' }) : ''}`;
+  `<div class="sec-head ${cls}" data-rise><span class="sec-n">${pad(n)}</span><span class="sec-label">${esc(label)}</span></div>${text ? statement(text, { tag, cls: 'statement-s' }) : ''}`;
 
 // ---------- Not found ----------
 export function notFound(site, origin) {
