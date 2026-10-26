@@ -170,11 +170,72 @@
     track.addEventListener('click', kill, { capture: true, once: true });
     setTimeout(() => track.removeEventListener('click', kill, { capture: true }), 50);
   }
+  // One grab handler for every track. A mouse drags through pointer events. A finger uses touch
+  // events directly (iOS does not always honour touch-action for pointer events) and decides
+  // within the first few pixels whether it is swiping the track or scrolling the page: a
+  // horizontal swipe takes the track 1:1 and the page stays put; a vertical one is left to the
+  // page. A trackpad's sideways scroll moves the track too and settles when it stops.
+  function grab(track, h) {
+    let dragging = false, startX = 0, startY = 0, lastX = 0, lastT = 0, vel = 0, lock = null, wheelT = 0, wheelDx = 0;
+    const begin = (cx, cy) => { dragging = true; lock = null; startX = lastX = cx; startY = cy; lastT = performance.now(); vel = 0; track.classList.add('dragging'); h.start(); };
+    const move = (cx) => {
+      const now = performance.now();
+      vel = (cx - lastX) / Math.max(1, now - lastT); lastX = cx; lastT = now;
+      h.move(cx - startX);
+    };
+    const finish = (cx) => {
+      if (!dragging) return;
+      dragging = false; track.classList.remove('dragging');
+      const dx = cx - startX;
+      if (Math.abs(dx) > 6) swallowClick(track);
+      h.end(dx, vel);
+    };
+    const hasTouch = 'ontouchstart' in window;
+    track.addEventListener('pointerdown', (e) => {
+      if (hasTouch && e.pointerType === 'touch') return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      begin(e.clientX, e.clientY); lock = 'x';
+      try { track.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+    });
+    track.addEventListener('pointermove', (e) => { if (dragging && lock === 'x' && !(hasTouch && e.pointerType === 'touch')) move(e.clientX); });
+    const pointerUp = (e) => { if (!(hasTouch && e.pointerType === 'touch')) finish(e.clientX); };
+    track.addEventListener('pointerup', pointerUp);
+    track.addEventListener('pointercancel', pointerUp);
+    if (hasTouch) {
+      track.addEventListener('touchstart', (e) => { if (e.touches.length === 1) begin(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+      track.addEventListener('touchmove', (e) => {
+        if (!dragging || e.touches.length !== 1) return;
+        const t = e.touches[0];
+        if (!lock) {
+          const ax = Math.abs(t.clientX - startX), ay = Math.abs(t.clientY - startY);
+          if (ax < 6 && ay < 6) return;
+          lock = ax > ay ? 'x' : 'y';
+          if (lock === 'y') { dragging = false; track.classList.remove('dragging'); h.end(0, 0); return; }
+        }
+        e.preventDefault();
+        move(t.clientX);
+      }, { passive: false });
+      const touchEnd = (e) => { if (dragging) finish(e.changedTouches.length ? e.changedTouches[0].clientX : lastX); };
+      track.addEventListener('touchend', touchEnd);
+      track.addEventListener('touchcancel', touchEnd);
+    }
+    track.addEventListener('wheel', (e) => {
+      const dx = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+      if (!dx) return;
+      e.preventDefault();
+      if (!wheelT) { h.start(); wheelDx = 0; }
+      wheelDx -= dx; h.move(wheelDx);
+      clearTimeout(wheelT);
+      wheelT = setTimeout(() => { wheelT = 0; h.end(wheelDx, 0, true); }, 110);
+    }, { passive: false });
+    track.addEventListener('dragstart', (e) => e.preventDefault());
+  }
 
   // ---------- The pieces reel ----------
   // The track walks on its own, endlessly (the pieces are laid twice), a little faster while the
-  // page scrolls. A finger or mouse takes it 1:1; on release it settles on the next piece and
-  // rests for a while before walking again. Hovering pauses it.
+  // page scrolls. A finger, a mouse or a trackpad takes it 1:1; on release it settles on the next
+  // piece (a quick flick carries it a few pieces further) and rests for a while before walking
+  // again. The arrows step one piece. Hovering pauses it.
   for (const reelEl of $$('[data-reel]')) {
     const track = $('.reel-track', reelEl);
     const cells = $$('.reel-cell', track);
@@ -183,7 +244,7 @@
     track.classList.add('is-engine');
     const walk = coarse.matches ? 20 : 30; // px per second
     let x = 0, lap = 0, last = 0, boost = 0, lastScroll = scrollY, holdUntil = 0, hover = false;
-    let dragging = false, startX = 0, lastX = 0, lastT = 0, vel = 0, base = 0, cancelGlide = () => {}, gliding = false;
+    let dragging = false, base = 0, cancelGlide = () => {}, gliding = false;
     const measure = () => { lap = cells[n].offsetLeft - cells[0].offsetLeft; };
     const step = () => cells[1].offsetLeft - cells[0].offsetLeft;
     const wrap = (v) => ((v % lap) + lap) % lap;
@@ -200,35 +261,39 @@
       requestAnimationFrame(frame);
     };
     requestAnimationFrame(frame);
-    const settle = (dir, v0) => {
-      const st = step(), near = Math.round(x / st);
-      const target = dir > 0 ? Math.max(near, Math.floor(x / st + 1e-6) + 1) : dir < 0 ? Math.min(near, Math.ceil(x / st - 1e-6) - 1) : near;
+    const glideTo = (target, v0) => {
       gliding = true;
-      cancelGlide = tween(x, target * st, v0, (v) => { x = v; apply(); }, () => { gliding = false; x = wrap(x); apply(); holdUntil = performance.now() + 4000; });
+      cancelGlide = tween(x, target, v0, (v) => { x = v; apply(); }, () => { gliding = false; x = wrap(x); apply(); holdUntil = performance.now() + 4000; });
     };
-    track.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      cancelGlide(); gliding = false; boost = 0;
-      dragging = true; startX = lastX = e.clientX; lastT = performance.now(); base = x; vel = 0;
-      track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
-    });
-    track.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const now = performance.now();
-      vel = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now;
-      x = base - (e.clientX - startX); apply();
-    });
-    const up = (e) => {
-      if (!dragging) return;
-      dragging = false; track.classList.remove('dragging');
-      const dx = e.clientX - startX;
-      const dir = Math.abs(dx) > 12 || Math.abs(vel) > 0.2 ? (dx < 0 ? 1 : -1) : 0;
-      if (Math.abs(dx) > 6) swallowClick(track);
-      settle(dir, -vel);
+    const settle = (dir, v0) => {
+      const st = step();
+      // Where a flick would carry the track, snapped to a piece: at least one piece in the swipe's
+      // direction, at most three.
+      const carry = Math.max(-3, Math.min(3, Math.round((x + v0 * 220) / st) - Math.round(x / st)));
+      const near = Math.round(x / st);
+      let target = near;
+      if (dir > 0) target = Math.max(Math.floor(x / st + 1e-6) + 1, near + Math.max(0, carry));
+      else if (dir < 0) target = Math.min(Math.ceil(x / st - 1e-6) - 1, near + Math.min(0, carry));
+      glideTo(target * st, v0);
     };
-    track.addEventListener('pointerup', up);
-    track.addEventListener('pointercancel', up);
-    track.addEventListener('dragstart', (e) => e.preventDefault());
+    const nudge = (dir) => {
+      cancelGlide(); boost = 0;
+      const st = step(), cur = dir > 0 ? Math.floor(x / st + 1e-6) : Math.ceil(x / st - 1e-6);
+      glideTo((cur + dir) * st, 0);
+    };
+    grab(track, {
+      start() { cancelGlide(); gliding = false; boost = 0; dragging = true; base = x; },
+      move(dx) { x = base - dx; apply(); },
+      end(dx, vel, nearest) {
+        dragging = false;
+        const dir = !nearest && (Math.abs(dx) > 12 || Math.abs(vel) > 0.2) ? (dx < 0 ? 1 : -1) : 0;
+        settle(dir, -vel);
+      },
+    });
+    $('[data-reel-prev]', reelEl.parentElement)?.addEventListener('click', () => nudge(-1));
+    $('[data-reel-next]', reelEl.parentElement)?.addEventListener('click', () => nudge(1));
+    reelEl.tabIndex = 0;
+    reelEl.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') { nudge(1); e.preventDefault(); } if (e.key === 'ArrowLeft') { nudge(-1); e.preventDefault(); } });
     if (matchMedia('(hover: hover)').matches) { reelEl.addEventListener('pointerenter', () => { hover = true; }); reelEl.addEventListener('pointerleave', () => { hover = false; }); }
     addEventListener('resize', () => { measure(); x = wrap(x); apply(); });
     apply();
@@ -297,35 +362,20 @@
     const step = () => cells[1].offsetLeft - cells[0].offsetLeft;
     const max = () => cells.length - Math.max(1, Math.floor((track.clientWidth - parseFloat(getComputedStyle(track).paddingLeft) * 2 + 12) / step()));
     track.classList.add('is-engine');
-    let x = 0, dragging = false, startX = 0, lastX = 0, lastT = 0, vel = 0, base = 0, cancelGlide = () => {};
+    let x = 0, base = 0, cancelGlide = () => {};
     const apply = () => { track.style.transform = `translate3d(${-x}px,0,0)`; };
     const clamp = (n) => Math.max(0, Math.min(max(), n));
     const go = (n, v = 0) => { i = clamp(n); cancelGlide(); cancelGlide = tween(x, i * step(), v, (val) => { x = val; apply(); }); setLabel(); };
-    track.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'mouse' && e.button !== 0) return;
-      cancelGlide();
-      dragging = true; startX = lastX = e.clientX; lastT = performance.now(); base = x; vel = 0;
-      track.classList.add('dragging'); track.setPointerCapture(e.pointerId);
+    grab(track, {
+      start() { cancelGlide(); base = x; },
+      move(dx) { x = Math.max(-40, Math.min(max() * step() + 40, base - dx)); apply(); },
+      end(dx, vel, nearest) {
+        const near = Math.round(x / step());
+        let n = near;
+        if (!nearest && (Math.abs(dx) > 12 || Math.abs(vel) > 0.2)) n = dx < 0 ? Math.max(near, i + 1) : Math.min(near, i - 1);
+        go(n, -vel);
+      },
     });
-    track.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      const now = performance.now();
-      vel = (e.clientX - lastX) / Math.max(1, now - lastT); lastX = e.clientX; lastT = now;
-      x = Math.max(-40, Math.min(max() * step() + 40, base - (e.clientX - startX))); apply();
-    });
-    const onUp = (e) => {
-      if (!dragging) return;
-      dragging = false; track.classList.remove('dragging');
-      const dx = e.clientX - startX;
-      const near = Math.round(x / step());
-      let n = near;
-      if (Math.abs(dx) > 12 || Math.abs(vel) > 0.2) n = dx < 0 ? Math.max(near, i + 1) : Math.min(near, i - 1);
-      go(n, -vel);
-      if (Math.abs(dx) > 6) swallowClick(track);
-    };
-    track.addEventListener('pointerup', onUp);
-    track.addEventListener('pointercancel', onUp);
-    track.addEventListener('dragstart', (e) => e.preventDefault());
     $('[data-strip-prev]', strip)?.addEventListener('click', () => go(i - 1));
     $('[data-strip-next]', strip)?.addEventListener('click', () => go(i + 1));
     strip.tabIndex = 0;
