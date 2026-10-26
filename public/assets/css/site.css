@@ -345,7 +345,7 @@ html.intro-on body { overflow: hidden; }
 .ribbon { position: absolute; left: 0; bottom: 14px; z-index: 2; background: var(--bone); color: var(--ink); padding: 5px 10px; }
 .product.archived .ribbon { background: var(--dim); color: var(--bone); }
 .product .frame-img img { transition: transform 900ms var(--ease), opacity 250ms var(--ease); transform-origin: 50% 60%; }
-.product .ticket::before { transition: transform 900ms var(--ease); transform-origin: 78% 40%; }
+.product .ticket::before { transition: transform 900ms var(--ease); transform-origin: 50% 45%; }
 @media (hover: hover) {
   .product:hover .frame-img img.alt { opacity: 1; }
   .js .product:hover .frame[data-reveal].in .frame-img img, .product:hover .frame-img img { transform: scale(1.035); }
@@ -654,11 +654,11 @@ select option { color: var(--ink); background: var(--bone); }
 .cover-void { background: radial-gradient(120% 80% at 70% 40%, color-mix(in srgb, var(--butterfly) 18%, var(--ink)) 0%, var(--ink) 70%); transform: none; animation: none !important; }
 .cover-void::after { content: ""; position: absolute; inset: 0; background: url("../img/ch1/logo-mark-lg.webp") no-repeat 76% 42% / auto 62%; opacity: .16; filter: grayscale(1); }
 @media (max-width: 979px) { .cover-void::after { background-position: 50% 28%; background-size: auto 44%; } }
-.ticket { position: absolute; inset: 0; display: grid; align-content: end; gap: 6px; padding: clamp(14px, 4%, 24px); background: linear-gradient(160deg, color-mix(in srgb, var(--accent, var(--butterfly)) 22%, var(--stone)) 0%, var(--stone) 60%); border-top: 3px solid var(--accent, var(--butterfly)); }
-.ticket::before { content: ""; position: absolute; inset: 0; background: url("../img/ch1/logo-mark-lg.webp") no-repeat 78% 18% / auto 58%; opacity: .1; filter: grayscale(1); pointer-events: none; }
+.ticket { position: absolute; inset: 0; container-type: inline-size; display: grid; align-content: end; gap: 6px; padding: clamp(14px, 4%, 24px); background: linear-gradient(160deg, color-mix(in srgb, var(--accent, var(--butterfly)) 22%, var(--stone)) 0%, var(--stone) 60%); border-top: 3px solid var(--accent, var(--butterfly)); }
+.ticket::before { content: ""; position: absolute; inset: 0; background: url("../img/ch1/logo-mark-lg.webp") no-repeat 50% 30% / auto 58%; opacity: .1; filter: grayscale(1); pointer-events: none; }
 .ticket > * { position: relative; }
 .ticket-ch { font-family: var(--display); font-stretch: 85%; font-weight: 600; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent, var(--butterfly)); }
-.ticket-name { font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: clamp(22px, 2.4vw, 34px); line-height: .95; letter-spacing: -.02em; text-transform: uppercase; color: var(--bone); }
+.ticket-name { font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: clamp(16px, 11.5cqw, 34px); overflow-wrap: anywhere; line-height: .95; letter-spacing: -.02em; text-transform: uppercase; color: var(--bone); }
 .ticket-sub { font-size: 14px; color: var(--muted); text-transform: capitalize; }
 .ticket .butterfly { position: absolute; top: 14px; right: 14px; width: 22px; height: 18px; color: var(--accent, var(--butterfly)); opacity: .9; }
 .product[data-collection="kaizen"] .ticket { --accent: var(--kaizen); }
