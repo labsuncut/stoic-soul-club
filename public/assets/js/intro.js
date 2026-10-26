@@ -8,7 +8,7 @@ window.SSCIntro = (function () {
   var seen = false, reduced = false;
   try { seen = sessionStorage.getItem('ssc-intro') === '1'; } catch (e) { /* private mode */ }
   try { reduced = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { /* old browser */ }
-  if (!seen) document.documentElement.classList.add('intro-on');
+  if (!seen) document.documentElement.classList.add('intro-on', 'had-intro');
   // Safety: if the page script never takes over (blocked, failed), uncover the page anyway.
   setTimeout(function () { if (!window.SSCIntro || !window.SSCIntro.started) document.documentElement.classList.remove('intro-on'); }, 9000);
 
@@ -33,6 +33,9 @@ window.SSCIntro = (function () {
     var R = Math.max(3, Math.round(4 * dpr));
     for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
       if (!blue[y * w + x]) continue;
+      d[(y * w + x) * 4 + 3] = 0;
+      // Only the edge of the butterfly needs the margin cleared around it; inside it every pixel clears itself.
+      if (x > 0 && y > 0 && x < w - 1 && y < h - 1 && blue[y * w + x - 1] && blue[y * w + x + 1] && blue[(y - 1) * w + x] && blue[(y + 1) * w + x]) continue;
       for (var yy = Math.max(0, y - R); yy <= Math.min(h - 1, y + R); yy++) for (var xx = Math.max(0, x - R); xx <= Math.min(w - 1, x + R); xx++) d[(yy * w + xx) * 4 + 3] = 0;
     }
     c.putImageData(im, 0, 0);
@@ -62,7 +65,8 @@ window.SSCIntro = (function () {
   }
 
   function start(canvas, img, onLand) {
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Phones draw at 1.5x: the butterflies are tiny and the bust only shows for two seconds, and a full 3x canvas costs frames.
+    var dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 1.5 : 2);
     // Size the drawing to the canvas's own box and pin that size, so a phone browser's toolbar
     // growing or shrinking cannot stretch the picture away from where the real mark appears.
     var box = canvas.getBoundingClientRect();
@@ -73,10 +77,12 @@ window.SSCIntro = (function () {
     var r0 = img.getBoundingClientRect();
     var rect = { left: r0.left - box.left, top: r0.top - box.top, width: r0.width, height: r0.height };
     var small = box.width < 700;
-    var layer = bustLayer(img, rect, dpr);
     var bx = rect.left * dpr, by = rect.top * dpr, bw = rect.width * dpr, bh = rect.height * dpr;
     var cx = bx + bw / 2, cy = by + bh * .48;
-    var L = { x: bx + layer.land.x, y: by + layer.land.y, s: layer.land.s };
+    // The bust layer (reading the picture pixel by pixel) is built a moment after the first
+    // frames, off the page's loading work; it is not needed until the bust surfaces at 1.3 s.
+    var layer = null, L = { x: bx + bw * .72, y: by + bh * .3, s: bw * .06 };
+    setTimeout(function () { layer = bustLayer(img, rect, dpr); L = { x: bx + layer.land.x, y: by + layer.land.y, s: layer.land.s }; }, 80);
     var N = small ? 9 : 14;
     var B = [];
     for (var i = 0; i < N; i++) {
@@ -125,12 +131,12 @@ window.SSCIntro = (function () {
       if (pool > 0) {
         var g = ctx.createRadialGradient(cx + ox, cy + oy, 0, cx + ox, cy + oy, bw * 1.6);
         g.addColorStop(0, rgba(BLUE, .09 * pool)); g.addColorStop(.5, rgba(BONE, .03 * pool)); g.addColorStop(1, rgba(BONE, 0));
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = g; ctx.fillRect(cx + ox - bw * 1.6, cy + oy - bw * 1.6, bw * 3.2, bw * 3.2); // the gradient is transparent beyond this square
       }
       // The bust surfaces beneath them, without its butterfly, and goes once the real mark has taken over.
       var bustIn = clamp01((t - 1300) / 1100), bustOut = clamp01((t - T.land) / (T.swap - T.land));
       var bustA = easeInOut(bustIn) * (1 - bustOut);
-      if (bustA > 0) { ctx.globalAlpha = bustA; ctx.drawImage(layer.canvas, bx + ox, by + oy, bw, bh); ctx.globalAlpha = 1; }
+      if (bustA > 0 && layer) { ctx.globalAlpha = bustA; ctx.drawImage(layer.canvas, bx + ox, by + oy, bw, bh); ctx.globalAlpha = 1; }
 
       for (var i = 0; i < N; i++) {
         var b = B[i], x, y, a, s = b.s, flap, rot;

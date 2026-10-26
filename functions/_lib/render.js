@@ -5,7 +5,7 @@ import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
 // Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
-export const ASSET_V = '10';
+export const ASSET_V = '11';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
 // Pixel sizes of the photographs shipped with the site, so the browser can reserve their space
@@ -16,6 +16,19 @@ export function dims(url) {
   const d = KNOWN_DIMS[u] || (/^\/assets\/img\/ch1\/v2-.*\.webp$/.test(u) ? [1600, 1200] : null);
   return d ? ` width="${d[0]}" height="${d[1]}"` : '';
 }
+// The shipped photos exist at four widths (see assets/img/ch1), so a phone downloads the small
+// one. `sizes` says how wide the picture is laid out; anything else gets its plain src.
+const PHOTO_WIDTHS = [480, 800, 1200];
+export function srcsetOf(url) {
+  const m = /^(\/assets\/img\/ch1\/v2-[\w-]+?)(?:-(?:480|800|1200))?\.webp$/.exec(String(url || ''));
+  return m ? { base: `${m[1]}.webp`, set: [...PHOTO_WIDTHS.map((w) => `${m[1]}-${w}.webp ${w}w`), `${m[1]}.webp 1600w`].join(', ') } : null;
+}
+export const COVER_SIZES = '(min-width: 980px) 56vw, 100vw';
+export function photo(url, sizes) {
+  const r = srcsetOf(url);
+  return r ? `${dims(r.base)} srcset="${r.set}" sizes="${sizes}"` : dims(url);
+}
+export const MARK_SRCSET = ' srcset="/assets/img/ch1/logo-mark-lg-320.webp 320w, /assets/img/ch1/logo-mark-lg.webp 640w"';
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const safeJson = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
 const paragraphs = (text) => String(text || '').split(/\n+/).map((t) => t.trim()).filter(Boolean).map((t) => `<p>${esc(t)}</p>`).join('');
@@ -58,7 +71,7 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
     ...(ig ? { sameAs: [ig] } : {}),
   };
   const logo = s.logo_image
-    ? `<img class="mark" src="${esc(s.logo_image)}" alt="" width="40" height="40">`
+    ? `<img class="mark" src="${esc(s.logo_image)}"${s.logo_image === '/assets/img/ch1/logo-mark.webp' ? ' srcset="/assets/img/ch1/logo-mark-96.webp 96w, /assets/img/ch1/logo-mark.webp 212w" sizes="32px"' : ''} alt="" width="40" height="40">`
     : BUTTERFLY;
   const tagline = s.hero_headline ? s.hero_headline.charAt(0).toUpperCase() + s.hero_headline.slice(1).toLowerCase() : '';
   const navItems = [['/shop', 'Shop'], ...(site.lookbooks.length ? [['/lookbook', 'Lookbook']] : []), ['/archive', 'Archive'], ['/story', 'Story'], ['/contact', 'Contact']];
@@ -81,7 +94,7 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
 <meta name="theme-color" content="#141311">
 <meta name="view-transition" content="same-origin">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="/assets/fonts/archivo-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/archivo-normal.woff2" as="font" type="font/woff2" crossorigin>${page === 'home' && srcsetOf(image) ? `\n<link rel="preload" as="image" imagesrcset="${srcsetOf(image).set}" imagesizes="${COVER_SIZES}" fetchpriority="high">` : ''}
 <script src="/assets/js/intro.js?v=${ASSET_V}" defer></script>
 <link rel="stylesheet" href="/assets/css/site.css?v=${ASSET_V}">
 ${[org, ...ld].map((o) => `<script type="application/ld+json">${safeJson(o)}</script>`).join('\n')}
@@ -92,7 +105,7 @@ ${[org, ...ld].map((o) => `<script type="application/ld+json">${safeJson(o)}</sc
   <canvas class="intro-canvas" id="intro-canvas"></canvas>
   <div class="intro-bloom"></div>
   <div class="intro-lock">
-    <img class="intro-mark" id="intro-mark" src="/assets/img/ch1/logo-mark-lg.webp" alt="" width="640" height="721" decoding="async" fetchpriority="high">
+    <img class="intro-mark" id="intro-mark" src="/assets/img/ch1/logo-mark-lg.webp"${MARK_SRCSET} sizes="(min-width: 900px) 250px, 28vmin" alt="" width="640" height="721" decoding="async" fetchpriority="high">
     <span class="intro-word" id="intro-word">Stoic Soul Club</span>
   </div>
   <p class="intro-tag">${esc(tagline)}</p>
@@ -158,7 +171,7 @@ ${body}
 export function frame({ image, alt, caption = '', n, ratio = '4/5', cls = '', eager = false, shot = '' }) {
   const num = n != null ? `<span class="frame-n" aria-hidden="true">${pad(n)}</span>` : '';
   const pic = image
-    ? `<img src="${esc(image)}"${dims(image)} alt="${esc(alt || caption)}" loading="${eager ? 'eager' : 'lazy'}" decoding="async">`
+    ? `<img src="${esc(image)}"${photo(image, '(min-width: 980px) 50vw, 100vw')} alt="${esc(alt || caption)}" loading="${eager ? 'eager' : 'lazy'}" decoding="async">`
     : `<div class="ph" role="img" aria-label="Photo to come: ${esc(shot || caption || alt)}"><span class="ph-label">Photo to come</span><span class="ph-shot">${esc(shot || caption || alt)}</span></div>`;
   return `<figure class="frame ${cls}" style="--ratio:${ratio}">${num}<div class="frame-img">${pic}</div>${caption && image ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
 }
@@ -170,6 +183,7 @@ export function availability(p) {
   return `<span class="tag tag-available">Available · ${esc(left.join(' '))}</span>`;
 }
 
+const CARD_SIZES = '(min-width: 980px) 30vw, (min-width: 720px) 45vw, 80vw';
 export function productCard(p, n, { cls = '', clone = false } = {}) {
   const front = p.images[0] || '';
   const back = p.images[1] || '';
@@ -177,7 +191,7 @@ export function productCard(p, n, { cls = '', clone = false } = {}) {
   return `<a class="product ${cls} ${p.status}" href="/product/${esc(p.slug)}" data-collection="${esc(p.collection)}"${clone ? ' aria-hidden="true" tabindex="-1"' : ''}>
     <figure class="frame" style="--ratio:4/5"><span class="frame-n" aria-hidden="true">${pad(n)}</span>
       <div class="frame-img">${front
-        ? `<img src="${esc(front)}"${dims(front)} alt="${esc(p.captions && p.captions[0] ? `${p.name}: ${p.captions[0]}` : p.name)}" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}"${dims(back)} alt="" loading="lazy" decoding="async">` : ''}`
+        ? `<img src="${esc(front)}"${photo(front, CARD_SIZES)} alt="${esc(p.captions && p.captions[0] ? `${p.name}: ${p.captions[0]}` : p.name)}" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}"${photo(back, CARD_SIZES)} alt="" loading="lazy" decoding="async">` : ''}`
         : ticket(p)}
       ${label ? `<span class="ribbon">${label}</span>` : ''}</div>
     </figure>
