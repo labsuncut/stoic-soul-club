@@ -55,7 +55,7 @@ If Stoic uses email at this domain (like hello@stoicsoulclub.com), say so before
 
 ## Launch checklist
 - [ ] WhatsApp number verified by sending a test inquiry from a customer's phone
-- [ ] Instagram handle confirmed (@stoicsoulclub or @stoicsoul.club)
+- [x] Instagram handle confirmed: @stoicsoul.club (Ali, 26 October 2026)
 - [ ] Logo, cover photo and product photos uploaded (no placeholders left on the home page)
 - [ ] Stock per size matches the shelf
 - [ ] Delivery, payment and swap wording confirmed by the founders

@@ -135,6 +135,8 @@ export const SEED_LOOKBOOKS = [
 
 // Wording the founders retired (25 October 2026). A live site still holding the old text gets the new one.
 export const RETIRED_WORDING = {
+  // 26 October 2026: the real handle is @stoicsoul.club (Ali); the old guess went nowhere.
+  instagram: ['stoicsoulclub'],
   ordering_text: ['Choose your size and tap Order via WhatsApp. The message is written for you; you send it. Sanad confirms availability, delivery and the total before anything is paid.'],
 };
 export const RETIRED_MEANINGS = { vengeance: ['Seeking revenge for justice. Turn it into fuel.'] };
@@ -151,7 +153,7 @@ export const DEFAULT_SETTINGS = {
   // The order number is never written in code. It is set in the dashboard, in international
   // format without + (for example 9627XXXXXXXX). Empty means ordering is switched off.
   whatsapp: '',
-  instagram: 'stoicsoulclub',
+  instagram: 'stoicsoul.club',
   contact_email: '',
   site_public: '0', // '1' removes the noindex header once the founders approve the launch
   hero_headline: "FOR THE CHAPTER YOU'RE IN.",
