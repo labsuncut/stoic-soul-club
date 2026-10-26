@@ -2,7 +2,7 @@
 // so a fresh Cloudflare D1 database needs no setup beyond connecting it as DB.
 // Money is stored in fils (1 JOD = 1000 fils) so sums never get rounding errors.
 import { HttpError, sha256, clientIp } from './http.js';
-import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, RETIRED_WORDING, RETIRED_MEANINGS, PHOTOS_CLEARED_KEY, seedVariants } from './seed.js';
+import { SEED_PRODUCTS, SEED_COLLECTIONS, SEED_LOOKBOOKS, DEFAULT_SETTINGS, RETIRED_WORDING, RETIRED_MEANINGS, PHOTOS_CLEARED_KEY, PHOTOS_V2_KEY, seedVariants } from './seed.js';
 
 export const PRODUCT_STATUS = ['draft', 'available', 'sold_out', 'archived'];
 export const COLLECTION_STATUS = ['draft', 'current', 'archived'];
@@ -166,6 +166,20 @@ export async function getDb(env) {
         env.DB.prepare(`UPDATE lookbooks SET status = 'draft'`),
         env.DB.prepare(`UPDATE settings SET value = '' WHERE key IN ('hero_image', 'hero_video', 'manifesto_image', 'story_image')`),
         env.DB.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').bind(PHOTOS_CLEARED_KEY, new Date().toISOString().slice(0, 10)),
+      ]);
+    }
+    // The first graded photographs, once (Ali, 26 October 2026): only fill what is still empty.
+    const v2 = await env.DB.prepare('SELECT value FROM settings WHERE key = ?').bind(PHOTOS_V2_KEY).first();
+    if (!v2) {
+      const img = env.DB.prepare(`UPDATE products SET images = ? WHERE slug = ? AND (images = '[]' OR images = '')`);
+      const cimg = env.DB.prepare(`UPDATE collections SET images = ? WHERE slug = ? AND (images = '[]' OR images = '')`);
+      const sset = env.DB.prepare(`UPDATE settings SET value = ? WHERE key = ? AND value = ''`);
+      await env.DB.batch([
+        ...SEED_PRODUCTS.filter((p) => p.images.length).map((p) => img.bind(JSON.stringify(p.images), p.slug)),
+        ...SEED_COLLECTIONS.filter((c) => c.images.length).map((c) => cimg.bind(JSON.stringify(c.images), c.slug)),
+        sset.bind(DEFAULT_SETTINGS.hero_image, 'hero_image'),
+        sset.bind(DEFAULT_SETTINGS.manifesto_image, 'manifesto_image'),
+        env.DB.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').bind(PHOTOS_V2_KEY, new Date().toISOString().slice(0, 10)),
       ]);
     }
     ready = true;
