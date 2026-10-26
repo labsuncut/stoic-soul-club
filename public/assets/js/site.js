@@ -84,10 +84,22 @@
     });
   }
 
+  // Things that drift slower than the page (the interlude photograph).
+  const drifters = $$('[data-parallax]');
+  if (drifters.length && !reduced.matches) followers.push(() => {
+    for (const el of drifters) {
+      const r = (el.closest('section') || el).getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) continue;
+      const k = parseFloat(el.dataset.parallax) || 0;
+      el.style.setProperty('--py', ((r.top + r.height / 2 - innerHeight / 2) * k).toFixed(1));
+    }
+  });
+
   // ---------- The opening ----------
-  // Dust gathers into the bust, the name writes itself, then both fly to their places in the
-  // masthead. Once per visit; a tap, Escape or Skip ends it. People who asked their phone for
-  // less motion get the short version (mark, name, line) instead of the dust.
+  // Butterflies come in out of the dark and gather where the bust stands; one lands on its
+  // shoulder and becomes the mark, the name writes itself, then both fly to their places in
+  // the masthead. Once per visit; a tap, Escape or Skip ends it. People who asked their phone
+  // for less motion get the short version (mark, name, line) without the butterflies.
   const intro = $('#intro');
   const I = window.SSCIntro;
   const wordmark = $('.masthead .wordmark');
@@ -115,10 +127,10 @@
     intro.classList.add('play');
     const begin = () => {
       if (done || intro.classList.contains('rolling')) return;
-      if (I.reduced) { intro.classList.add('rolling', 'quick'); timer = setTimeout(end, 2600); return; }
-      try { scene = I.start($('#intro-canvas'), markImg); } catch { end(); return; }
+      if (I.reduced) { intro.classList.add('rolling', 'quick', 'landed'); timer = setTimeout(end, 2600); return; }
+      try { scene = I.start($('#intro-canvas'), markImg, () => intro.classList.add('landed')); } catch { end(); return; }
       intro.classList.add('rolling');
-      timer = setTimeout(end, 5600);
+      timer = setTimeout(end, 5500);
     };
     // The scene needs the bust's picture to know its shape; start the clock once it is ready (or at once if it never loads).
     if (markImg.decode) markImg.decode().then(begin, begin); else if (markImg.complete) begin(); else { markImg.onload = begin; markImg.onerror = begin; }
