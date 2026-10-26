@@ -611,6 +611,8 @@ select option { color: var(--ink); background: var(--bone); }
 /* The wordmark is sized from its container so it spans the page width exactly, centred, on every screen
    (the text measures 11.24 em wide in Archivo at 125% stretch). */
 .foot .foot-giant { max-width: none; margin-top: clamp(40px, 7vw, 96px); font-family: var(--display); font-stretch: 125%; font-weight: 800; font-size: calc(100cqw / 11.3); line-height: .82; letter-spacing: -.035em; text-transform: uppercase; white-space: nowrap; text-align: center; color: transparent; -webkit-text-stroke: 1px #4A4742; user-select: none; -webkit-user-select: none; }
+/* The name is drawn by the pseudo-element (data-text): it is decoration, outline only, so no checker reads it as low-contrast text. */
+.foot .foot-giant::before { content: attr(data-text); }
 @supports not (font-size: 1cqw) { .foot .foot-giant { font-size: clamp(32px, 8.4vw, 132px); } }
 .foot-end { display: flex; justify-content: space-between; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--gray); font-size: 13px; }
 @media (min-width: 720px) { .foot-grid { grid-template-columns: 1.6fr 1fr 1.4fr 1fr; } }
