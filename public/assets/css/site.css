@@ -632,8 +632,9 @@ select option { color: var(--ink); background: var(--bone); }
 .js .frame[data-reveal].in .frame-img { clip-path: inset(0 0 0 0); transition: clip-path var(--t-reveal) var(--ease); }
 .js .frame[data-reveal].in .frame-img img, .js .frame[data-reveal].in .frame-img .ph { transform: none; transition: transform var(--t-reveal) var(--ease); }
 .js .frame[data-reveal].in .frame-img img.alt { transition: transform var(--t-reveal) var(--ease), opacity 250ms var(--ease); }
-.js .cover-pic { opacity: 0; }
-.js .cover.in .cover-pic { opacity: 1; transition: opacity 1100ms var(--ease); }
+/* Without the opening the photo fades in; with it, the photo is already painted beneath the opening (first paint counts for speed). */
+html:not(.had-intro).js .cover-pic { opacity: 0; }
+html:not(.had-intro).js .cover.in .cover-pic { opacity: 1; transition: opacity 1100ms var(--ease); }
 .js [data-rise] { opacity: 0; transform: translateY(16px); }
 .js .sec-head[data-rise] { transform: translateX(-12px); }
 .js [data-rise].in { opacity: 1; transform: none; transition: opacity 700ms var(--ease), transform 700ms var(--ease); }
@@ -672,10 +673,10 @@ select option { color: var(--ink); background: var(--bone); }
 
 /* ---------- Without photos: the type carries the page ---------- */
 .cover-void { background: radial-gradient(120% 80% at 70% 40%, color-mix(in srgb, var(--butterfly) 18%, var(--ink)) 0%, var(--ink) 70%); transform: none; animation: none !important; }
-.cover-void::after { content: ""; position: absolute; inset: 0; background: url("../img/ch1/logo-mark-lg.webp") no-repeat 76% 42% / auto 62%; opacity: .16; filter: grayscale(1); }
+.cover-void::after { content: ""; position: absolute; inset: 0; background: url("../img/ch1/logo-mark-lg-320.webp") no-repeat 76% 42% / auto 62%; opacity: .16; filter: grayscale(1); }
 @media (max-width: 979px) { .cover-void::after { background-position: 50% 28%; background-size: auto 44%; } }
 .ticket { position: absolute; inset: 0; container-type: inline-size; display: grid; align-content: end; gap: 6px; padding: clamp(14px, 4%, 24px); background: linear-gradient(160deg, color-mix(in srgb, var(--accent, var(--butterfly)) 22%, var(--stone)) 0%, var(--stone) 60%); border-top: 3px solid var(--accent, var(--butterfly)); }
-.ticket::before { content: ""; position: absolute; inset: 0; background: url("../img/ch1/logo-mark-lg.webp") no-repeat 50% 30% / auto 58%; opacity: .1; filter: grayscale(1); pointer-events: none; }
+.ticket::before { content: ""; position: absolute; inset: 0; background: url("../img/ch1/logo-mark-lg-320.webp") no-repeat 50% 30% / auto 58%; opacity: .1; filter: grayscale(1); pointer-events: none; }
 .ticket > * { position: relative; }
 .ticket-ch { font-family: var(--display); font-stretch: 85%; font-weight: 600; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent, var(--butterfly)); }
 .ticket-name { font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: clamp(16px, 11.5cqw, 34px); overflow-wrap: anywhere; line-height: .95; letter-spacing: -.02em; text-transform: uppercase; color: var(--bone); }
@@ -684,7 +685,7 @@ select option { color: var(--ink); background: var(--bone); }
 .product[data-collection="kaizen"] .ticket { --accent: var(--kaizen); }
 .product[data-collection="tranquility"] .ticket { --accent: var(--tranquility); }
 .product[data-collection="vengeance"] .ticket { --accent: var(--vengeance); }
-.scene-void { display: block; height: 50svh; aspect-ratio: 1; max-width: 88vw; background: url("../img/ch1/logo-mark-lg.webp") no-repeat 50% 50% / contain; opacity: .12; filter: grayscale(1); transform: translate3d(0, calc((.5 - var(--p, .5)) * 9%), 0); will-change: transform; }
+.scene-void { display: block; height: 50svh; aspect-ratio: 1; max-width: 88vw; background: url("../img/ch1/logo-mark-lg-320.webp") no-repeat 50% 50% / contain; opacity: .12; filter: grayscale(1); transform: translate3d(0, calc((.5 - var(--p, .5)) * 9%), 0); will-change: transform; }
 @media (min-width: 980px) { .scene-void { height: 70svh; } }
 @media (prefers-reduced-motion: reduce) { .scene-void { transform: none; height: 40svh; } }
 .legend-void { display: grid; place-items: center; }

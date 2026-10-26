@@ -235,6 +235,9 @@
     track.addEventListener('dragstart', (e) => e.preventDefault());
   }
 
+  // Everything below is set up a moment after the first paint, so the page shows before the
+  // reel, stage, strip and order message are wired (shorter blocking tasks on slow phones).
+  setTimeout(() => {
   // ---------- The pieces reel ----------
   // The track walks on its own, endlessly (the pieces are laid twice), a little faster while the
   // page scrolls. A finger, a mouse or a trackpad takes it 1:1; on release it settles on the next
@@ -257,6 +260,7 @@
     followers.push(() => { const dy = scrollY - lastScroll; lastScroll = scrollY; boost = Math.max(-900, Math.min(900, boost + dy * 1.1)); });
     const frame = (now) => {
       const dt = Math.min(50, now - (last || now)); last = now;
+      if (root.classList.contains('intro-on')) { requestAnimationFrame(frame); return; } // covered by the opening: nothing to move yet
       if (!dragging && !gliding) {
         const moving = Math.abs(boost) > 1;
         if ((!hover && now > holdUntil) || moving) { x = wrap(x + ((hover || now <= holdUntil ? 0 : walk) + boost) * dt / 1000); apply(); }
@@ -472,5 +476,6 @@
   });
 
   runFollowers();
+  }, 0);
   addEventListener('load', schedule);
 })();

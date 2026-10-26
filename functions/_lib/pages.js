@@ -1,6 +1,6 @@
 // The public pages: home, shop, product, lookbook, archive, story, contact.
 import { money, chapterLabel, bySlug } from './content.js';
-import { layout, frame, productCard, statement, filmStrip, sectionHead, reel, ticker, ticket, esc, dims, SITE } from './render.js';
+import { layout, frame, productCard, statement, filmStrip, sectionHead, reel, ticker, ticket, esc, dims, photo, MARK_SRCSET, COVER_SIZES, SITE } from './render.js';
 
 const pad = (n) => String(n).padStart(2, '0');
 const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
@@ -30,7 +30,7 @@ export function home(site, origin) {
   const heroMedia = s.hero_video
     ? `<video class="cover-media" autoplay muted loop playsinline preload="none" poster="${esc(s.hero_image)}" aria-hidden="true"><source src="${esc(s.hero_video)}" type="video/mp4"></video>`
     : s.hero_image
-      ? `<img class="cover-media" src="${esc(s.hero_image)}"${dims(s.hero_image)} alt="" fetchpriority="high">`
+      ? `<img class="cover-media" src="${esc(s.hero_image)}"${photo(s.hero_image, COVER_SIZES)} alt="" fetchpriority="high" decoding="async">`
       : `<div class="cover-media cover-void" aria-hidden="true"></div>`;
 
   // One wide photograph between the pieces and the philosophy: the second frame of the chapter
@@ -68,7 +68,7 @@ ${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Mad
 </section>
 
 ${interlude ? `<section class="interlude" id="interlude" aria-label="Amman, after dark">
-  <div class="interlude-pic" aria-hidden="true"><img src="${esc(interlude.image)}"${dims(interlude.image)} alt="" loading="lazy" decoding="async" data-parallax="-.12"></div>
+  <div class="interlude-pic" aria-hidden="true"><img src="${esc(interlude.image)}"${photo(interlude.image, '100vw')} alt="" loading="lazy" decoding="async" data-parallax="-.12"></div>
   <div class="interlude-text">
     ${statement('NOBODY / HAS ARRIVED.', { tag: 'p', cls: 'statement-s' })}
     <p class="interlude-line" data-rise>The clothes are for people building something who have not finished yet.</p>
@@ -98,7 +98,7 @@ ${interlude ? `<section class="interlude" id="interlude" aria-label="Amman, afte
         const live = pieces.some((p) => p.status === 'available');
         const art = c.images[1] || c.images[0] || '';
         return `<li class="scene-panel${i === 0 ? ' is-active' : ''}" style="--accent:${esc(c.accent)}" data-panel>
-          <div class="scene-art" aria-hidden="true">${art ? `<img src="${esc(art)}"${dims(art)} alt="" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">` : '<span class="scene-void"></span>'}</div>
+          <div class="scene-art" aria-hidden="true">${art ? `<img src="${esc(art)}"${photo(art, '(min-width: 980px) 50vw, 88vw')} alt="" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">` : '<span class="scene-void"></span>'}</div>
           <div class="scene-copy">
             <span class="scene-n">${chapterLabel(c.chapter)} · ${pad(i + 1)} / ${pad(chapters.length)}</span>
             <h3 class="scene-title">${esc(c.title)}</h3>
@@ -318,7 +318,7 @@ The first three designs, KAIZEN, TRANQUILITY and VENGEANCE, were made in 2024. E
 The three founders still make it together: the clothes, the photos and the words.`;
   const body = `
 <section class="legend" id="legend">
-  <div class="legend-pic${s.story_image ? '' : ' legend-void'}">${s.story_image ? `<img src="${esc(s.story_image)}" alt="" fetchpriority="high">` : `<img class="legend-mark" src="/assets/img/ch1/logo-mark-lg.webp" alt="" width="640" height="721">`}</div>
+  <div class="legend-pic${s.story_image ? '' : ' legend-void'}">${s.story_image ? `<img src="${esc(s.story_image)}" alt="" fetchpriority="high">` : `<img class="legend-mark" src="/assets/img/ch1/logo-mark-lg.webp"${MARK_SRCSET} sizes="(min-width: 980px) 40vw, 60vw" alt="" width="640" height="721">`}</div>
   <div class="wrap legend-text">
     ${sectionHead(6, 'Story', 'STILL / BECOMING.', { tag: 'h1' })}
     <p class="legend-line" data-rise>Independent streetwear from Amman. Three designs, made in 2024, for whichever chapter you are in.</p>
