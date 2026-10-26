@@ -64,7 +64,7 @@ ${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Mad
     <p class="lead" data-rise>Three designs, cut heavy, each with a 52 cm print on the back. Drag the reel, or let it pass.</p>
   </div>
   ${drop.length ? reel(drop, { id: 'home-reel' }) : `<div class="wrap"><p class="lead">Nothing is on sale right now. The next chapter is being made.</p></div>`}
-  <div class="wrap reel-bar"><a class="link" href="/shop">Everything in the shop</a><span class="reel-count">${pad(drop.length)} pieces</span></div>
+  <div class="wrap reel-bar"><a class="link" href="/shop">Everything in the shop</a><span class="reel-side"><span class="reel-count">${pad(drop.length)} pieces</span><span class="reel-btns"><button type="button" data-reel-prev aria-label="Previous piece">←</button><button type="button" data-reel-next aria-label="Next piece">→</button></span></span></div>
 </section>
 
 ${interlude ? `<section class="interlude" id="interlude" aria-label="Amman, after dark">
