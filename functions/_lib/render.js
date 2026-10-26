@@ -5,7 +5,7 @@ import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
 // Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
-export const ASSET_V = '11';
+export const ASSET_V = '12';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
 // Pixel sizes of the photographs shipped with the site, so the browser can reserve their space
@@ -156,7 +156,7 @@ ${body}
       </ul>
     </div>
   </div>
-  <div class="wrap foot-giant-wrap"><p class="foot-giant" aria-hidden="true">Stoic Soul Club</p></div>
+  <div class="wrap foot-giant-wrap"><p class="foot-giant" aria-hidden="true" data-text="Stoic Soul Club"></p></div>
   <div class="wrap foot-end"><span>© ${new Date().getFullYear()} Stoic Soul Club</span><span class="folio-ch">${chapterLabel(chapter)}</span></div>
 </footer>
 <script src="/assets/js/site.js?v=${ASSET_V}" defer></script>
