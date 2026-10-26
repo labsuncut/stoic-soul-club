@@ -5,7 +5,7 @@ import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
 // Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
-export const ASSET_V = '8';
+export const ASSET_V = '9';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -101,7 +101,7 @@ ${s.announcement ? `<div class="announce"><div class="wrap">${esc(s.announcement
 </header>
 <nav class="menu" id="menu" aria-label="Main" hidden>
   ${navItems.map(([href, label], i) => `<a href="${href}"><small>${pad(i + 2)}</small>${label}</a>`).join('')}
-  ${ig ? `<a href="${ig}" target="_blank" rel="noopener"><small>IG</small>@${esc(s.instagram)}</a>` : ''}
+  ${ig ? `<a class="menu-ig" href="${ig}" target="_blank" rel="noopener"><small>IG</small>@${esc(s.instagram)}</a>` : ''}
 </nav>
 <main id="main">
 ${body}

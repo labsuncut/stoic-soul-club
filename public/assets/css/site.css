@@ -188,9 +188,10 @@ html.intro-on .masthead .wordmark, .js .masthead .wordmark.landing { opacity: 0;
 .menu-btn { justify-self: end; display: inline-flex; align-items: center; gap: 8px; background: none; border: 0; padding: 8px 0; font-family: var(--display); font-stretch: 90%; font-weight: 600; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
 .menu-btn span { display: none; }
 .menu { position: fixed; inset: var(--head) 0 0; z-index: 39; background: var(--ink); color: var(--bone); padding: 24px var(--gutter); display: grid; align-content: start; gap: 4px; }
-.menu a { display: flex; align-items: baseline; gap: 16px; font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: clamp(34px, 9vw, 56px); text-transform: uppercase; letter-spacing: -.02em; line-height: 1.1; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.menu a { display: flex; align-items: baseline; gap: 14px; min-width: 0; font-family: var(--display); font-stretch: 105%; font-weight: 800; font-size: clamp(28px, 7.2vw, 48px); text-transform: uppercase; letter-spacing: -.02em; line-height: 1.15; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .menu a:hover { text-decoration: none; color: var(--butterfly); }
-.menu small { color: var(--butterfly); width: 28px; }
+.menu .menu-ig { font-size: clamp(20px, 5.4vw, 34px); font-stretch: 100%; letter-spacing: 0; text-transform: none; padding-top: 18px; }
+.menu small { color: var(--butterfly); width: 28px; flex: 0 0 28px; }
 @media (min-width: 980px) {
   .nav { display: flex; }
   .menu-btn, .menu { display: none !important; }
@@ -386,16 +387,18 @@ html:not(.js) .reel-btns { display: none; }
 @media (min-width: 1280px) { .reel-cell { flex-basis: clamp(300px, 22vw, 400px); } }
 
 /* ---------- Interlude: one wide photograph, the line beside it ---------- */
-.interlude { position: relative; min-height: 78svh; display: grid; align-items: end; overflow: hidden; background: var(--ink); isolation: isolate; }
-.interlude-pic { position: absolute; inset: -12% 0; }
-.interlude-pic img { width: 100%; height: 100%; object-fit: cover; object-position: 18% 42%; transform: translate3d(0, calc(var(--py, 0) * 1px), 0); will-change: transform; }
+.interlude { position: relative; min-height: 62svh; display: grid; align-items: end; overflow: hidden; background: var(--ink); isolation: isolate; }
+.interlude-pic { position: absolute; inset: -6% 0; }
+/* On phones the band is shorter so the 4:3 photograph keeps the whole figure in frame (centred at 45%). */
+.interlude-pic img { width: 100%; height: 100%; object-fit: cover; object-position: 45% 52%; transform: translate3d(0, calc(var(--py, 0) * 1px), 0); will-change: transform; }
 .interlude-pic::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, var(--ink) 0%, rgba(14,13,12,.2) 22%, rgba(14,13,12,.15) 60%, var(--ink) 100%), linear-gradient(90deg, rgba(14,13,12,.7) 0%, rgba(14,13,12,0) 55%); }
-.interlude-text { position: relative; z-index: 2; display: grid; gap: 16px; padding: clamp(120px, 24svh, 220px) var(--gutter) clamp(44px, 8vw, 96px); }
+.interlude-text { position: relative; z-index: 2; display: grid; gap: 16px; padding: clamp(100px, 22svh, 220px) var(--gutter) clamp(44px, 8vw, 96px); }
 .interlude-text .statement { max-width: 9ch; font-size: clamp(38px, 6.4vw, 84px); }
 .interlude-line { font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2.2vw, 27px); line-height: 1.3; max-width: 30ch; color: var(--bone); }
 .interlude-cap { position: absolute; right: var(--gutter); bottom: 18px; z-index: 2; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--muted); }
 @media (min-width: 980px) {
   .interlude { min-height: 92svh; }
+  .interlude-pic { inset: -12% 0; }
   .interlude-pic img { object-position: 50% 40%; }
   .interlude-pic::after { background: linear-gradient(180deg, var(--ink) 0%, rgba(14,13,12,0) 24%, rgba(14,13,12,0) 70%, var(--ink) 100%), linear-gradient(270deg, rgba(14,13,12,.8) 0%, rgba(14,13,12,.15) 40%, rgba(14,13,12,0) 56%); }
   .interlude-text { justify-self: end; width: min(100%, 46%); padding-top: 200px; gap: 22px; }
@@ -588,7 +591,7 @@ select option { color: var(--ink); background: var(--bone); }
 .beliefs p, .steps p, .policies p { color: var(--muted); font-size: 16px; max-width: 40ch; }
 .steps { margin-bottom: clamp(28px, 4vw, 48px); }
 .ig-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 20px; margin-top: clamp(20px, 3vw, 36px); }
-.ig-line a { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(26px, 5vw, 48px); letter-spacing: -.03em; }
+.ig-line a { font-family: var(--display); font-stretch: 110%; font-weight: 800; font-size: clamp(24px, 5vw, 48px); letter-spacing: -.02em; overflow-wrap: anywhere; }
 .ig-line span { color: var(--muted); }
 @media (min-width: 720px) { .beliefs, .policies { grid-template-columns: repeat(2, 1fr); } .steps { grid-template-columns: repeat(4, 1fr); } }
 
