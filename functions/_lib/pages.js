@@ -1,6 +1,6 @@
 // The public pages: home, shop, product, lookbook, archive, story, contact.
 import { money, chapterLabel, bySlug } from './content.js';
-import { layout, frame, productCard, statement, filmStrip, sectionHead, reel, ticker, ticket, esc, SITE } from './render.js';
+import { layout, frame, productCard, statement, filmStrip, sectionHead, reel, ticker, ticket, esc, dims, SITE } from './render.js';
 
 const pad = (n) => String(n).padStart(2, '0');
 const WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten'];
@@ -30,7 +30,7 @@ export function home(site, origin) {
   const heroMedia = s.hero_video
     ? `<video class="cover-media" autoplay muted loop playsinline preload="none" poster="${esc(s.hero_image)}" aria-hidden="true"><source src="${esc(s.hero_video)}" type="video/mp4"></video>`
     : s.hero_image
-      ? `<img class="cover-media" src="${esc(s.hero_image)}" alt="" fetchpriority="high">`
+      ? `<img class="cover-media" src="${esc(s.hero_image)}"${dims(s.hero_image)} alt="" fetchpriority="high">`
       : `<div class="cover-media cover-void" aria-hidden="true"></div>`;
 
   // One wide photograph between the pieces and the philosophy: the second frame of the chapter
@@ -68,7 +68,7 @@ ${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Mad
 </section>
 
 ${interlude ? `<section class="interlude" id="interlude" aria-label="Amman, after dark">
-  <div class="interlude-pic" aria-hidden="true"><img src="${esc(interlude.image)}" alt="" loading="lazy" decoding="async" data-parallax="-.12"></div>
+  <div class="interlude-pic" aria-hidden="true"><img src="${esc(interlude.image)}"${dims(interlude.image)} alt="" loading="lazy" decoding="async" data-parallax="-.12"></div>
   <div class="interlude-text">
     ${statement('NOBODY / HAS ARRIVED.', { tag: 'p', cls: 'statement-s' })}
     <p class="interlude-line" data-rise>The clothes are for people building something who have not finished yet.</p>
@@ -98,7 +98,7 @@ ${interlude ? `<section class="interlude" id="interlude" aria-label="Amman, afte
         const live = pieces.some((p) => p.status === 'available');
         const art = c.images[1] || c.images[0] || '';
         return `<li class="scene-panel${i === 0 ? ' is-active' : ''}" style="--accent:${esc(c.accent)}" data-panel>
-          <div class="scene-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">` : '<span class="scene-void"></span>'}</div>
+          <div class="scene-art" aria-hidden="true">${art ? `<img src="${esc(art)}"${dims(art)} alt="" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">` : '<span class="scene-void"></span>'}</div>
           <div class="scene-copy">
             <span class="scene-n">${chapterLabel(c.chapter)} · ${pad(i + 1)} / ${pad(chapters.length)}</span>
             <h3 class="scene-title">${esc(c.title)}</h3>
@@ -145,7 +145,7 @@ export function shop(site, origin, url) {
   const body = `
 <section class="band band-first">
   <div class="wrap">
-    ${sectionHead(2, `${chapterLabel(chapter)} · Shop`, active ? active.title : 'THE DROP.')}
+    ${sectionHead(2, `${chapterLabel(chapter)} · Shop`, active ? active.title : 'THE DROP.', { tag: 'h1' })}
     ${active ? `<p class="lead">${esc(active.meaning)}</p>` : ''}
     <nav class="filters" aria-label="Collections">
       <a href="/shop"${!filter ? ' aria-current="true"' : ''}>All</a>
@@ -193,7 +193,7 @@ export function product(site, origin, p) {
   const detail = (label, text) => (text ? `<div class="detail"><dt>${label}</dt><dd>${paragraphs(text)}</dd></div>` : '');
   const body = `
 <article class="pdp" data-product>
-  <div class="pdp-gallery" data-gallery>${gallery}</div>
+  <div class="pdp-gallery" data-gallery aria-label="Product photos">${gallery}</div>
   <div class="pdp-panel">
     <div class="pdp-sticky">
       <p class="pdp-chapter" style="--accent:${esc(col ? col.accent : '#6888A0')}"><a href="${p.status === 'archived' ? '/archive' : `/shop?collection=${esc(p.collection)}`}">${chapterLabel(chapter)} · ${esc((col ? col.title : p.collection).toUpperCase())}</a></p>
@@ -241,7 +241,7 @@ export function lookbookIndex(site, origin) {
   const body = `
 <section class="band band-first">
   <div class="wrap">
-    ${sectionHead(4, 'Lookbook', 'SHOT WHERE / IT\'S WORN.')}
+    ${sectionHead(4, 'Lookbook', 'SHOT WHERE / IT\'S WORN.', { tag: 'h1' })}
     ${books.length ? `<div class="books">${books.map((l, i) => {
       const cover = l.photos.find((ph) => ph.image);
       return `<a class="book" href="/lookbook/${esc(l.slug)}">${cover ? frame({ image: cover.image, alt: cover.alt, n: i + 1, ratio: '4/5' }) : ''}<span class="book-title">${esc(l.title)}</span><span class="book-sub">${l.photos.length} frames${l.credit ? ` · ${esc(l.credit)}` : ''}</span></a>`;
@@ -258,7 +258,7 @@ export function lookbook(site, origin, l) {
   const ld = photos.some((ph) => ph.image) ? [{ '@context': 'https://schema.org', '@type': 'ImageGallery', name: `${l.title} · ${SITE}`, image: photos.filter((ph) => ph.image).map((ph) => imgUrl(origin, ph.image)) }] : [];
   const body = `
 <section class="band band-first band-strip">
-  <div class="wrap">${sectionHead(4, `Lookbook${col ? ` · ${col.title}` : ''}`, l.title.toUpperCase())}${l.intro ? `<p class="lead">${esc(l.intro)}</p>` : ''}</div>
+  <div class="wrap">${sectionHead(4, `Lookbook${col ? ` · ${col.title}` : ''}`, l.title.toUpperCase(), { tag: 'h1' })}${l.intro ? `<p class="lead">${esc(l.intro)}</p>` : ''}</div>
   ${filmStrip(photos, { id: 'book-strip', label: l.title })}
 </section>
 <section class="band">
@@ -278,7 +278,7 @@ export function archive(site, origin) {
   const body = `
 <section class="band band-first band-ink">
   <div class="wrap">
-    ${sectionHead(5, 'Archive', 'THE CHAPTERS / SO FAR.')}
+    ${sectionHead(5, 'Archive', 'THE CHAPTERS / SO FAR.', { tag: 'h1' })}
     <p class="lead">Every design Stoic has made, in order. Archived pieces stay here as the record; they are not for sale.</p>
   </div>
 </section>
@@ -320,7 +320,7 @@ The three founders still make it together: the clothes, the photos and the words
 <section class="legend" id="legend">
   <div class="legend-pic${s.story_image ? '' : ' legend-void'}">${s.story_image ? `<img src="${esc(s.story_image)}" alt="" fetchpriority="high">` : `<img class="legend-mark" src="/assets/img/ch1/logo-mark-lg.webp" alt="" width="640" height="721">`}</div>
   <div class="wrap legend-text">
-    ${sectionHead(6, 'Story', 'STILL / BECOMING.')}
+    ${sectionHead(6, 'Story', 'STILL / BECOMING.', { tag: 'h1' })}
     <p class="legend-line" data-rise>Independent streetwear from Amman. Three designs, made in 2024, for whichever chapter you are in.</p>
   </div>
 </section>
@@ -391,22 +391,22 @@ export function contact(site, origin) {
   const body = `
 <section class="band band-first">
   <div class="wrap">
-    ${sectionHead(7, 'Contact and ordering', 'HOW / IT WORKS.')}
+    ${sectionHead(7, 'Contact and ordering', 'HOW / IT WORKS.', { tag: 'h1' })}
     <ol class="steps">
-      <li><span class="sec-n">01</span><h3>Pick a piece and a size</h3><p>Every product page shows the sizes that are left, with measurements laid flat.</p></li>
-      <li><span class="sec-n">02</span><h3>Tap Order via WhatsApp</h3><p>WhatsApp opens with your inquiry already written: the piece, size, colour, price and your country. You send it yourself.</p></li>
-      <li><span class="sec-n">03</span><h3>We confirm</h3><p>${esc(s.ordering_text)}</p></li>
-      <li><span class="sec-n">04</span><h3>Pay and receive</h3><p>${esc(s.payment_text)}</p></li>
+      <li><span class="sec-n">01</span><h2 class="h3">Pick a piece and a size</h2><p>Every product page shows the sizes that are left, with measurements laid flat.</p></li>
+      <li><span class="sec-n">02</span><h2 class="h3">Tap Order via WhatsApp</h2><p>WhatsApp opens with your inquiry already written: the piece, size, colour, price and your country. You send it yourself.</p></li>
+      <li><span class="sec-n">03</span><h2 class="h3">We confirm</h2><p>${esc(s.ordering_text)}</p></li>
+      <li><span class="sec-n">04</span><h2 class="h3">Pay and receive</h2><p>${esc(s.payment_text)}</p></li>
     </ol>
     <p class="cover-cta">${wa ? `<a class="btn btn-wa" href="${wa}" target="_blank" rel="noopener" data-wa-general>Message us on WhatsApp</a>` : '<span class="btn" aria-disabled="true">WhatsApp line opening soon</span>'}${s.instagram ? `<a class="link" href="https://www.instagram.com/${esc(s.instagram)}/" target="_blank" rel="noopener">Instagram @${esc(s.instagram)}</a>` : ''}${s.contact_email ? `<a class="link" href="mailto:${esc(s.contact_email)}">${esc(s.contact_email)}</a>` : ''}</p>
   </div>
 </section>
 <section class="band band-paper">
   <div class="wrap policies">
-    <div id="shipping"><h3>Delivery and shipping</h3><p>${esc(s.shipping_text)}</p></div>
-    <div id="payment"><h3>Payment</h3><p>${esc(s.payment_text)}</p></div>
-    <div id="swap"><h3>Size swaps and defects</h3><p>${esc(s.swap_text)}</p></div>
-    <div id="privacy"><h3>Privacy</h3><p>This site sets no cookies and runs no third-party trackers. It counts page views and WhatsApp clicks without personal data. What you send on WhatsApp stays between you and Stoic Soul Club and is used only to handle your order.</p></div>
+    <div id="shipping"><h2 class="h3">Delivery and shipping</h2><p>${esc(s.shipping_text)}</p></div>
+    <div id="payment"><h2 class="h3">Payment</h2><p>${esc(s.payment_text)}</p></div>
+    <div id="swap"><h2 class="h3">Size swaps and defects</h2><p>${esc(s.swap_text)}</p></div>
+    <div id="privacy"><h2 class="h3">Privacy</h2><p>This site sets no cookies and runs no third-party trackers. It counts page views and WhatsApp clicks without personal data. What you send on WhatsApp stays between you and Stoic Soul Club and is used only to handle your order.</p></div>
   </div>
 </section>`;
   return layout({ site, origin, page: 'contact', section: 'Contact', chapter, title: 'Contact and ordering', path: '/contact', description: 'How to order Stoic Soul Club on WhatsApp, delivery inside Jordan, international inquiries, payment and size swaps.', body });
