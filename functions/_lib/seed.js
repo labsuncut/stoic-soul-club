@@ -22,7 +22,7 @@ export function seedVariants(p) {
 export const SEED_PRODUCTS = [
   {
     slug: 'vengeance-washed-hoodie',
-    images: [],
+    images: ['/assets/img/ch1/v2-vengeance-hoodie-balcony.webp | Back print, hood up, Amman after dark', '/assets/img/ch1/v2-vengeance-hoodie-balcony-2.webp | Over the city, after dark'],
     sku: 'SSC-VEN-WH', name: 'VENGEANCE Washed Hoodie', category: 'hoodies', collection: 'vengeance',
     price: 35000, tone: '#55524c', featured: true, status: 'available', sort: 10, color: 'Acid-washed charcoal',
     // White: real piece (Ali, 25 October 2026); count per size still to come, so it starts at 0.
@@ -35,7 +35,7 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'vengeance-washed-tee',
-    images: [],
+    images: ['/assets/img/ch1/v2-vengeance-tee-wall.webp | Back print, acid-washed charcoal'],
     sku: 'SSC-VEN-WT', name: 'VENGEANCE Washed Tee', category: 'tees', collection: 'vengeance',
     price: 25000, tone: '#5e5b55', featured: true, status: 'available', sort: 20, color: 'Acid-washed charcoal',
     stock: { S: 0, M: 1, L: 2, XL: 2, XXL: 2 },
@@ -72,7 +72,7 @@ export const SEED_PRODUCTS = [
   },
   {
     slug: 'tranquility-hoodie',
-    images: [],
+    images: ['/assets/img/ch1/v2-tranquility-hoodie-pillar.webp | Back print, white', '/assets/img/ch1/v2-tranquility-hoodie-mural.webp | Hood up, the mural'],
     sku: 'SSC-TRA-H', name: 'TRANQUILITY Hoodie', category: 'hoodies', collection: 'tranquility',
     price: 35000, tone: '#e8e3d8', featured: false, status: 'available', sort: 50, color: 'White',
     stock: { S: 1, M: 3, L: 2, XL: 3, XXL: 0 },
@@ -106,13 +106,13 @@ export const SEED_COLLECTIONS = [
   {
     slug: 'tranquility', title: 'TRANQUILITY', chapter: 1, accent: '#A9B7BE', status: 'current',
     meaning: 'Calm in the noise. A sense of peace and quiet.',
-    images: [],
+    images: ['/assets/img/ch1/v2-tranquility-hoodie-pillar.webp', '/assets/img/ch1/v2-tranquility-hoodie-mural.webp'],
     description: 'White cotton, the same cuts as KAIZEN, the opposite mood. For the chapter where you stop proving and start seeing clearly.',
   },
   {
     slug: 'vengeance', title: 'VENGEANCE', chapter: 1, accent: '#B8382E', status: 'current',
     meaning: 'The hardest chapter, turned into fuel.',
-    images: [],
+    images: ['/assets/img/ch1/v2-vengeance-hoodie-balcony-2.webp', '/assets/img/ch1/v2-vengeance-hoodie-balcony.webp'],
     description: 'Acid-washed charcoal, cut oversized, the heaviest fabric of the three. VENGEANCE is never about people. It is what you make of the hardest chapter.',
   },
 ];
@@ -142,6 +142,10 @@ export const RETIRED_MEANINGS = { vengeance: ['Seeking revenge for justice. Turn
 // 25 October 2026: Ali asked for every photo to come off the site ("disregard all photos I sent
 // you previously"). A live database still holding them is cleared once; the key below records it.
 export const PHOTOS_CLEARED_KEY = 'photos_cleared';
+// 26 October 2026: Ali approved the first five graded photographs (photo benchmark, Commerce Clean and
+// Stoic Editorial treatments) for the site. A live database gets them once, only where it still has
+// no photo, so anything the staff uploaded in between stays.
+export const PHOTOS_V2_KEY = 'photos_v2';
 
 export const DEFAULT_SETTINGS = {
   // The order number is never written in code. It is set in the dashboard, in international
@@ -152,11 +156,11 @@ export const DEFAULT_SETTINGS = {
   site_public: '0', // '1' removes the noindex header once the founders approve the launch
   hero_headline: "FOR THE CHAPTER YOU'RE IN.",
   hero_cta: 'Shop the drop',
-  hero_image: '',
+  hero_image: '/assets/img/ch1/v2-vengeance-hoodie-balcony.webp',
   hero_video: '',
   hero_caption: 'Chapter One, Amman, after dark',
   manifesto: 'People move through chapters. Some are about building, some about grief, some about getting your calm back.\nThe clothes are for the one you are in now, not the one you are performing.\nWear it like you mean it.',
-  manifesto_image: '',
+  manifesto_image: '/assets/img/ch1/v2-tranquility-hoodie-mural.webp',
   announcement: '',
   ordering_text: 'Choose your size and tap Order via WhatsApp. The message is written for you; you send it. We confirm availability, delivery and the total before anything is paid.',
   shipping_text: 'Free delivery in Amman. 3 JOD across the rest of Jordan. International order inquiries welcome: shipping availability and cost are confirmed before purchase.',
