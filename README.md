@@ -42,6 +42,7 @@ functions/              Cloudflare Pages Functions
   _lib/seed.js          starter content and default settings (no phone number in code)
   _lib/db.js            tables, migrations, settings, rate limit
   _lib/content.js       loads everything a page needs; falls back to seed.js without a database
+  _middleware.js        one address: stoic-soul-club.pages.dev and www redirect to stoicsoulclub.com (previews and local dev untouched)
   _lib/render.js        layout (with the opening's markup), frames, cards, reel, ticker, film strip, headers (CSP, noindex)
   _lib/pages.js         the page templates
   index.js, shop.js, product/, lookbook/, archive.js, story.js, contact.js, sitemap.xml.js
