@@ -15,3 +15,5 @@ export async function onRequestGet({ params, env, request }) {
     },
   });
 }
+
+export const onRequestHead = onRequestGet;

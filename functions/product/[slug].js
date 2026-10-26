@@ -6,3 +6,5 @@ export const onRequestGet = page((site, origin, url) => {
   const p = /^[a-z0-9-]{1,60}$/.test(slug) ? bySlug(site.products, slug) : null;
   return p ? product(site, origin, p) : null;
 });
+// Link checkers and uptime monitors send HEAD; the runtime drops the body.
+export const onRequestHead = onRequestGet;

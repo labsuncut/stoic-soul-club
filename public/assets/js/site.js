@@ -118,12 +118,16 @@
       done = true; clearTimeout(timer);
       try { sessionStorage.setItem('ssc-intro', '1'); } catch { /* private mode */ }
       if (wordmark) wordmark.classList.add('landing');
-      intro.classList.add('done');
+      intro.classList.add('done'); intro.inert = true;
+      for (const el of covered) el.inert = false;
       root.classList.remove('intro-on');
       flyTo(markImg, wordmark && $('.mark', wordmark)); flyTo(word, wordmark && $('span', wordmark));
       setTimeout(() => { if (wordmark) wordmark.classList.remove('landing'); }, 800);
       setTimeout(() => { intro.classList.remove('play'); intro.hidden = true; if (scene) scene.stop(); startCover(); }, 1200);
     };
+    // The rest of the page is covered while the opening plays, so it is inert until the end.
+    const covered = $$('body > header, body > main, body > footer');
+    for (const el of covered) el.inert = true;
     intro.classList.add('play');
     const begin = () => {
       if (done || intro.classList.contains('rolling')) return;
@@ -449,11 +453,23 @@
       restock.addEventListener('click', () => track('restock_click', { product: p.slug, collection: p.collection }));
     }
     // On phones the gallery swipes like the strip; on desktop it is an editorial column.
-    if (gallery && coarse.matches) gallery.classList.add('is-swipe');
+    if (gallery && coarse.matches) { gallery.classList.add('is-swipe'); gallery.tabIndex = 0; }
   } else if (document.body.dataset.page === 'home') {
     track('page_view');
   }
   $('[data-wa-general]')?.addEventListener('click', () => track('wa_click', { product: 'general' }));
+
+  // In-page links glide to their target (the page itself does not use CSS smooth scrolling, so
+  // keyboard focus and "jump to" links land at once).
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || a.getAttribute('href').length < 2) return;
+    const target = document.getElementById(a.getAttribute('href').slice(1));
+    if (!target) return;
+    e.preventDefault();
+    target.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth', block: 'start' });
+    history.pushState(null, '', a.getAttribute('href'));
+  });
 
   runFollowers();
   addEventListener('load', schedule);

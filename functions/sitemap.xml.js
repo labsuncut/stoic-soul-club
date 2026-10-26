@@ -14,3 +14,6 @@ ${urls.map((u) => `  <url><loc>${origin}${u}</loc></url>`).join('\n')}
 `;
   return new Response(xml, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=3600' } });
 }
+
+// Link checkers and uptime monitors send HEAD; the runtime drops the body.
+export const onRequestHead = onRequestGet;

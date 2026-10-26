@@ -5,9 +5,17 @@ import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
 // Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
-export const ASSET_V = '9';
+export const ASSET_V = '10';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
+// Pixel sizes of the photographs shipped with the site, so the browser can reserve their space
+// before they load (no layout jumps). Staff uploads are sized by their frame's aspect ratio in CSS.
+const KNOWN_DIMS = { '/assets/img/ch1/logo-mark-lg.webp': [640, 721], '/assets/img/ch1/logo-mark.webp': [212, 240], '/assets/img/ch1/logo-black.webp': [1200, 1200] };
+export function dims(url) {
+  const u = String(url || '');
+  const d = KNOWN_DIMS[u] || (/^\/assets\/img\/ch1\/v2-.*\.webp$/.test(u) ? [1600, 1200] : null);
+  return d ? ` width="${d[0]}" height="${d[1]}"` : '';
+}
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const safeJson = (v) => JSON.stringify(v).replace(/</g, '\\u003c');
 const paragraphs = (text) => String(text || '').split(/\n+/).map((t) => t.trim()).filter(Boolean).map((t) => `<p>${esc(t)}</p>`).join('');
@@ -43,6 +51,7 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
   const canonical = `${origin}${path}`;
   const og = imgUrl(origin, image) || `${origin}/assets/img/og.jpg`;
   const ig = s.instagram ? `https://www.instagram.com/${esc(s.instagram)}/` : '';
+  const waFoot = s.whatsapp ? `https://wa.me/${esc(s.whatsapp)}?text=${encodeURIComponent('Hello Stoic Soul Club! I have a question about ordering.')}` : '';
   const org = {
     '@context': 'https://schema.org', '@type': 'Organization', name: SITE, url: `${origin}/`,
     logo: imgUrl(origin, s.logo_image) || `${origin}/assets/img/favicon.svg`,
@@ -73,12 +82,12 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
 <meta name="view-transition" content="same-origin">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/assets/fonts/archivo-normal.woff2" as="font" type="font/woff2" crossorigin>
-<script src="/assets/js/intro.js?v=${ASSET_V}"></script>
+<script src="/assets/js/intro.js?v=${ASSET_V}" defer></script>
 <link rel="stylesheet" href="/assets/css/site.css?v=${ASSET_V}">
 ${[org, ...ld].map((o) => `<script type="application/ld+json">${safeJson(o)}</script>`).join('\n')}
 </head>
 <body data-page="${page}" class="${bodyClass}${s.announcement ? ' has-announce' : ''}">
-<div class="intro" id="intro" aria-hidden="true">
+<div class="intro" id="intro" role="region" aria-label="Opening">
   <div class="intro-bg"></div>
   <canvas class="intro-canvas" id="intro-canvas"></canvas>
   <div class="intro-bloom"></div>
@@ -111,6 +120,7 @@ ${body}
     <div class="foot-brand">
       <a class="wordmark" href="/">${logo}<span>Stoic Soul Club</span></a>
       <p class="foot-line">For the chapter you're in. Independent streetwear from Amman.</p>
+      ${waFoot ? `<a class="foot-ig" href="${waFoot}" target="_blank" rel="noopener" data-wa-general>Message us on WhatsApp</a>` : ''}
       ${ig ? `<a class="foot-ig" href="${ig}" target="_blank" rel="noopener">Instagram @${esc(s.instagram)}</a>` : ''}
     </div>
     <div>
@@ -148,7 +158,7 @@ ${body}
 export function frame({ image, alt, caption = '', n, ratio = '4/5', cls = '', eager = false, shot = '' }) {
   const num = n != null ? `<span class="frame-n" aria-hidden="true">${pad(n)}</span>` : '';
   const pic = image
-    ? `<img src="${esc(image)}" alt="${esc(alt || caption)}" loading="${eager ? 'eager' : 'lazy'}" decoding="async">`
+    ? `<img src="${esc(image)}"${dims(image)} alt="${esc(alt || caption)}" loading="${eager ? 'eager' : 'lazy'}" decoding="async">`
     : `<div class="ph" role="img" aria-label="Photo to come: ${esc(shot || caption || alt)}"><span class="ph-label">Photo to come</span><span class="ph-shot">${esc(shot || caption || alt)}</span></div>`;
   return `<figure class="frame ${cls}" style="--ratio:${ratio}">${num}<div class="frame-img">${pic}</div>${caption && image ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
 }
@@ -167,7 +177,7 @@ export function productCard(p, n, { cls = '', clone = false } = {}) {
   return `<a class="product ${cls} ${p.status}" href="/product/${esc(p.slug)}" data-collection="${esc(p.collection)}"${clone ? ' aria-hidden="true" tabindex="-1"' : ''}>
     <figure class="frame" style="--ratio:4/5"><span class="frame-n" aria-hidden="true">${pad(n)}</span>
       <div class="frame-img">${front
-        ? `<img src="${esc(front)}" alt="${esc(p.captions && p.captions[0] ? `${p.name}: ${p.captions[0]}` : p.name)}" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}" alt="" loading="lazy" decoding="async">` : ''}`
+        ? `<img src="${esc(front)}"${dims(front)} alt="${esc(p.captions && p.captions[0] ? `${p.name}: ${p.captions[0]}` : p.name)}" loading="lazy" decoding="async">${back ? `<img class="alt" src="${esc(back)}"${dims(back)} alt="" loading="lazy" decoding="async">` : ''}`
         : ticket(p)}
       ${label ? `<span class="ribbon">${label}</span>` : ''}</div>
     </figure>
@@ -227,6 +237,6 @@ export const sectionHead = (n, label, text, { tag = 'h2', cls = '' } = {}) =>
 export function notFound(site, origin) {
   return layout({
     site, origin, page: 'notfound', section: 'Lost page', title: 'Page not found', path: '/404',
-    body: `<section class="band band-ink"><div class="wrap">${sectionHead(0, 'Not every page is in this issue', 'THAT PAGE / IS NOT HERE.')}<p class="lead">The link may be old or mistyped.</p><p><a class="btn" href="/shop">Go to the shop</a> <a class="btn btn-ghost" href="/">Home</a></p></div></section>`,
+    body: `<section class="band band-ink"><div class="wrap">${sectionHead(0, 'Not every page is in this issue', 'THAT PAGE / IS NOT HERE.', { tag: 'h1' })}<p class="lead">The link may be old or mistyped.</p><p><a class="btn" href="/shop">Go to the shop</a> <a class="btn btn-ghost" href="/">Home</a></p></div></section>`,
   });
 }
