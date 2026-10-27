@@ -48,6 +48,7 @@ functions/              Cloudflare Pages Functions
   index.js, shop.js, product/, lookbook/, archive.js, story.js, contact.js, sitemap.xml.js
   api/event.js          first-party, cookie-free counts (page views, WhatsApp clicks)
   api/staff/            dashboard API: login, products, variants, collections, lookbooks, settings, upload, overview
+  mcp.js                the "Stoic Website" connector (MCP server at /mcp) that Stoic HQ and Claude chats use; wraps api/staff
   img/[key].js          serves uploaded photos from the R2 bucket
 docs/EDITING.md         how Sanad edits the site
 LAUNCH.md               Cloudflare setup and launch checklist
