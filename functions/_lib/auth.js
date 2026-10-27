@@ -31,10 +31,16 @@ export async function checkPassword(env, attempt) {
   return typeof attempt === 'string' && (await sameText(attempt, env.STAFF_PASSWORD));
 }
 
-export async function sessionCookie(env) {
+// The session is "<expiry>.<signature>": the same value rides in the cookie on this site, or
+// as "Authorization: Bearer <token>" from Stoic HQ. The password itself is never stored anywhere.
+export async function sessionToken(env) {
   const exp = Date.now() + HOURS * 3_600_000;
   const sig = await hmac(secretOf(env), `staff|${exp}`);
-  return `${COOKIE}=${exp}.${sig}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${HOURS * 3600}`;
+  return `${exp}.${sig}`;
+}
+
+export async function sessionCookie(env) {
+  return `${COOKIE}=${await sessionToken(env)}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${HOURS * 3600}`;
 }
 
 export function clearCookie() {
@@ -42,8 +48,9 @@ export function clearCookie() {
 }
 
 export async function isStaff(request, env) {
+  const bearer = (request.headers.get('authorization') || '').match(/^Bearer (\d+)\.([a-f0-9]{64})$/);
   const cookie = request.headers.get('cookie') || '';
-  const match = cookie.match(new RegExp(`(?:^|;\\s*)${COOKIE}=(\\d+)\\.([a-f0-9]{64})`));
+  const match = bearer || cookie.match(new RegExp(`(?:^|;\\s*)${COOKIE}=(\\d+)\\.([a-f0-9]{64})`));
   if (!match) return false;
   const [, exp, sig] = match;
   if (Number(exp) < Date.now()) return false;

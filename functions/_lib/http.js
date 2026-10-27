@@ -46,13 +46,38 @@ export async function readBody(request) {
   }
 }
 
-// Requests that change data must come from our own site.
+// Requests that change data must come from our own site when they ride on the browser's
+// cookie. A request without any cookie carries nothing ambient (the HQ page sends a token it
+// holds itself), so another site cannot forge one on a visitor's behalf.
 export function sameOrigin(request) {
   if (request.method === 'GET' || request.method === 'HEAD') return;
+  if (!request.headers.get('cookie')) return;
   const origin = request.headers.get('origin');
   if (origin && origin !== new URL(request.url).origin) {
     throw new HttpError(403, 'Not allowed from another site.');
   }
+}
+
+// Cross-origin answers for token-based callers (Stoic HQ runs on claude.ai). Only requests that
+// carry no cookie get them, so the cookie session stays usable from this site alone.
+export function corsHeaders(request) {
+  const origin = request.headers.get('origin');
+  if (!origin || request.headers.get('cookie')) return {};
+  return {
+    'access-control-allow-origin': origin,
+    'access-control-allow-headers': 'content-type, authorization',
+    'access-control-allow-methods': 'GET, POST, DELETE, OPTIONS',
+    'access-control-max-age': '600',
+    'vary': 'Origin',
+  };
+}
+
+export function withCors(response, request) {
+  const extra = corsHeaders(request);
+  if (!Object.keys(extra).length) return response;
+  const headers = new Headers(response.headers);
+  for (const [k, v] of Object.entries(extra)) headers.set(k, v);
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
 export function text(value, max, { required = false, label = 'This field' } = {}) {
