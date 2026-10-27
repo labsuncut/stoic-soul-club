@@ -1,8 +1,8 @@
 // GET /api/health: is the site wired up? Safe to share: no secrets, no counts of people.
-import { json } from '../_lib/http.js';
+import { json, corsHeaders } from '../_lib/http.js';
 import { loadSite } from '../_lib/content.js';
 
-export async function onRequestGet({ env }) {
+export async function onRequestGet({ request, env }) {
   let site; let error = '';
   try { site = await loadSite(env); } catch (err) { error = String((err && err.message) || err); }
   const settings = site ? site.settings : {};
@@ -14,5 +14,10 @@ export async function onRequestGet({ env }) {
     photo_uploads: env.IMAGES ? 'connected' : 'not connected (R2 bucket not bound as IMAGES)',
     products: site ? site.products.length : 0,
     error,
-  }, 200, { 'cache-control': 'no-store' });
+  }, 200, { 'cache-control': 'no-store', ...corsHeaders(request) });
+}
+
+// Cross-origin preflight (Stoic HQ reads the health check from claude.ai).
+export function onRequestOptions({ request }) {
+  return new Response(null, { status: 204, headers: corsHeaders(request) });
 }
