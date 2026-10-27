@@ -8,6 +8,10 @@
   Strict-Transport-Security: max-age=31536000
   X-Robots-Tag: noindex
 
+/hq/*
+  Cache-Control: no-store
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'
+
 /staff/*
   Cache-Control: no-store
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'
