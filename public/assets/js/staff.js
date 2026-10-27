@@ -296,7 +296,7 @@
 
   // ---------- Site ----------
   const SITE_TEXT = ['whatsapp', 'instagram', 'contact_email', 'hero_headline', 'hero_cta', 'hero_caption', 'announcement', 'manifesto', 'story_text', 'ordering_text', 'shipping_text', 'payment_text', 'swap_text'];
-  const SITE_IMG = ['hero_image', 'hero_video', 'manifesto_image', 'story_image', 'logo_image'];
+  const SITE_IMG = ['hero_image', 'hero_video', 'hero_video_webm', 'hero_video_phone', 'hero_poster', 'manifesto_image', 'story_image', 'logo_image'];
   const SITE_SWITCH = ['restock_inquiries', 'analytics', 'site_public'];
   async function loadSite() {
     const { settings: s, images } = await api('/api/staff/settings');

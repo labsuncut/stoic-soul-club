@@ -70,3 +70,5 @@ dialog form { display: grid; gap: 14px; }
 .alert.bad { border-color: #b8382e; color: #8a2a22; background: #fbeeec; }
 .alert.warn { border-color: #c8963e; color: #7a5a22; background: #fbf4e6; }
 .alert.info { border-color: #cfc9bc; color: #555; background: #f4f1ea; }
+
+.hint { margin: 4px 0 12px; font-size: 13px; color: #6E6A62; }

@@ -2,7 +2,7 @@
 // and answers with its address (/img/<key>). The browser shrinks photos before sending them.
 import { handle, json, HttpError } from '../../_lib/http.js';
 
-const TYPES = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png', 'video/mp4': 'mp4' };
+const TYPES = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png', 'video/mp4': 'mp4', 'video/webm': 'webm' };
 const MAX = { image: 8_000_000, video: 12_000_000 };
 
 export const onRequestPost = handle(async ({ request, env }) => {
@@ -11,7 +11,7 @@ export const onRequestPost = handle(async ({ request, env }) => {
   const file = form && form.get('file');
   if (!file || typeof file === 'string') throw new HttpError(400, 'Choose a file to upload.');
   const ext = TYPES[file.type];
-  if (!ext) throw new HttpError(415, 'Upload a JPG, PNG, WebP photo or an MP4 video.');
+  if (!ext) throw new HttpError(415, 'Upload a JPG, PNG, WebP photo or an MP4 / WebM video.');
   const limit = file.type.startsWith('video/') ? MAX.video : MAX.image;
   if (file.size > limit) throw new HttpError(413, `That file is too big (${Math.round(file.size / 1e6)} MB). Keep photos under 8 MB and videos under 12 MB.`);
   const key = `${Date.now().toString(36)}-${crypto.randomUUID().slice(0, 8)}.${ext}`;

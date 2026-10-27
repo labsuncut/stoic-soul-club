@@ -311,6 +311,37 @@ html.intro-on body { overflow: hidden; }
 .cover .ph { padding: 24px; align-content: center; justify-items: end; text-align: right; }
 .cover .ph-shot { max-width: 24ch; font-size: clamp(18px, 2.4vw, 28px); }
 
+/* ---------- Cover film: the film plays forwards and back with the scroll ---------- */
+/* A tall track scrolls through a stage that stays on screen; site.js maps the scroll to the
+   film's time. The words come in three beats over a scrim at the foot of the frame. */
+.cover-film { display: block; min-height: 0; overflow: visible; isolation: auto; }
+.film-track { height: 400svh; }
+.film-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: var(--ink); isolation: isolate; }
+.film, .film-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; transform: none; animation: none; }
+.film-poster { display: none; }
+.cover-film.no-video .film { display: none; }
+.cover-film.no-video .film-poster { display: block; }
+.film-poster.cover-void::after { background-position: 50% 36%; background-size: auto 46%; }
+.film-scrim { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(14,13,12,.5) 0%, rgba(14,13,12,0) 26%, rgba(14,13,12,0) 44%, rgba(14,13,12,.72) 72%, rgba(14,13,12,.94) 100%); }
+.cover-film .cover-text { position: absolute; inset: auto 0 0 0; z-index: 2; display: block; padding: 0; }
+.cover-film .beat { display: grid; gap: 18px; padding: 0 var(--gutter) clamp(56px, 9vw, 92px); }
+.js .cover-film .beat { position: absolute; inset: auto 0 0 0; opacity: 0; transform: translateY(14px); pointer-events: none; transition: opacity 420ms var(--ease), transform 420ms var(--ease); }
+.js .cover-film .beat.on { opacity: 1; transform: none; pointer-events: auto; transition-delay: 60ms; }
+.cover-film .cover-cap { bottom: 18px; z-index: 2; }
+.cover-film .cover-scroll { bottom: 72px; }
+.film-bar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; height: 2px; background: var(--butterfly); transform-origin: left center; transform: scaleX(0); }
+[dir="rtl"] .film-bar { transform-origin: right center; }
+@media (min-width: 980px) {
+  .cover-film { grid-template-columns: none; }
+  .cover-film .cover-text { opacity: 1; padding: 0; }
+  .cover-film .beat { padding-bottom: 84px; }
+  .cover-film .beat > * { max-width: 62vw; }
+  .cover-film .cover-cap { right: 48px; bottom: 36px; }
+}
+@media (prefers-reduced-motion: reduce) { .js .cover-film .beat, .js .cover-film .beat.on { transition-duration: 200ms; transform: none; } }
+
+
 /* ---------- Sheets (grids) ---------- */
 .sheet { display: grid; gap: clamp(28px, 2.4vw, 32px) clamp(14px, 1.8vw, 24px); }
 .sheet-drop, .sheet-shop { grid-template-columns: repeat(2, 1fr); }
