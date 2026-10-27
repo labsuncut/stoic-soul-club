@@ -75,9 +75,63 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(go); else go();
     setTimeout(go, 900);
   }
+  // ---------- The cover film ----------
+  // The stage stays on screen while the page scrolls through a tall track; where the page is
+  // in the track sets where the film is. The shown time eases toward the target so a fast
+  // flick does not jump frames. The reader drives it, so it stays on with Reduce Motion.
+  // If no source can play, the stage shows the still frame instead.
+  const filmCover = cover && cover.classList.contains('cover-film') ? cover : null;
+  if (filmCover) {
+    const track = $('.film-track', filmCover);
+    const film = $('video.film', filmCover);
+    const bar = $('.film-bar', filmCover);
+    const beats = $$('.beat', filmCover);
+    const phone = film.dataset.phone;
+    if (phone && matchMedia('(orientation: portrait) and (max-width: 719px)').matches) {
+      film.innerHTML = '';
+      const src = document.createElement('source'); src.src = phone; src.type = 'video/mp4'; film.append(src);
+      film.load();
+    }
+    const fail = () => filmCover.classList.add('no-video');
+    film.addEventListener('error', fail, true);
+    const lastSource = film.querySelector('source:last-of-type');
+    if (lastSource) lastSource.addEventListener('error', fail);
+    if (film.canPlayType && !$$('source', film).some((src) => film.canPlayType(src.type))) fail();
+    let ready = film.readyState >= 1, target = 0, shown = 0, running = false, lastP = -1;
+    const progress = () => {
+      const span = track.offsetHeight - innerHeight;
+      return span > 0 ? Math.min(1, Math.max(0, -track.getBoundingClientRect().top / span)) : 0;
+    };
+    const tick = () => {
+      const p = progress();
+      if (p !== lastP) {
+        lastP = p;
+        bar.style.transform = `scaleX(${p.toFixed(4)})`;
+        for (const b of beats) b.classList.toggle('on', p >= +b.dataset.from && p < +b.dataset.to);
+      }
+      let busy = false;
+      if (ready && film.duration) {
+        target = p * Math.max(0, film.duration - 0.05);
+        shown += (target - shown) * 0.2;
+        if (Math.abs(target - shown) < 0.002) shown = target; else busy = true;
+        if (Math.abs(film.currentTime - shown) > 0.01 && !film.seeking) film.currentTime = shown;
+      }
+      if (busy) requestAnimationFrame(tick); else running = false;
+    };
+    const kick = () => { if (!running) { running = true; requestAnimationFrame(tick); } };
+    film.addEventListener('loadedmetadata', () => { ready = true; kick(); });
+    // The film fetches fully once the page has painted, and iOS decodes frames only after the
+    // film has been "played" once.
+    const warm = () => { film.preload = 'auto'; const pr = film.play(); if (pr && pr.then) pr.then(() => film.pause()).catch(() => {}); };
+    const later = () => ('requestIdleCallback' in window ? requestIdleCallback(warm, { timeout: 1500 }) : setTimeout(warm, 300));
+    if (document.readyState === 'complete') later(); else addEventListener('load', later, { once: true });
+    followers.push(kick);
+    kick();
+  }
+
   // The cover photo sinks slower than the page, and a soft light follows the pointer across it.
   if (cover) {
-    if (!reduced.matches) followers.push(() => cover.style.setProperty('--sy', String(Math.min(scrollY, innerHeight * 1.3))));
+    if (!reduced.matches && !filmCover) followers.push(() => cover.style.setProperty('--sy', String(Math.min(scrollY, innerHeight * 1.3))));
     if (matchMedia('(hover: hover)').matches) cover.addEventListener('pointermove', (e) => {
       const r = cover.getBoundingClientRect();
       cover.style.setProperty('--mx', `${e.clientX - r.left}px`); cover.style.setProperty('--my', `${e.clientY - r.top}px`);

@@ -27,11 +27,9 @@ export function home(site, origin) {
   const community = site.lookbooks.flatMap((l) => l.photos.filter((ph) => ph.tag === 'community')).slice(0, 6);
   const chapters = [...site.collections].sort((a, b) => b.chapter - a.chapter || a.sort - b.sort);
 
-  const heroMedia = s.hero_video
-    ? `<video class="cover-media" autoplay muted loop playsinline preload="none" poster="${esc(s.hero_image)}" aria-hidden="true"><source src="${esc(s.hero_video)}" type="video/mp4"></video>`
-    : s.hero_image
-      ? `<img class="cover-media" src="${esc(s.hero_image)}"${photo(s.hero_image, COVER_SIZES)} alt="" fetchpriority="high" decoding="async">`
-      : `<div class="cover-media cover-void" aria-hidden="true"></div>`;
+  const heroMedia = s.hero_image
+    ? `<img class="cover-media" src="${esc(s.hero_image)}"${photo(s.hero_image, COVER_SIZES)} alt="" fetchpriority="high" decoding="async">`
+    : `<div class="cover-media cover-void" aria-hidden="true"></div>`;
 
   // One wide photograph between the pieces and the philosophy: the second frame of the chapter
   // the cover opened with, so the page has one quiet moment that is only picture. Skipped
@@ -44,17 +42,47 @@ export function home(site, origin) {
   const fill = String(s.manifesto || '').split(/\n+/).map((t) => t.trim()).filter(Boolean)
     .map((t) => `<p>${t.split(/\s+/).map((w) => `<span class="w">${esc(w)}</span>`).join(' ')}</p>`).join('');
 
-  const body = `
+  const kicker = `<p class="cover-kicker"><span class="folio-ch">Chapter ${words(chapter)}</span><span>Amman<span class="kicker-more">${chapters.length ? ' · ' + chapters.map((c) => esc(c.title)).join(' · ') : ''}</span></span></p>`;
+  const headline = statement(s.hero_headline.replace(/\s+(YOU'RE IN\.?)$/i, '\n$1'), { tag: 'h1', cls: 'statement-xl' });
+  const sub = `<p class="cover-sub"><em>Chapter ${words(chapter)}</em> is out. Heavy cotton tees and hoodies, ${words(chapters.length).toLowerCase()} designs, a print on the back that says where you are.</p>`;
+  const cta = `<p class="cover-cta"><a class="btn" href="/shop">${esc(s.hero_cta)}</a><a class="link" href="/story">Read the story</a></p>`;
+  const caption = s.hero_caption ? `<span class="cover-cap">${esc(s.hero_caption)}</span>` : '';
+
+  // With a film, the cover is a scroll film: the stage stays on screen while the page scrolls
+  // through a tall track, and the film plays forwards and back with the scroll. The words come
+  // in three beats. Without a film, the cover is the garment photo beside the headline.
+  const cover = s.hero_video ? `
+<section class="cover cover-film" id="cover">
+  <div class="film-track">
+    <div class="film-stage">
+      <video class="film" muted playsinline preload="metadata"${s.hero_poster ? ` poster="${esc(s.hero_poster)}"` : ''}${s.hero_video_phone ? ` data-phone="${esc(s.hero_video_phone)}"` : ''} aria-hidden="true" tabindex="-1">
+        <source src="${esc(s.hero_video)}" type="video/mp4">${s.hero_video_webm ? `\n        <source src="${esc(s.hero_video_webm)}" type="video/webm">` : ''}
+      </video>
+      ${s.hero_poster ? `<img class="film-poster" src="${esc(s.hero_poster)}" alt="" fetchpriority="high" decoding="async">` : '<div class="film-poster cover-void" aria-hidden="true"></div>'}
+      <div class="film-scrim" aria-hidden="true"></div>
+      <div class="cover-text film-beats">
+        <div class="beat" data-from="0" data-to="0.4">${kicker}${headline}</div>
+        <div class="beat" data-from="0.4" data-to="0.7">${sub}</div>
+        <div class="beat" data-from="0.7" data-to="1.01">${cta}</div>
+      </div>
+      ${caption}
+      <span class="film-bar" aria-hidden="true"></span>
+      <a class="cover-scroll" href="#drop" aria-label="Scroll to the pieces">Scroll</a>
+    </div>
+  </div>
+</section>` : `
 <section class="cover" id="cover">
-  <div class="cover-pic">${heroMedia}<div class="cover-light" aria-hidden="true"></div>${(s.hero_image || s.hero_video) && s.hero_caption ? `<span class="cover-cap">${esc(s.hero_caption)}</span>` : ''}</div>
+  <div class="cover-pic">${heroMedia}<div class="cover-light" aria-hidden="true"></div>${s.hero_image ? caption : ''}</div>
   <div class="cover-text">
-    <p class="cover-kicker"><span class="folio-ch">Chapter ${words(chapter)}</span><span>Amman<span class="kicker-more">${chapters.length ? ' · ' + chapters.map((c) => esc(c.title)).join(' · ') : ''}</span></span></p>
-    ${statement(s.hero_headline.replace(/\s+(YOU'RE IN\.?)$/i, '\n$1'), { tag: 'h1', cls: 'statement-xl' })}
-    <p class="cover-sub"><em>Chapter ${words(chapter)}</em> is out. Heavy cotton tees and hoodies, ${words(chapters.length).toLowerCase()} designs, a print on the back that says where you are.</p>
-    <p class="cover-cta"><a class="btn" href="/shop">${esc(s.hero_cta)}</a><a class="link" href="/story">Read the story</a></p>
+    ${kicker}
+    ${headline}
+    ${sub}
+    ${cta}
   </div>
   <a class="cover-scroll" href="#drop" aria-label="Scroll to the pieces">Scroll</a>
-</section>
+</section>`;
+
+  const body = `${cover}
 
 ${ticker([s.hero_headline, ...chapters.map((c) => c.title), 'Heavy cotton', 'Made in Amman', 'Ordered on WhatsApp'])}
 
@@ -128,7 +156,7 @@ ${(community.length || s.instagram) ? `<section class="band band-tight" id="comm
 </section>` : ''}
 `;
   return layout({
-    site, origin, page: 'home', section: 'Cover', chapter, title: SITE, path: '/', image: s.hero_image,
+    site, origin, page: 'home', section: 'Cover', chapter, title: SITE, path: '/', image: s.hero_image, preload: s.hero_video ? s.hero_poster : s.hero_image,
     description: `Stoic Soul Club, independent streetwear from Amman. ${s.hero_headline} Heavy cotton tees and hoodies, three designs, ordered on WhatsApp.`,
     body, bodyClass: 'is-home',
   });

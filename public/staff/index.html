@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex">
 <title>Stoic · Staff</title>
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/css/site.css?v=12">
-<link rel="stylesheet" href="/assets/css/staff.css?v=12">
+<link rel="stylesheet" href="/assets/css/site.css?v=13">
+<link rel="stylesheet" href="/assets/css/staff.css?v=13">
 </head>
 <body class="staff-body">
 <header class="masthead">
@@ -173,7 +173,13 @@
         </div>
         <div class="row2">
           <div class="field"><label>Cover photo</label><div class="photos" data-photos="hero_image" data-single></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="image/*" hidden data-upload="hero_image"></label><button type="button" class="link" data-addlink="hero_image">Paste a link</button></div><input name="hero_image" type="hidden"></div>
-          <div class="field"><label>Cover video (optional, MP4 under 12 MB, muted; phones show the photo)</label><div class="photos" data-photos="hero_video" data-single data-video></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="video/mp4" hidden data-upload="hero_video"></label><button type="button" class="link" data-addlink="hero_video">Paste a link</button></div><input name="hero_video" type="hidden"></div>
+          <div class="field"><label>Cover film: still frame (shows first and while the film loads; the share image stays the cover photo)</label><div class="photos" data-photos="hero_poster" data-single></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="image/*" hidden data-upload="hero_poster"></label><button type="button" class="link" data-addlink="hero_poster">Paste a link</button></div><input name="hero_poster" type="hidden"></div>
+        </div>
+        <p class="hint">Cover film: when a film is set, the cover plays it as the visitor scrolls, forwards and back. 4 to 8 seconds, silent, 1280×720, every frame a keyframe, under 2 MB (the team encodes it). Without a film the cover shows the photo.</p>
+        <div class="row3">
+          <div class="field"><label>Cover film, MP4 (under 12 MB)</label><div class="photos" data-photos="hero_video" data-single data-video></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="video/mp4" hidden data-upload="hero_video"></label><button type="button" class="link" data-addlink="hero_video">Paste a link</button></div><input name="hero_video" type="hidden"></div>
+          <div class="field"><label>Cover film, WebM (optional, smaller for Android/Chrome)</label><div class="photos" data-photos="hero_video_webm" data-single data-video></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="video/webm" hidden data-upload="hero_video_webm"></label><button type="button" class="link" data-addlink="hero_video_webm">Paste a link</button></div><input name="hero_video_webm" type="hidden"></div>
+          <div class="field"><label>Cover film, phone cut (optional, portrait 720×1280 MP4)</label><div class="photos" data-photos="hero_video_phone" data-single data-video></div><div class="bar"><label class="btn btn-ghost btn-s">Upload<input type="file" accept="video/mp4" hidden data-upload="hero_video_phone"></label><button type="button" class="link" data-addlink="hero_video_phone">Paste a link</button></div><input name="hero_video_phone" type="hidden"></div>
         </div>
         <div class="field"><label>Caption on the cover photo</label><input name="hero_caption" type="text" maxlength="80"></div>
         <div class="field"><label>Announcement bar (empty = none). Only for things that are decided.</label><input name="announcement" type="text" maxlength="160"></div>
@@ -205,6 +211,6 @@
     </section>
   </div>
 </main>
-<script src="/assets/js/staff.js?v=12" defer></script>
+<script src="/assets/js/staff.js?v=13" defer></script>
 </body>
 </html>

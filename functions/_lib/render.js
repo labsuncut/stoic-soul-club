@@ -5,7 +5,7 @@ import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
 // Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
-export const ASSET_V = '12';
+export const ASSET_V = '13';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
 // Pixel sizes of the photographs shipped with the site, so the browser can reserve their space
@@ -57,7 +57,7 @@ export function headers(site, extra = {}) {
 
 // ---------- Layout ----------
 
-export function layout({ site, origin, page, section, chapter = 1, title, description, path, image, ld = [], body, bodyClass = '' }) {
+export function layout({ site, origin, page, section, chapter = 1, title, description, path, image, preload = '', ld = [], body, bodyClass = '' }) {
   const s = site.settings;
   const fullTitle = page === 'home' ? `${SITE} · ${s.hero_headline}` : `${title} · ${SITE}`;
   const desc = description || DEFAULT_DESC;
@@ -94,7 +94,7 @@ export function layout({ site, origin, page, section, chapter = 1, title, descri
 <meta name="theme-color" content="#141311">
 <meta name="view-transition" content="same-origin">
 <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-<link rel="preload" href="/assets/fonts/archivo-normal.woff2" as="font" type="font/woff2" crossorigin>${page === 'home' && srcsetOf(image) ? `\n<link rel="preload" as="image" imagesrcset="${srcsetOf(image).set}" imagesizes="${COVER_SIZES}" fetchpriority="high">` : ''}
+<link rel="preload" href="/assets/fonts/archivo-normal.woff2" as="font" type="font/woff2" crossorigin>${preload && srcsetOf(preload) ? `\n<link rel="preload" as="image" imagesrcset="${srcsetOf(preload).set}" imagesizes="${COVER_SIZES}" fetchpriority="high">` : preload ? `\n<link rel="preload" as="image" href="${esc(preload)}" fetchpriority="high">` : ''}
 <script src="/assets/js/intro.js?v=${ASSET_V}" defer></script>
 <link rel="stylesheet" href="/assets/css/site.css?v=${ASSET_V}">
 ${[org, ...ld].map((o) => `<script type="application/ld+json">${safeJson(o)}</script>`).join('\n')}

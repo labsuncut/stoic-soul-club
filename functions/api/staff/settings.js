@@ -5,7 +5,7 @@ import { invalidate } from '../../_lib/content.js';
 
 const SHORT = ['instagram', 'hero_headline', 'hero_cta', 'hero_caption', 'contact_email'];
 const LONG = ['manifesto', 'announcement', 'ordering_text', 'shipping_text', 'payment_text', 'swap_text', 'story_text'];
-const IMAGES = ['hero_image', 'hero_video', 'manifesto_image', 'story_image', 'logo_image'];
+const IMAGES = ['hero_image', 'hero_video', 'hero_video_webm', 'hero_video_phone', 'hero_poster', 'manifesto_image', 'story_image', 'logo_image'];
 const SWITCHES = ['site_public', 'restock_inquiries', 'analytics'];
 
 export const onRequestGet = handle(async ({ env }) => json({ settings: await getSettings(await getDb(env)), images: !!env.IMAGES }));
