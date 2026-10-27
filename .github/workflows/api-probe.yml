@@ -1,0 +1,24 @@
+# Manual check of the live staff API from outside Cloudflare: the cross-origin preflight and a
+# token-less call, as Stoic HQ on claude.ai makes them. Prints headers only; no secrets used.
+name: API probe
+on:
+  workflow_dispatch:
+    inputs:
+      origin:
+        description: Origin header to send
+        default: https://claude.ai
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Preflight on login
+        run: |
+          curl -sS -i -X OPTIONS "https://stoicsoulclub.com/api/staff/login" \
+            -H "Origin: ${{ inputs.origin }}" -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: content-type, authorization" | head -30
+      - name: Health with Origin
+        run: |
+          curl -sS -i "https://stoicsoulclub.com/api/health" -H "Origin: ${{ inputs.origin }}" | head -30
+      - name: Settings without token (expect 401 with CORS headers)
+        run: |
+          curl -sS -i "https://stoicsoulclub.com/api/staff/settings" -H "Origin: ${{ inputs.origin }}" -H "Authorization: Bearer 1.0000000000000000000000000000000000000000000000000000000000000000" | head -30
