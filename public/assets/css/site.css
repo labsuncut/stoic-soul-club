@@ -553,7 +553,7 @@ html:not(.js) .fill .w { color: var(--bone); }
 .pdp-gallery.is-swipe .frame { flex: 0 0 84%; scroll-snap-align: start; }
 .pdp-gallery.is-swipe .frame:first-child { grid-column: auto; }
 .pdp-sticky { display: grid; gap: 18px; }
-.pdp-chapter a { display: inline-block; min-height: 24px; padding: 5px 0; color: var(--accent, var(--butterfly)); }
+.pdp-chapter a { display: inline-block; min-height: 24px; padding: 5px 0; color: var(--butterfly); color: color-mix(in srgb, var(--accent, var(--butterfly)) 70%, #fff); }
 .pdp-name { font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: clamp(32px, 5vw, 56px); letter-spacing: -.03em; line-height: .95; text-transform: uppercase; }
 .pdp-price { font-family: var(--display); font-size: 20px; font-weight: 500; }
 .pdp-price s { color: var(--gray); margin-left: 8px; }

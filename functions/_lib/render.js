@@ -5,7 +5,7 @@ import { money, chapterLabel } from './content.js';
 
 export const SITE = 'Stoic Soul Club';
 // Bump when site.css, site.js or intro.js change, so browsers that cached the old files load the new ones.
-export const ASSET_V = '13';
+export const ASSET_V = '14';
 const DEFAULT_DESC = 'Independent streetwear from Amman. Heavy cotton tees and hoodies with a chapter on the back. Order on WhatsApp.';
 
 // Pixel sizes of the photographs shipped with the site, so the browser can reserve their space
